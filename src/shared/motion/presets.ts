@@ -10,7 +10,7 @@ export const EASE_OUT: [number, number, number, number] = [0.22, 1, 0.36, 1]
 
 export const spring: Transition = { type: 'spring', stiffness: 380, damping: 30 }
 export const springSoft: Transition = { type: 'spring', stiffness: 220, damping: 26 }
-export const springBouncy: Transition = { type: 'spring', stiffness: 520, damping: 16 }
+export const springBouncy: Transition = { type: 'spring', stiffness: 420, damping: 24 }
 
 /** Conteneur qui déclenche ses enfants en cascade. */
 export const staggerContainer = (stagger = 0.06, delay = 0): Variants => ({

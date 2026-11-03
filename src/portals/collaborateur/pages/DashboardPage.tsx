@@ -3,6 +3,7 @@ import { Link } from 'react-router'
 import {
   ArrowRight,
   CalendarCheck,
+  Check,
   Flame,
   Layers,
   Lightbulb,
@@ -12,7 +13,6 @@ import {
 } from 'lucide-react'
 import { useAuth } from '@/app/auth/AuthProvider'
 import { RESOURCES, levelFromXp } from '@/shared/content'
-import { Mascot } from '@/shared/components/Mascot'
 import { ProgressRing } from '@/shared/components/ProgressRing'
 import { PILLAR_META } from '@/shared/components/PillarTag'
 import {
@@ -26,7 +26,7 @@ import {
   Progress,
 } from '@/shared/ui'
 import { addDays, cn, formatNumber, todayISO } from '@/shared/lib/utils'
-import { AnimatedNumber, Reveal, Stagger, hoverLift, springBouncy } from '@/shared/motion'
+import { AnimatedNumber, Reveal, Stagger, hoverLift } from '@/shared/motion'
 import { collabPath } from '../paths'
 import { ThemeBadge } from '../components/ThemeBadge'
 import { BADGES } from '../store/badges'
@@ -54,62 +54,78 @@ function Hero() {
   const { user } = useAuth()
   const xp = useProgress((s) => s.xp)
   const streak = useProgress((s) => s.streak)
+  const cards = useProgress((s) => s.cards)
   const { current, next, progress, toNext } = levelFromXp(xp)
+  const due = countDue(cards)
   const hour = new Date().getHours()
   const hello = hour < 18 ? 'Bonjour' : 'Bonsoir'
+  const LevelIcon = current.icon
 
   return (
-    <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-teal-600 via-teal-700 to-cyan-900 text-white shadow-lg">
-      <div aria-hidden className="bg-grid absolute inset-0 text-white opacity-60" />
-      <div
-        aria-hidden
-        className="absolute -top-16 -right-16 size-56 rounded-full bg-amber-300/20 blur-2xl"
-      />
-      <CardContent className="relative flex flex-col gap-6 p-6 sm:flex-row sm:items-center sm:p-8">
-        <div className="min-w-0 flex-1">
-          <p className="mb-1 text-sm font-semibold text-teal-100">
-            {hello} {user.firstName} 👋
+    <Card className="overflow-hidden border-0 bg-primary text-primary-foreground shadow-md">
+      <CardContent className="grid gap-6 p-6 sm:p-8 lg:grid-cols-[1fr_340px] lg:items-center">
+        <div className="min-w-0">
+          <p className="mb-2 text-xs font-semibold tracking-[0.12em] text-primary-foreground/75 uppercase">
+            Parcours Santé & Sécurité au travail
           </p>
-          <h1 className="mb-3 text-2xl leading-tight font-extrabold sm:text-3xl">
-            Prêt·e pour votre dose de prévention du jour ?
+          <h1 className="mb-2 text-2xl leading-tight font-bold text-balance sm:text-3xl">
+            {hello} {user.firstName}
           </h1>
-          <div className="mb-4 flex flex-wrap items-center gap-2 text-sm">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 font-bold backdrop-blur">
-              {current.emoji} Niveau {current.level} · {current.title}
-            </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 font-bold backdrop-blur">
-              <Flame className="size-4 fill-amber-300 text-amber-300" /> {streak.count} jours
-              d’affilée
-            </span>
-          </div>
-          <div className="max-w-md">
-            <div className="mb-1.5 flex justify-between text-xs font-semibold text-teal-100">
-              <span>{formatNumber(xp)} XP</span>
-              <span>
-                {next ? `${toNext} XP avant « ${next.title} »` : 'Niveau maximum atteint'}
-              </span>
-            </div>
-            <Progress
-              value={progress}
-              className="h-2.5 bg-white/20"
-              indicatorClassName="bg-gradient-to-r from-amber-300 to-amber-400"
-            />
+          <p className="mb-5 max-w-xl text-primary-foreground/85">
+            {due > 0
+              ? `${due} cartes sont à réviser aujourd’hui. Quelques minutes suffisent pour consolider vos réflexes de prévention.`
+              : 'Vos révisions sont à jour. Poursuivez votre parcours avec une ressource ou un quiz.'}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              asChild
+              size="lg"
+              className="bg-white text-primary shadow-none hover:bg-white/90"
+            >
+              <Link to={collabPath('flashcards/session')}>
+                Reprendre ma révision <ArrowRight />
+              </Link>
+            </Button>
+            <Button
+              asChild
+              size="lg"
+              variant="outline"
+              className="border-white/40 bg-transparent text-primary-foreground hover:bg-white/10"
+            >
+              <Link to={collabPath('ressources')}>Voir les ressources</Link>
+            </Button>
           </div>
         </div>
-        <div className="flex items-center gap-4 sm:flex-col sm:items-end">
-          <motion.div
-            initial={{ scale: 0, rotate: -30, y: 30 }}
-            animate={{ scale: 1, rotate: 0, y: 0 }}
-            transition={{ ...springBouncy, delay: 0.25 }}
-            whileHover={{ rotate: [0, -10, 10, -6, 0], transition: { duration: 0.6 } }}
-          >
-            <Mascot mood="cheer" className="size-24 animate-float sm:size-28" />
-          </motion.div>
-          <Button asChild variant="accent" size="lg" className="shadow-lg">
-            <Link to={collabPath('flashcards/session')}>
-              Session express <ArrowRight />
-            </Link>
-          </Button>
+
+        <div className="rounded-lg bg-card p-5 text-card-foreground shadow-sm">
+          <div className="mb-4 flex items-center gap-3">
+            <span className="grid size-11 place-items-center rounded-md bg-primary/10 text-primary">
+              <LevelIcon className="size-5" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className="text-xs font-medium text-muted-foreground">
+                Niveau {current.level}
+              </div>
+              <div className="font-semibold">{current.title}</div>
+            </div>
+            <div className="text-right">
+              <div className="text-lg leading-none font-bold tabular-nums">
+                <AnimatedNumber value={xp} />
+              </div>
+              <div className="text-xs text-muted-foreground">XP</div>
+            </div>
+          </div>
+          <Progress value={progress} className="mb-2 h-2" />
+          <div className="flex justify-between text-xs text-muted-foreground">
+            <span>{next ? `${toNext} XP avant « ${next.title} »` : 'Niveau maximum atteint'}</span>
+          </div>
+          <div className="mt-4 flex items-center gap-2 border-t pt-3 text-sm">
+            <Flame className="size-4 text-streak" />
+            <span>
+              <span className="font-semibold tabular-nums">{streak.count} jours</span> d’activité
+              consécutifs
+            </span>
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -130,7 +146,7 @@ function StatTiles() {
       suffix: '',
       icon: Layers,
       to: 'flashcards',
-      tone: 'text-primary bg-primary/10',
+      tone: 'text-primary bg-primary/8',
     },
     {
       label: 'Missions du jour',
@@ -138,7 +154,7 @@ function StatTiles() {
       suffix: `/${MISSIONS.length}`,
       icon: Target,
       to: '',
-      tone: 'text-success bg-success/12',
+      tone: 'text-primary bg-primary/8',
     },
     {
       label: 'Badges obtenus',
@@ -146,7 +162,7 @@ function StatTiles() {
       suffix: `/${BADGES.length}`,
       icon: Medal,
       to: 'trophees',
-      tone: 'text-xp bg-xp/10',
+      tone: 'text-primary bg-primary/8',
     },
     {
       label: 'Maîtrise globale',
@@ -154,7 +170,7 @@ function StatTiles() {
       suffix: ' %',
       icon: Sparkles,
       to: 'quiz',
-      tone: 'text-streak bg-streak/12',
+      tone: 'text-primary bg-primary/8',
     },
   ]
   return (
@@ -164,15 +180,15 @@ function StatTiles() {
           <Link to={collabPath(t.to)} className="group block h-full">
             <Card className="h-full transition-shadow group-hover:shadow-md">
               <CardContent className="flex items-center gap-3 p-4">
-                <span className={cn('grid size-11 shrink-0 place-items-center rounded-xl', t.tone)}>
+                <span className={cn('grid size-10 shrink-0 place-items-center rounded-md', t.tone)}>
                   <t.icon className="size-5" />
                 </span>
                 <span className="min-w-0">
-                  <span className="block text-2xl leading-none font-extrabold tabular-nums">
+                  <span className="block text-2xl leading-none font-bold tabular-nums">
                     <AnimatedNumber value={t.value} from={0} />
                     {t.suffix}
                   </span>
-                  <span className="mt-1 block text-xs leading-tight font-semibold text-muted-foreground">
+                  <span className="mt-1 block text-xs leading-tight font-medium text-muted-foreground">
                     {t.label}
                   </span>
                 </span>
@@ -205,12 +221,18 @@ function DailyMissions() {
               key={m.id}
               to={collabPath(m.to)}
               className={cn(
-                'flex items-center gap-3 rounded-xl border p-3 transition-colors hover:bg-muted/60',
+                'flex items-center gap-3 rounded-md border p-3 transition-colors hover:bg-muted/60',
                 done && 'border-success/40 bg-success/5',
               )}
             >
-              <span className="text-2xl" aria-hidden>
-                {done ? '✅' : m.emoji}
+              <span
+                aria-hidden
+                className={cn(
+                  'grid size-9 shrink-0 place-items-center rounded-md',
+                  done ? 'bg-success text-success-foreground' : 'bg-muted text-foreground',
+                )}
+              >
+                {done ? <Check className="size-4" /> : <m.icon className="size-4" />}
               </span>
               <span className="min-w-0 flex-1">
                 <span
@@ -259,7 +281,7 @@ function Pillars() {
               <div
                 key={p.id}
                 className={cn(
-                  'rounded-xl border p-4',
+                  'rounded-md border p-4',
                   p.id === weakest.id && 'border-warning/60 bg-warning/5',
                 )}
               >
@@ -268,7 +290,7 @@ function Pillars() {
                     <Icon className="size-4" />
                   </span>
                   <span className="flex-1 text-sm font-bold">{p.label}</span>
-                  <span className="text-lg font-extrabold tabular-nums">{p.score}%</span>
+                  <span className="text-lg font-bold tabular-nums">{p.score}%</span>
                 </div>
                 <Progress value={p.score} className="mb-2 h-2" />
                 <p className="text-xs text-muted-foreground">{p.metric}</p>
@@ -276,7 +298,7 @@ function Pillars() {
             )
           })}
         </div>
-        <div className="mt-4 flex flex-col gap-3 rounded-xl bg-muted/70 p-4 sm:flex-row sm:items-center">
+        <div className="mt-4 flex flex-col gap-3 rounded-md bg-muted/70 p-4 sm:flex-row sm:items-center">
           <Lightbulb className="size-5 shrink-0 text-warning" />
           <p className="flex-1 text-sm">
             <span className="font-bold">
@@ -309,7 +331,7 @@ function ThemesProgress() {
           <Link
             key={theme.id}
             to={collabPath(`quiz/jouer?mode=entrainement&theme=${theme.id}`)}
-            className="group flex items-center gap-3 rounded-xl border p-3 transition-all hover:-translate-y-0.5 hover:shadow-md"
+            className="group flex items-center gap-3 rounded-md border p-3 transition-colors hover:border-primary/40 hover:bg-muted/40"
           >
             <ProgressRing
               value={mastery}
@@ -318,12 +340,10 @@ function ThemesProgress() {
               indicatorClassName="stroke-primary"
               label={`Maîtrise ${theme.title}`}
             >
-              <span className="text-lg" aria-hidden>
-                {theme.emoji}
-              </span>
+              <theme.icon className="size-5 text-foreground" strokeWidth={1.75} aria-hidden />
             </ProgressRing>
             <span className="min-w-0 flex-1">
-              <span className="block text-sm leading-tight font-bold">{theme.title}</span>
+              <span className="block text-sm leading-tight font-semibold">{theme.title}</span>
               <span className="text-xs text-muted-foreground">
                 <span className="font-bold text-foreground tabular-nums">{mastery}%</span> maîtrisé
               </span>
@@ -427,7 +447,7 @@ function ToWatch() {
           <Link
             key={r.id}
             to={collabPath(`ressources?r=${r.id}`)}
-            className="flex flex-col gap-1.5 rounded-xl border p-3 transition-colors hover:bg-muted"
+            className="flex flex-col gap-1.5 rounded-md border p-3 transition-colors hover:bg-muted"
           >
             <span className="flex items-center gap-2">
               <ThemeBadge themeId={r.themeId} />
@@ -452,7 +472,6 @@ function Leaderboard() {
   const rows = [...TEAM, { name: `${user.firstName} ${user.lastName[0]}.`, xp, me: true }].sort(
     (a, b) => b.xp - a.xp,
   )
-  const medals = ['🥇', '🥈', '🥉']
   return (
     <Card>
       <CardHeader>
@@ -465,12 +484,17 @@ function Leaderboard() {
             layout
             key={r.name}
             className={cn(
-              'flex items-center gap-3 rounded-lg px-2 py-1.5 text-sm',
-              'me' in r && 'bg-primary/10 font-bold text-primary',
+              'flex items-center gap-3 rounded-md px-2 py-1.5 text-sm',
+              'me' in r && 'bg-primary/8 font-semibold text-primary',
             )}
           >
-            <span className="w-6 text-center">
-              {medals[i] ?? <span className="text-xs text-muted-foreground">{i + 1}</span>}
+            <span
+              className={cn(
+                'grid size-6 place-items-center rounded-sm text-xs font-semibold tabular-nums',
+                i === 0 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground',
+              )}
+            >
+              {i + 1}
             </span>
             <span className="flex-1 truncate">
               {r.name}
@@ -487,12 +511,12 @@ function Leaderboard() {
 function DidYouKnow() {
   const tip = TIPS[new Date().getDate() % TIPS.length]
   return (
-    <Card className="border-accent/50 bg-gradient-to-br from-accent/20 to-card">
+    <Card className="border-l-4 border-l-primary">
       <CardContent className="flex gap-3 p-5">
-        <Mascot mood="thinking" className="size-14 shrink-0" />
+        <Lightbulb className="mt-0.5 size-5 shrink-0 text-primary" />
         <div>
-          <div className="mb-1 text-xs font-bold tracking-wider text-accent-foreground uppercase dark:text-accent">
-            Le saviez-vous ?
+          <div className="mb-1 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+            Repère prévention
           </div>
           <p className="text-sm font-medium">{tip}</p>
         </div>

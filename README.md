@@ -16,7 +16,7 @@ Ce dépôt contient le **front-end**, organisé en **portails** selon le rôle d
 - **React Router 7** (routes déclarées par portail, pages chargées à la demande)
 - **Motion** (ex-Framer Motion) pour les animations et gestes
 - **Zustand** (état de progression du collaborateur, persisté en `localStorage` pour la démo)
-- **lucide-react** (icônes), police **Plus Jakarta Sans** (embarquée)
+- **lucide-react** (icônes), police **IBM Plex Sans** (embarquée)
 
 ## Démarrer
 
@@ -72,12 +72,18 @@ src/
 
 ### Identité visuelle — règles d’équipe
 
+Charte **institutionnelle rouge et blanc** : rouge de marque (`primary`) pour les actions et repères,
+surfaces blanches sur fond gris très clair, graphite (`inverse`, `accent`) pour les bandeaux contrastés,
+gris neutres pour le reste. Pas d’emojis ni de dégradés décoratifs : icônes `lucide-react` uniquement.
+Chaque thématique SST a une icône et un repère couleur discret (`THEMES[x].icon` / `.dot`), affichés via
+`<ThemeBadge>` et `<ThemeIcon>`.
+
 - Utiliser **uniquement les tokens** (`bg-primary`, `text-muted-foreground`, `bg-accent`, `text-xp`, `bg-success`…),
   jamais de couleur codée en dur dans une page. Les tokens clair/sombre sont définis dans `src/index.css`.
 - Réutiliser `@/shared/ui` ; pour un nouveau composant shadcn : `npx shadcn@latest add <composant>`
   (le fichier `components.json` pointe déjà vers `src/shared/ui`).
 - Chaque page commence par un `<PageHeader eyebrow title description />`.
-- Couleurs des thématiques SST : `THEMES[x].tone` (`src/shared/content/themes.ts`).
+- Icône et repère couleur des thématiques : `THEMES[x].icon` / `.dot` (`src/shared/content/themes.ts`).
 - Sur mobile : barre de navigation basse (5 premières entrées de la `nav`), libellés courts via `short`.
 
 ### Animations (Motion)

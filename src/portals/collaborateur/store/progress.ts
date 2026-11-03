@@ -1,3 +1,4 @@
+import { Flame, Target, Zap } from 'lucide-react'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { FLASHCARDS, XP, levelFromXp, type ThemeId } from '@/shared/content'
@@ -143,9 +144,9 @@ export const useProgress = create<ProgressState>()(
           nextStreak = { count, best: Math.max(streak.best, count), lastDay: today }
           if (count > 1)
             toast({
-              title: `Série de ${count} jours !`,
-              description: 'Continuez demain pour l’entretenir.',
-              icon: '🔥',
+              title: `Série de ${count} jours`,
+              description: 'Revenez demain pour la prolonger.',
+              icon: Flame,
               tone: 'xp',
             })
         }
@@ -166,7 +167,7 @@ export const useProgress = create<ProgressState>()(
           toast({
             title: 'Mission du jour accomplie',
             description: def.label,
-            icon: '🎯',
+            icon: Target,
             tone: 'success',
           })
           get().addXp(XP.dailyMission, undefined, true)
@@ -183,7 +184,7 @@ export const useProgress = create<ProgressState>()(
           toast({
             title: `Badge débloqué : ${b.name}`,
             description: b.description,
-            icon: b.emoji,
+            icon: b.icon,
             tone: 'badge',
           }),
         )
@@ -200,13 +201,13 @@ export const useProgress = create<ProgressState>()(
             activity: { ...s.activity, [today]: (s.activity[today] ?? 0) + amount },
           }))
           if (!silent && reason)
-            toast({ title: `+${amount} XP`, description: reason, icon: '⚡', tone: 'xp' })
+            toast({ title: `+${amount} XP`, description: reason, icon: Zap, tone: 'xp' })
           const after = levelFromXp(get().xp).current
           if (after.level > before)
             toast({
               title: `Niveau ${after.level} : ${after.title}`,
-              description: 'Nouveau palier atteint, bravo !',
-              icon: after.emoji,
+              description: 'Nouveau palier atteint.',
+              icon: after.icon,
               tone: 'badge',
             })
         },

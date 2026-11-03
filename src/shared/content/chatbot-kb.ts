@@ -24,7 +24,7 @@ export const CHAT_KB: ChatKnowledge[] = [
     ],
     themeId: 'secours',
     answer:
-      '🚨 **En cas d’urgence**, composez :\n• **15** — SAMU (urgence médicale)\n• **18** — Pompiers\n• **112** — Numéro d’urgence européen\n• **114** — Urgence par SMS\n\nPensez **P.A.S.** : Protéger, Alerter, Secourir. Prévenez aussi un Sauveteur Secouriste du Travail (SST) de votre site.',
+      '**En cas d’urgence**, composez :\n• **15** — SAMU (urgence médicale)\n• **18** — Pompiers\n• **112** — Numéro d’urgence européen\n• **114** — Urgence par SMS\n\nPensez **P.A.S.** : Protéger, Alerter, Secourir. Prévenez aussi un Sauveteur Secouriste du Travail (SST) de votre site.',
     links: [
       { label: 'Fiche numéros d’urgence', to: 'ressources?r=r-numeros' },
       { label: 'Vidéo P.A.S.', to: 'ressources?r=r-pas' },
@@ -131,7 +131,7 @@ export const CHAT_KB: ChatKnowledge[] = [
     ],
     themeId: 'rps',
     answer:
-      'Merci d’en parler, c’est important. 💬\nVous pouvez vous adresser à : votre **manager**, les **RH**, le **médecin du travail**, vos **représentants du personnel (CSE)**, ou la **cellule d’écoute psychologique** si votre entreprise en propose une (confidentielle).\n\nSi vous êtes en détresse, le **3114** (numéro national de prévention du suicide) répond 24h/24.',
+      'Merci d’en parler, c’est important.\nVous pouvez vous adresser à : votre **manager**, les **RH**, le **médecin du travail**, vos **représentants du personnel (CSE)**, ou la **cellule d’écoute psychologique** si votre entreprise en propose une (confidentielle).\n\nSi vous êtes en détresse, le **3114** (numéro national de prévention du suicide) répond 24h/24.',
     links: [{ label: 'Podcast : stress au travail', to: 'ressources?r=r-stress' }],
   },
   {

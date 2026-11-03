@@ -127,7 +127,7 @@ export default function HazardHuntPage() {
             <ArrowLeft /> Quiz & défis
           </Link>
         </Button>
-        <h1 className="flex items-center gap-2 text-xl font-extrabold sm:text-2xl">
+        <h1 className="flex items-center gap-2 text-xl font-bold sm:text-2xl">
           <Crosshair className="size-6 text-primary" /> Chasse aux risques
         </h1>
         <Badge variant="secondary" className="ml-auto">
@@ -227,7 +227,7 @@ export default function HazardHuntPage() {
                     <Card className="max-w-sm text-center">
                       <CardContent className="p-6">
                         <Mascot mood="cheer" className="mx-auto mb-2 size-24" />
-                        <h2 className="mb-1 text-2xl font-extrabold">Œil de lynx ! 🦉</h2>
+                        <h2 className="mb-1 text-2xl font-bold">Inspection terminée</h2>
                         <p className="mb-4 text-sm text-muted-foreground">
                           Les 6 dangers repérés en {mm}:{ss} avec {missCount} clic(s) dans le vide
                           et {hintsUsed} indice(s).
@@ -276,7 +276,7 @@ export default function HazardHuntPage() {
                       <Badge variant="success">Danger n°{found.indexOf(lastHazard.id) + 1}</Badge>
                       <ThemeBadge themeId={lastHazard.themeId} />
                     </div>
-                    <h3 className="mb-1 font-extrabold">{lastHazard.label}</h3>
+                    <h3 className="mb-1 font-bold">{lastHazard.label}</h3>
                     <p className="text-sm text-muted-foreground">{lastHazard.explanation}</p>
                   </CardContent>
                 </Card>

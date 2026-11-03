@@ -23,7 +23,7 @@ function NotFound() {
     <div className="grid min-h-dvh place-items-center p-6 text-center">
       <div>
         <Mascot mood="oops" className="mx-auto mb-4 size-28" />
-        <h1 className="mb-2 text-2xl font-extrabold">Page introuvable</h1>
+        <h1 className="mb-2 text-2xl font-bold">Page introuvable</h1>
         <p className="mb-6 text-muted-foreground">
           Cette zone n’est pas balisée… revenons en lieu sûr.
         </p>

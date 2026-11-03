@@ -210,7 +210,7 @@ function QuizGame() {
           transition={spring}
         >
           <Card className="mb-6 overflow-hidden">
-            <div className="flex flex-col items-center gap-6 bg-gradient-to-br from-primary/10 via-card to-xp/10 p-8 text-center sm:flex-row sm:text-left">
+            <div className="flex flex-col items-center gap-6 border-t-4 border-t-primary p-8 text-center sm:flex-row sm:text-left">
               <ProgressRing
                 value={pct}
                 size={128}
@@ -224,7 +224,7 @@ function QuizGame() {
                     from={0}
                     duration={1.1}
                     format={(n) => `${Math.round(n)}%`}
-                    className="block text-3xl font-extrabold tabular-nums"
+                    className="block text-3xl font-bold tabular-nums"
                   />
                   <div className="text-xs font-semibold text-muted-foreground tabular-nums">
                     {score}/{total}
@@ -233,7 +233,7 @@ function QuizGame() {
               </ProgressRing>
               <div className="flex-1">
                 <div className="text-sm font-bold text-primary">{title}</div>
-                <h1 className="mb-2 text-2xl font-extrabold">{message}</h1>
+                <h1 className="mb-2 text-2xl font-bold">{message}</h1>
                 <div className="flex flex-wrap justify-center gap-2 sm:justify-start">
                   <span className="rounded-full bg-xp/12 px-3 py-1 text-sm font-bold text-xp">
                     +{earned} XP
@@ -264,7 +264,7 @@ function QuizGame() {
         {mistakes.length > 0 && (
           <Card className="mb-6">
             <CardContent className="p-5">
-              <h2 className="mb-1 font-extrabold">Revoir mes erreurs</h2>
+              <h2 className="mb-1 font-bold">Revoir mes erreurs</h2>
               <p className="mb-4 text-sm text-muted-foreground">
                 Relire la correction maintenant renforce la mémorisation.
               </p>
@@ -347,9 +347,9 @@ function QuizGame() {
                 animate={{ scale: 1, opacity: 1, rotate: 0 }}
                 exit={{ scale: 0.5, opacity: 0 }}
                 transition={springBouncy}
-                className="text-sm font-extrabold text-streak"
+                className="text-sm font-bold text-streak"
               >
-                🔥 x{combo}
+                Série ×{combo}
               </motion.span>
             )}
           </AnimatePresence>
@@ -393,7 +393,7 @@ function QuizGame() {
           />
           <span
             className={cn(
-              'w-8 text-right text-sm font-extrabold tabular-nums',
+              'w-8 text-right text-sm font-bold tabular-nums',
               timeLeft <= 5 && 'text-destructive',
             )}
           >
@@ -416,7 +416,7 @@ function QuizGame() {
                 Difficulté {'●'.repeat(q.difficulty)}
                 {'○'.repeat(3 - q.difficulty)}
               </div>
-              <h2 className="mb-6 text-xl leading-snug font-extrabold sm:text-2xl">{q.question}</h2>
+              <h2 className="mb-6 text-xl leading-snug font-bold sm:text-2xl">{q.question}</h2>
               <div className="grid gap-3 sm:grid-cols-2">
                 {q.options.map((opt, i) => {
                   const isAnswer = i === q.answer
@@ -447,7 +447,7 @@ function QuizGame() {
                     >
                       <span
                         className={cn(
-                          'grid size-8 shrink-0 place-items-center rounded-lg bg-muted text-sm font-extrabold',
+                          'grid size-8 shrink-0 place-items-center rounded-lg bg-muted text-sm font-bold',
                           revealed && isAnswer && 'bg-success text-success-foreground',
                           revealed && isPicked && !isAnswer && 'bg-destructive text-white',
                         )}
@@ -493,7 +493,7 @@ function QuizGame() {
                   <Mascot mood={correctNow ? 'cheer' : 'oops'} className="size-16" />
                 </motion.div>
                 <div className="flex-1">
-                  <p className="mb-1 font-extrabold">
+                  <p className="mb-1 font-bold">
                     {correctNow
                       ? 'Bonne réponse !'
                       : picked === null

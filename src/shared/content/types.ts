@@ -3,6 +3,8 @@
  * Le portail admin éditera ces objets, le portail référent en suivra l'usage,
  * le portail collaborateur les consomme.
  */
+import type { LucideIcon } from 'lucide-react'
+
 export type ThemeId =
   | 'fondamentaux'
   | 'postures'
@@ -17,9 +19,9 @@ export interface Theme {
   title: string
   short: string
   description: string
-  emoji: string
-  /** Classes Tailwind statiques (pour la détection au build) */
-  tone: { solid: string; soft: string; gradient: string; text: string; ring: string }
+  icon: LucideIcon
+  /** Repère couleur discret de la thématique (classe Tailwind statique) */
+  dot: string
 }
 
 export type ResourceType = 'video' | 'fiche' | 'infographie' | 'podcast'

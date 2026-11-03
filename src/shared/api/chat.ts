@@ -37,16 +37,16 @@ export class MockChatService implements ChatService {
     const q = normalize(question)
     if (/^(bonjour|salut|hello|coucou|bonsoir)\b/.test(q) && q.split(' ').length < 4) {
       return {
-        text: 'Bonjour 👋 Je suis **Prévi**, votre assistant santé-sécurité. Posez-moi une question sur les risques, les bons gestes ou les démarches !',
+        text: 'Bonjour, je suis **Prévi**, votre assistant santé-sécurité. Posez-moi une question sur les risques, les bons gestes ou les démarches !',
       }
     }
-    if (/\bmerci\b/.test(q)) return { text: 'Avec plaisir ! Prenez soin de vous 🦺' }
+    if (/\bmerci\b/.test(q)) return { text: 'Avec plaisir. Prenez soin de vous.' }
     const best = CHAT_KB.map((k) => ({ k, s: score(q, k) }))
       .filter((x) => x.s > 0)
       .sort((a, b) => b.s - a.s)[0]
     if (!best) {
       return {
-        text: 'Je n’ai pas encore de réponse fiable à cette question. 🤔\nPour une réponse adaptée à votre situation, contactez votre **référent SST** ou votre manager. Vous pouvez aussi reformuler avec d’autres mots (ex. « extincteur », « droit de retrait », « mal au dos »).',
+        text: 'Je n’ai pas encore de réponse fiable à cette question.\nPour une réponse adaptée à votre situation, contactez votre **référent SST** ou votre manager. Vous pouvez aussi reformuler avec d’autres mots (ex. « extincteur », « droit de retrait », « mal au dos »).',
       }
     }
     return { text: best.k.answer, links: best.k.links, matched: best.k.id }

@@ -1,8 +1,8 @@
-import { motion } from 'motion/react'
 import { Link } from 'react-router'
 import {
   ArrowRight,
   CalendarHeart,
+  Check,
   Crosshair,
   Dumbbell,
   Heart,
@@ -25,6 +25,7 @@ import {
 import { cn, todayISO } from '@/shared/lib/utils'
 import { Reveal, Stagger, spring } from '@/shared/motion'
 import { collabPath } from '../paths'
+import { ThemeIcon } from '../components/ThemeBadge'
 import { themeMastery } from '../store/insights'
 import { useProgress, type QuizMode } from '../store/progress'
 
@@ -39,7 +40,7 @@ function ModeCard({
   title,
   description,
   icon: Icon,
-  gradient,
+  featured,
   meta,
   to,
   cta,
@@ -49,7 +50,7 @@ function ModeCard({
   title: string
   description: string
   icon: typeof Zap
-  gradient: string
+  featured?: boolean
   meta: React.ReactNode
   to: string
   cta: string
@@ -57,23 +58,31 @@ function ModeCard({
   done?: boolean
 }) {
   return (
-    <Reveal className="h-full" whileHover={{ y: -6, transition: spring }}>
-      <Card className="group flex h-full flex-col overflow-hidden transition-shadow hover:shadow-xl">
+    <Reveal className="h-full" whileHover={{ y: -3, transition: spring }}>
+      <Card
+        className={cn(
+          'group flex h-full flex-col overflow-hidden transition-shadow hover:shadow-md',
+          featured && 'border-primary/40',
+        )}
+      >
         <div
-          className={cn('relative flex h-28 items-end bg-gradient-to-br p-5 text-white', gradient)}
+          className={cn(
+            'relative flex items-center gap-3 border-b p-5',
+            featured ? 'bg-primary text-primary-foreground' : 'bg-muted/50',
+          )}
         >
-          <div aria-hidden className="bg-grid absolute inset-0 text-white opacity-40" />
-          <motion.span
-            className="absolute top-4 right-4"
-            animate={{ y: [0, -5, 0], rotate: [0, 4, 0] }}
-            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+          <span
+            className={cn(
+              'grid size-10 shrink-0 place-items-center rounded-md',
+              featured ? 'bg-white/15' : 'bg-primary text-primary-foreground',
+            )}
           >
-            <Icon className="size-14 opacity-25 transition-transform group-hover:scale-125 group-hover:rotate-12" />
-          </motion.span>
-          <h3 className="relative text-xl font-extrabold">{title}</h3>
+            <Icon className="size-5" />
+          </span>
+          <h3 className="text-lg font-semibold">{title}</h3>
           {done && (
-            <Badge className="absolute top-4 left-4 bg-white text-emerald-700">
-              ✓ Fait aujourd’hui
+            <Badge className="ml-auto bg-white text-success">
+              <Check /> Fait
             </Badge>
           )}
         </div>
@@ -110,7 +119,7 @@ export default function QuizHubPage() {
           title="Défi du jour"
           description="5 questions choisies sur vos thématiques à renforcer. XP doublée !"
           icon={CalendarHeart}
-          gradient="from-amber-400 to-orange-600"
+          featured
           meta={
             <>
               <Badge variant="accent">×2 XP</Badge>
@@ -126,7 +135,6 @@ export default function QuizHubPage() {
           title="Défi chrono"
           description="15 secondes par question, 3 vies, des combos pour multiplier les points. Prêt·e ?"
           icon={Timer}
-          gradient="from-rose-500 to-red-700"
           meta={
             <>
               <Badge variant="destructive">
@@ -143,13 +151,12 @@ export default function QuizHubPage() {
           title="Chasse aux risques"
           description="Une scène de bureau, six dangers cachés. Ouvrez l’œil et cliquez sur chaque situation à risque."
           icon={Crosshair}
-          gradient="from-sky-500 to-indigo-700"
           meta={
             <>
               <Badge variant="secondary">
                 {hazardsFound}/{HAZARD_SCENES[0].hazards.length} trouvés
               </Badge>
-              <Badge variant="xp">Nouveau</Badge>
+              <Badge variant="accent">Nouveau</Badge>
             </>
           }
           to={collabPath('quiz/chasse-aux-risques')}
@@ -160,7 +167,6 @@ export default function QuizHubPage() {
           title="Entraînement libre"
           description="Sans chrono ni pression : choisissez une thématique et apprenez de chaque explication."
           icon={Dumbbell}
-          gradient="from-teal-500 to-emerald-700"
           meta={<Badge variant="secondary">8 questions · sans limite de temps</Badge>}
           to={collabPath('quiz/jouer?mode=entrainement')}
           cta="Toutes thématiques"
@@ -183,19 +189,11 @@ export default function QuizHubPage() {
                 <Link
                   key={t.id}
                   to={collabPath(`quiz/jouer?mode=entrainement&theme=${t.id}`)}
-                  className="group flex items-center gap-3 rounded-xl border p-3 transition-colors hover:bg-muted/60"
+                  className="group flex items-center gap-3 rounded-md border p-3 transition-colors hover:border-primary/40 hover:bg-muted/40"
                 >
-                  <span
-                    className={cn(
-                      'grid size-10 place-items-center rounded-lg text-xl',
-                      t.tone.soft,
-                    )}
-                    aria-hidden
-                  >
-                    {t.emoji}
-                  </span>
+                  <ThemeIcon themeId={t.id} />
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-bold">{t.title}</span>
+                    <span className="block truncate text-sm font-semibold">{t.title}</span>
                     <span className="mt-1 flex items-center gap-2">
                       <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
                         <span
@@ -229,7 +227,7 @@ export default function QuizHubPage() {
                 <div key={q.id} className="flex items-center gap-3 rounded-lg border p-2.5">
                   <span
                     className={cn(
-                      'grid size-10 shrink-0 place-items-center rounded-lg text-xs font-extrabold tabular-nums',
+                      'grid size-10 shrink-0 place-items-center rounded-md text-xs font-semibold tabular-nums',
                       pct >= 70
                         ? 'bg-success/12 text-success'
                         : 'bg-warning/15 text-warning-foreground dark:text-warning',

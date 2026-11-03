@@ -1,12 +1,11 @@
 import { useState } from 'react'
-import { motion } from 'motion/react'
 import { Flame, Layers, Lock, RotateCcw, Trophy, Zap } from 'lucide-react'
 import { LEVELS, levelFromXp } from '@/shared/content'
 import { PageHeader } from '@/shared/components/PageHeader'
 import { ProgressRing } from '@/shared/components/ProgressRing'
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui'
 import { cn, formatNumber } from '@/shared/lib/utils'
-import { AnimatedNumber, Reveal, Stagger, springBouncy } from '@/shared/motion'
+import { AnimatedNumber, Reveal, Stagger } from '@/shared/motion'
 import { BADGES } from '../store/badges'
 import { useProgress } from '../store/progress'
 
@@ -80,20 +79,22 @@ export default function TrophiesPage() {
             value={progress}
             size={150}
             stroke={12}
-            indicatorClassName="stroke-xp"
+            indicatorClassName="stroke-primary"
             label="Progression vers le niveau suivant"
           >
             <div>
-              <div className="text-4xl" aria-hidden>
-                {current.emoji}
-              </div>
-              <div className="text-sm font-extrabold">Niveau {current.level}</div>
+              <current.icon
+                className="mx-auto mb-1 size-8 text-primary"
+                strokeWidth={1.75}
+                aria-hidden
+              />
+              <div className="text-sm font-bold">Niveau {current.level}</div>
             </div>
           </ProgressRing>
           <div>
-            <div className="text-xl font-extrabold">{current.title}</div>
+            <div className="text-xl font-bold">{current.title}</div>
             <div className="text-sm text-muted-foreground">
-              {next ? `${toNext} XP avant « ${next.title} »` : 'Niveau maximum atteint 🎉'}
+              {next ? `${toNext} XP avant « ${next.title} »` : 'Niveau maximum atteint'}
             </div>
           </div>
         </Card>
@@ -120,23 +121,25 @@ export default function TrophiesPage() {
                         aria-hidden
                         className={cn(
                           'absolute top-6 right-1/2 hidden h-1 w-full -translate-y-1/2 sm:block',
-                          reached ? 'bg-xp' : 'bg-muted',
+                          reached ? 'bg-primary' : 'bg-border',
                         )}
                       />
                     )}
                     <span
                       className={cn(
-                        'relative z-10 grid size-12 shrink-0 place-items-center rounded-full border-4 text-xl',
-                        reached ? 'border-xp bg-card' : 'border-muted bg-muted grayscale',
-                        isCurrent && 'ring-4 ring-xp/25',
+                        'relative z-10 grid size-12 shrink-0 place-items-center rounded-full border-2',
+                        reached
+                          ? 'border-primary bg-primary text-primary-foreground'
+                          : 'border-border bg-card text-muted-foreground',
+                        isCurrent && 'ring-4 ring-primary/20',
                       )}
                     >
-                      {l.emoji}
+                      <l.icon className="size-5" strokeWidth={1.75} />
                     </span>
                     <span>
                       <span
                         className={cn(
-                          'block text-sm font-bold',
+                          'block text-sm font-semibold',
                           !reached && 'text-muted-foreground',
                         )}
                       >
@@ -158,11 +161,11 @@ export default function TrophiesPage() {
         {stats.map((st) => (
           <Card key={st.label}>
             <CardContent className="flex items-center gap-3 p-4">
-              <span className={cn('grid size-11 place-items-center rounded-xl', st.tone)}>
+              <span className={cn('grid size-11 place-items-center rounded-md', st.tone)}>
                 <st.icon className="size-5" />
               </span>
               <span>
-                <span className="block text-2xl leading-none font-extrabold tabular-nums">
+                <span className="block text-2xl leading-none font-bold tabular-nums">
                   <AnimatedNumber value={st.value} from={0} />
                   {st.suffix}
                 </span>
@@ -173,7 +176,7 @@ export default function TrophiesPage() {
         ))}
       </div>
 
-      <h2 className="mb-3 text-lg font-extrabold">
+      <h2 className="mb-3 text-lg font-bold">
         Badges{' '}
         <span className="text-muted-foreground">
           · {unlocked}/{BADGES.length}
@@ -187,34 +190,29 @@ export default function TrophiesPage() {
         {BADGES.map((b) => {
           const date = s.badges[b.id]
           return (
-            <Reveal
-              key={b.id}
-              variant="pop"
-              whileHover={
-                date ? { y: -6, rotate: [0, -2, 2, 0], transition: { duration: 0.4 } } : undefined
-              }
-            >
+            <Reveal key={b.id} variant="pop" whileHover={date ? { y: -3 } : undefined}>
               <Card
                 className={cn(
                   'relative flex h-full flex-col items-center gap-2 p-5 text-center transition-shadow',
-                  date
-                    ? 'border-accent/60 bg-gradient-to-b from-accent/15 to-card hover:shadow-lg'
-                    : 'opacity-70',
+                  date ? 'border-t-4 border-t-primary hover:shadow-md' : 'bg-muted/40',
                 )}
               >
-                <motion.span
-                  className={cn('text-5xl', !date && 'opacity-40 grayscale')}
+                <span
                   aria-hidden
-                  whileHover={date ? { scale: 1.25, rotate: 12 } : undefined}
-                  transition={springBouncy}
+                  className={cn(
+                    'grid size-14 place-items-center rounded-full',
+                    date ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground/60',
+                  )}
                 >
-                  {b.emoji}
-                </motion.span>
+                  <b.icon className="size-7" strokeWidth={1.75} />
+                </span>
                 {!date && <Lock className="absolute top-3 right-3 size-4 text-muted-foreground" />}
-                <span className="font-bold">{b.name}</span>
+                <span className={cn('font-semibold', !date && 'text-muted-foreground')}>
+                  {b.name}
+                </span>
                 <span className="text-xs text-muted-foreground">{b.description}</span>
                 {date && (
-                  <span className="text-[11px] font-semibold text-accent-foreground dark:text-accent">
+                  <span className="text-[11px] font-medium text-primary">
                     Obtenu le{' '}
                     {new Date(date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
                   </span>

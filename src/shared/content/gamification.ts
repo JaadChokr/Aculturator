@@ -1,17 +1,19 @@
+import { Award, Eye, HardHat, Landmark, Shield, Sprout, type LucideIcon } from 'lucide-react'
+
 export interface Level {
   level: number
   title: string
   minXp: number
-  emoji: string
+  icon: LucideIcon
 }
 
 export const LEVELS: Level[] = [
-  { level: 1, title: 'Éveil', minXp: 0, emoji: '🌱' },
-  { level: 2, title: 'Vigie', minXp: 200, emoji: '👀' },
-  { level: 3, title: 'Sentinelle', minXp: 500, emoji: '🛡️' },
-  { level: 4, title: 'Pilier prévention', minXp: 1000, emoji: '🏛️' },
-  { level: 5, title: 'Gardien·ne SST', minXp: 1800, emoji: '🦺' },
-  { level: 6, title: 'Ambassadeur·rice SST', minXp: 3000, emoji: '🏆' },
+  { level: 1, title: 'Éveil', minXp: 0, icon: Sprout },
+  { level: 2, title: 'Vigie', minXp: 200, icon: Eye },
+  { level: 3, title: 'Sentinelle', minXp: 500, icon: Shield },
+  { level: 4, title: 'Pilier prévention', minXp: 1000, icon: Landmark },
+  { level: 5, title: 'Gardien·ne SST', minXp: 1800, icon: HardHat },
+  { level: 6, title: 'Ambassadeur·rice SST', minXp: 3000, icon: Award },
 ]
 
 export function levelFromXp(xp: number) {

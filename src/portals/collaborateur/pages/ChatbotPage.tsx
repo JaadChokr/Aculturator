@@ -47,7 +47,7 @@ function RichText({ text }: { text: string }) {
 const WELCOME: Message = {
   id: 0,
   role: 'bot',
-  text: 'Bonjour, je suis **Prévi** 🦺, votre assistant santé & sécurité.\nPosez-moi vos questions sur les bons gestes, les démarches ou les risques au travail. Je vous oriente aussi vers les bonnes ressources.',
+  text: 'Bonjour, je suis **Prévi**, votre assistant santé & sécurité.\nPosez-moi vos questions sur les bons gestes, les démarches ou les risques au travail. Je vous oriente aussi vers les bonnes ressources.',
 }
 
 export default function ChatbotPage() {
@@ -104,12 +104,12 @@ export default function ChatbotPage() {
 
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
         <Card className="flex h-[calc(100dvh-16rem)] min-h-[480px] flex-col overflow-hidden">
-          <div className="flex items-center gap-3 border-b bg-gradient-to-r from-teal-600 to-cyan-700 px-5 py-3 text-white">
+          <div className="flex items-center gap-3 border-b bg-card px-5 py-3">
             <Mascot className="size-11" />
             <div>
-              <div className="font-extrabold">Prévi</div>
-              <div className="flex items-center gap-1.5 text-xs text-teal-100">
-                <span className="size-2 rounded-full bg-emerald-300" /> En ligne · assistant SST
+              <div className="font-bold">Prévi</div>
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <span className="size-2 rounded-full bg-success" /> En ligne · assistant SST
               </div>
             </div>
           </div>
@@ -277,7 +277,7 @@ export default function ChatbotPage() {
                   href={`tel:${n}`}
                   className="rounded-lg border bg-card p-2 text-center hover:border-destructive/50"
                 >
-                  <div className="text-xl font-extrabold text-destructive">{n}</div>
+                  <div className="text-xl font-bold text-destructive">{n}</div>
                   <div className="text-xs font-semibold text-muted-foreground">{l}</div>
                 </a>
               ))}

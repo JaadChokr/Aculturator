@@ -65,22 +65,21 @@ function ResourceCard({ r, onOpen }: { r: Resource; onOpen: () => void }) {
   const Icon = TYPE_ICON[r.type]
 
   return (
-    <Card className="group flex h-full flex-col overflow-hidden transition-all hover:-translate-y-1 hover:shadow-lg">
+    <Card className="group flex h-full flex-col overflow-hidden transition-shadow hover:shadow-md">
       <button
         onClick={onOpen}
         className="relative block aspect-video w-full overflow-hidden text-left"
         aria-label={`Ouvrir ${r.title}`}
       >
-        <div className={cn('absolute inset-0 bg-gradient-to-br', theme.tone.gradient)} />
-        <div aria-hidden className="bg-grid absolute inset-0 text-white opacity-50" />
-        <span
+        <div className="absolute inset-0 bg-inverse" />
+        <div aria-hidden className="absolute inset-x-0 bottom-0 h-1 bg-primary" />
+        <theme.icon
           aria-hidden
-          className="absolute -right-4 -bottom-6 text-8xl opacity-30 transition-transform group-hover:scale-110"
-        >
-          {theme.emoji}
-        </span>
+          strokeWidth={1.25}
+          className="absolute -right-3 -bottom-4 size-32 text-inverse-foreground/10 transition-transform duration-500 group-hover:scale-105"
+        />
         <span className="absolute inset-0 grid place-items-center">
-          <span className="grid size-14 place-items-center rounded-full bg-white/90 text-slate-900 shadow-lg transition-transform group-hover:scale-110">
+          <span className="grid size-12 place-items-center rounded-full bg-primary text-primary-foreground shadow-md transition-transform group-hover:scale-105">
             {r.type === 'video' || r.type === 'podcast' ? (
               <Play className="ml-0.5 size-6 fill-current" />
             ) : (
@@ -89,17 +88,17 @@ function ResourceCard({ r, onOpen }: { r: Resource; onOpen: () => void }) {
           </span>
         </span>
         <span className="absolute top-3 left-3 flex gap-1.5">
-          <Badge className="bg-black/40 text-white backdrop-blur">
+          <Badge className="bg-white/12 text-white">
             <Icon /> {RESOURCE_TYPE_LABEL[r.type]}
           </Badge>
-          {r.mandatory && <Badge className="bg-red-600 text-white">Obligatoire</Badge>}
-          {r.isNew && <Badge className="bg-amber-400 text-amber-950">Nouveau</Badge>}
+          {r.mandatory && <Badge className="bg-primary text-primary-foreground">Obligatoire</Badge>}
+          {r.isNew && <Badge className="bg-white text-inverse">Nouveau</Badge>}
         </span>
-        <span className="absolute right-3 bottom-3 inline-flex items-center gap-1 rounded-md bg-black/50 px-2 py-0.5 text-xs font-semibold text-white">
+        <span className="absolute right-3 bottom-3 inline-flex items-center gap-1 rounded-sm bg-black/40 px-2 py-0.5 text-xs font-medium text-white">
           <Clock className="size-3" /> {r.durationMin} min
         </span>
         {viewed && (
-          <span className="absolute top-3 right-3 inline-flex items-center gap-1 rounded-full bg-white px-2 py-0.5 text-xs font-bold text-emerald-700">
+          <span className="absolute top-3 right-3 inline-flex items-center gap-1 rounded-sm bg-success px-2 py-0.5 text-xs font-semibold text-success-foreground">
             <CheckCircle2 className="size-3.5" /> Vu
           </span>
         )}
@@ -119,7 +118,7 @@ function ResourceCard({ r, onOpen }: { r: Resource; onOpen: () => void }) {
           </Button>
         </div>
         <button onClick={onOpen} className="text-left">
-          <h3 className="leading-snug font-bold group-hover:text-primary">{r.title}</h3>
+          <h3 className="leading-snug font-semibold group-hover:text-primary">{r.title}</h3>
         </button>
         <p className="line-clamp-2 text-sm text-muted-foreground">{r.summary}</p>
       </div>
@@ -157,7 +156,7 @@ function MediaPlayer({ r, onComplete }: { r: Resource; onComplete: () => void })
       <video
         src={r.mediaUrl}
         controls
-        className="aspect-video w-full rounded-xl bg-black"
+        className="aspect-video w-full rounded-md bg-black"
         onEnded={onComplete}
       />
     )
@@ -165,25 +164,28 @@ function MediaPlayer({ r, onComplete }: { r: Resource; onComplete: () => void })
 
   const step = Math.min(r.keyPoints.length - 1, Math.floor((pct / 100) * r.keyPoints.length))
   return (
-    <div
-      className={cn(
-        'relative overflow-hidden rounded-xl bg-gradient-to-br text-white',
-        theme.tone.gradient,
-      )}
-    >
-      <div aria-hidden className="bg-grid absolute inset-0 text-white opacity-40" />
+    <div className="relative overflow-hidden rounded-md bg-inverse text-inverse-foreground">
+      <theme.icon
+        aria-hidden
+        strokeWidth={1}
+        className="absolute -right-6 -bottom-8 size-56 text-inverse-foreground/[0.06]"
+      />
       <div className="relative flex aspect-video flex-col justify-between p-5">
-        <div className="text-xs font-bold tracking-wider uppercase opacity-80">
-          {r.type === 'podcast' ? '🎧 Podcast' : '🎬 Vidéo'} · aperçu de démonstration
+        <div className="flex items-center gap-2 text-xs font-semibold tracking-wider uppercase opacity-80">
+          <span className="h-3 w-1 bg-primary" />
+          {r.type === 'podcast' ? 'Podcast' : 'Vidéo'} · aperçu de démonstration
         </div>
-        <p key={step} className="max-w-lg animate-pop text-lg leading-snug font-bold sm:text-xl">
+        <p
+          key={step}
+          className="max-w-lg animate-in fade-in text-lg leading-snug font-semibold sm:text-xl"
+        >
           {pct === 0 ? r.summary : r.keyPoints[step]}
         </p>
         <div className="flex items-center gap-3">
           <Button
             size="icon"
             onClick={() => setPlaying((p) => !p)}
-            className="rounded-full bg-white text-slate-900 hover:bg-white/90"
+            className="rounded-full"
             aria-label={playing ? 'Pause' : 'Lecture'}
           >
             {playing ? (
@@ -195,7 +197,7 @@ function MediaPlayer({ r, onComplete }: { r: Resource; onComplete: () => void })
           <Progress
             value={pct}
             className="h-1.5 flex-1 bg-white/25"
-            indicatorClassName="bg-white"
+            indicatorClassName="bg-primary"
           />
           <span className="text-xs font-semibold tabular-nums">{r.durationMin}:00</span>
         </div>
@@ -327,12 +329,12 @@ export default function ResourcesPage() {
         title="Apprendre en quelques minutes"
         description="Des formats courts pour capter l’essentiel, suivis d’un check express pour vérifier que c’est acquis."
         actions={
-          <div className="flex items-center gap-3 rounded-xl border bg-card px-4 py-2">
+          <div className="flex items-center gap-3 rounded-md border bg-card px-4 py-2">
             <div className="text-right">
               <div className="text-xs font-semibold text-muted-foreground">
                 Ressources consultées
               </div>
-              <div className="font-extrabold tabular-nums">
+              <div className="font-bold tabular-nums">
                 {viewed.length}/{RESOURCES.length}
               </div>
             </div>
@@ -381,14 +383,14 @@ export default function ResourcesPage() {
         <button
           onClick={() => setTheme('all')}
           className={cn(
-            'relative rounded-full border bg-card px-3 py-1.5 text-sm font-semibold transition-colors',
+            'relative rounded-md border bg-card px-3 py-1.5 text-sm font-medium transition-colors',
             theme === 'all' ? 'border-foreground text-background' : 'hover:bg-muted',
           )}
         >
           {theme === 'all' && (
             <motion.span
               layoutId="theme-chip"
-              className="absolute inset-0 rounded-full bg-foreground"
+              className="absolute inset-0 rounded-md bg-foreground"
               transition={spring}
             />
           )}
@@ -399,19 +401,19 @@ export default function ResourcesPage() {
             key={t.id}
             onClick={() => setTheme(t.id)}
             className={cn(
-              'relative rounded-full border bg-card px-3 py-1.5 text-sm font-semibold transition-colors',
+              'relative rounded-md border bg-card px-3 py-1.5 text-sm font-medium transition-colors',
               theme === t.id ? 'border-foreground text-background' : 'hover:bg-muted',
             )}
           >
             {theme === t.id && (
               <motion.span
                 layoutId="theme-chip"
-                className="absolute inset-0 rounded-full bg-foreground"
+                className="absolute inset-0 rounded-md bg-foreground"
                 transition={spring}
               />
             )}
             <span className="relative">
-              <span aria-hidden>{t.emoji}</span> {t.short}
+              <t.icon aria-hidden className="mr-1 inline size-3.5 align-[-2px]" /> {t.short}
             </span>
           </button>
         ))}

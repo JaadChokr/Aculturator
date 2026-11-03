@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { AnimatePresence, motion, useMotionValue, useTransform, type PanInfo } from 'motion/react'
 import { Link, useSearchParams } from 'react-router'
-import { ArrowLeft, Lightbulb, RotateCcw } from 'lucide-react'
+import { ArrowLeft, Check, CircleHelp, Lightbulb, type LucideIcon, RotateCcw } from 'lucide-react'
 import { FLASHCARDS, THEME_BY_ID, type Flashcard, type ThemeId } from '@/shared/content'
 import { Confetti } from '@/shared/components/Confetti'
 import { Mascot } from '@/shared/components/Mascot'
@@ -12,30 +12,35 @@ import { collabPath } from '../paths'
 import { ThemeBadge } from '../components/ThemeBadge'
 import { dueCards, useProgress, type CardGrade } from '../store/progress'
 
-const GRADES: { grade: CardGrade; label: string; key: string; className: string; emoji: string }[] =
-  [
-    {
-      grade: 'again',
-      label: 'À revoir',
-      key: '1',
-      emoji: '😕',
-      className: 'border-destructive/40 hover:bg-destructive/10 text-destructive',
-    },
-    {
-      grade: 'hard',
-      label: 'Hésitant',
-      key: '2',
-      emoji: '🤔',
-      className: 'border-warning/60 hover:bg-warning/10 text-warning-foreground dark:text-warning',
-    },
-    {
-      grade: 'good',
-      label: 'Je sais !',
-      key: '3',
-      emoji: '😎',
-      className: 'border-success/50 hover:bg-success/10 text-success',
-    },
-  ]
+const GRADES: {
+  grade: CardGrade
+  label: string
+  key: string
+  className: string
+  icon: LucideIcon
+}[] = [
+  {
+    grade: 'again',
+    label: 'À revoir',
+    key: '1',
+    icon: RotateCcw,
+    className: 'border-destructive/40 hover:bg-destructive/10 text-destructive',
+  },
+  {
+    grade: 'hard',
+    label: 'Hésitant',
+    key: '2',
+    icon: CircleHelp,
+    className: 'border-warning/60 hover:bg-warning/10 text-warning-foreground dark:text-warning',
+  },
+  {
+    grade: 'good',
+    label: 'Je sais',
+    key: '3',
+    icon: Check,
+    className: 'border-success/50 hover:bg-success/10 text-success',
+  },
+]
 
 function buildQueue(
   theme: ThemeId | null,
@@ -114,18 +119,18 @@ function SwipeCard({
         animate={{ rotateY: flipped ? 180 : 0 }}
         transition={{ type: 'spring', stiffness: 260, damping: 24 }}
       >
-        <Card className="backface-hidden absolute inset-0 flex flex-col overflow-hidden border-2 shadow-xl">
-          <div className={cn('h-2 bg-gradient-to-r', t.tone.gradient)} />
+        <Card className="backface-hidden absolute inset-0 flex flex-col overflow-hidden shadow-lg">
+          <div className="h-1 bg-primary" />
           <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
-            <motion.span
-              className="text-5xl"
+            <span
+              className="grid size-12 place-items-center rounded-md bg-muted text-foreground"
               aria-hidden
-              animate={{ rotate: [0, -8, 8, 0] }}
-              transition={{ duration: 0.6, delay: 0.25 }}
             >
-              {t.emoji}
-            </motion.span>
-            <p className="text-xl leading-snug font-bold sm:text-2xl">{card.front}</p>
+              <t.icon className="size-6" strokeWidth={1.75} />
+            </span>
+            <p className="text-xl leading-snug font-semibold text-balance sm:text-2xl">
+              {card.front}
+            </p>
             <AnimatePresence>
               {hint && card.hint && (
                 <motion.p
@@ -133,7 +138,7 @@ function SwipeCard({
                   animate={{ opacity: 1, height: 'auto' }}
                   className="text-sm text-muted-foreground italic"
                 >
-                  💡 {card.hint}
+                  Indice : {card.hint}
                 </motion.p>
               )}
             </AnimatePresence>
@@ -142,8 +147,8 @@ function SwipeCard({
             Touchez la carte ou appuyez sur Espace pour retourner
           </div>
         </Card>
-        <Card className="backface-hidden rotate-y-180 absolute inset-0 flex flex-col overflow-hidden border-2 border-primary/40 bg-gradient-to-br from-primary/5 to-card shadow-xl">
-          <div className="h-2 bg-primary" />
+        <Card className="backface-hidden rotate-y-180 absolute inset-0 flex flex-col overflow-hidden border-primary/30 bg-card shadow-lg">
+          <div className="h-1 bg-primary" />
           <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center">
             <span className="text-xs font-bold tracking-wider text-primary uppercase">Réponse</span>
             <p className="text-lg leading-relaxed font-semibold whitespace-pre-line sm:text-xl">
@@ -159,13 +164,13 @@ function SwipeCard({
       {/* Tampons qui apparaissent pendant le glissement */}
       <motion.span
         style={{ opacity: goodOpacity }}
-        className="pointer-events-none absolute top-6 left-6 -rotate-12 rounded-lg border-4 border-success bg-card/80 px-3 py-1 text-xl font-extrabold text-success uppercase"
+        className="pointer-events-none absolute top-6 left-6 -rotate-6 rounded-md border-2 border-success bg-card px-3 py-1 text-base font-semibold tracking-wide text-success uppercase"
       >
         Je sais !
       </motion.span>
       <motion.span
         style={{ opacity: againOpacity }}
-        className="pointer-events-none absolute top-6 right-6 rotate-12 rounded-lg border-4 border-destructive bg-card/80 px-3 py-1 text-xl font-extrabold text-destructive uppercase"
+        className="pointer-events-none absolute top-6 right-6 rotate-6 rounded-md border-2 border-destructive bg-card px-3 py-1 text-base font-semibold tracking-wide text-destructive uppercase"
       >
         À revoir
       </motion.span>
@@ -241,7 +246,7 @@ function Session() {
       <div className="mx-auto max-w-xl text-center">
         {backLink}
         <Mascot mood="cheer" className="mx-auto my-6 size-28" />
-        <h1 className="mb-2 text-2xl font-extrabold">Rien à réviser pour le moment 🎉</h1>
+        <h1 className="mb-2 text-2xl font-bold">Aucune révision en attente</h1>
         <p className="mb-6 text-muted-foreground">
           Vos cartes reviendront au bon moment. Envie de continuer ? Passez en mode libre.
         </p>
@@ -264,9 +269,9 @@ function Session() {
           animate={{ scale: 1, rotate: 0 }}
           transition={springBouncy}
         >
-          <Mascot mood="cheer" className="mx-auto mb-4 size-32 animate-float" />
+          <Mascot mood="cheer" className="mx-auto mb-4 size-32" />
         </motion.div>
-        <h1 className="mb-2 text-3xl font-extrabold">Session terminée !</h1>
+        <h1 className="mb-2 text-3xl font-bold">Session terminée !</h1>
         <p className="mb-6 text-muted-foreground">
           {total} révisions · votre mémoire vous dit merci. Revenez demain pour consolider.
         </p>
@@ -275,11 +280,11 @@ function Session() {
             <Reveal key={g.grade} variant="pop">
               <Card>
                 <CardContent className="p-4">
-                  <div className="text-2xl">{g.emoji}</div>
+                  <g.icon className="mx-auto mb-1 size-5 text-muted-foreground" />
                   <AnimatedNumber
                     value={stats[g.grade]}
                     from={0}
-                    className="block text-2xl font-extrabold tabular-nums"
+                    className="block text-2xl font-bold tabular-nums"
                   />
                   <div className="text-xs font-semibold text-muted-foreground">{g.label}</div>
                 </CardContent>
@@ -325,9 +330,9 @@ function Session() {
               animate={{ scale: 1, opacity: 1, rotate: 0 }}
               exit={{ scale: 0.6, opacity: 0 }}
               transition={springBouncy}
-              className="text-sm font-extrabold text-streak"
+              className="text-sm font-bold text-streak"
             >
-              🔥 Combo x{combo}
+              Série de {combo} bonnes réponses
             </motion.span>
           )}
         </AnimatePresence>
@@ -336,10 +341,10 @@ function Session() {
       {/* Paquet : les cartes suivantes sont visibles derrière la carte active */}
       <div className="relative h-80 sm:h-96">
         {remaining > 2 && (
-          <div className="absolute inset-x-6 top-5 bottom-0 translate-y-3 rounded-xl border bg-card/60 shadow-sm" />
+          <div className="absolute inset-x-6 top-5 bottom-0 translate-y-3 rounded-lg border bg-card/60 shadow-sm" />
         )}
         {remaining > 1 && (
-          <div className="absolute inset-x-3 top-2.5 bottom-0 translate-y-1.5 rounded-xl border bg-card/80 shadow-md" />
+          <div className="absolute inset-x-3 top-2.5 bottom-0 translate-y-1.5 rounded-lg border bg-card/80 shadow-md" />
         )}
         <AnimatePresence custom={exitDir} initial={false}>
           <SwipeCard
@@ -364,7 +369,7 @@ function Session() {
                     onClick={() => grade(g.grade)}
                     className={cn('h-auto w-full flex-col gap-0.5 border-2 py-3', g.className)}
                   >
-                    <span className="text-xl">{g.emoji}</span>
+                    <g.icon className="size-5" />
                     <span>{g.label}</span>
                     <span className="hidden text-[10px] font-medium opacity-60 sm:block">
                       touche {g.key}

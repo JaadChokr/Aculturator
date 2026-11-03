@@ -4,8 +4,8 @@ import { Layers, Play, Repeat, Sparkles } from 'lucide-react'
 import { FLASHCARDS, THEMES } from '@/shared/content'
 import { PageHeader } from '@/shared/components/PageHeader'
 import { PillarTags } from '@/shared/components/PillarTag'
-import { Mascot } from '@/shared/components/Mascot'
 import {
+  Badge,
   Button,
   Card,
   CardContent,
@@ -17,6 +17,7 @@ import {
 import { cn, todayISO } from '@/shared/lib/utils'
 import { Reveal, Stagger } from '@/shared/motion'
 import { collabPath } from '../paths'
+import { ThemeIcon } from '../components/ThemeBadge'
 import { LEITNER_INTERVALS, dueCards, useProgress } from '../store/progress'
 
 const BOX_LABELS = ['Nouvelles', 'Boîte 1', 'Boîte 2', 'Boîte 3', 'Boîte 4', 'Boîte 5']
@@ -40,27 +41,35 @@ export default function FlashcardsPage() {
       />
 
       <div className="mb-6 grid gap-6 lg:grid-cols-3">
-        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-violet-600 to-indigo-800 text-white lg:col-span-2">
-          <div aria-hidden className="bg-grid absolute inset-0 text-white opacity-40" />
+        <Card className="relative overflow-hidden border-0 border-l-4 border-l-primary bg-inverse text-inverse-foreground lg:col-span-2">
           <CardContent className="relative flex flex-col gap-5 p-6 sm:flex-row sm:items-center">
             <div className="flex-1">
-              <div className="mb-1 text-sm font-semibold text-violet-200">Révision du jour</div>
-              <div className="mb-2 text-4xl font-extrabold tabular-nums">
-                {review.length}{' '}
-                <span className="text-xl font-bold text-violet-200">cartes à réviser</span>
+              <div className="mb-1 text-xs font-semibold tracking-[0.12em] text-inverse-foreground/70 uppercase">
+                Révision du jour
               </div>
-              <p className="mb-4 max-w-md text-sm text-violet-100">
+              <div className="mb-2 text-4xl font-bold tabular-nums">
+                {review.length}{' '}
+                <span className="text-lg font-medium text-inverse-foreground/70">
+                  cartes à réviser
+                </span>
+              </div>
+              <p className="mb-4 max-w-md text-sm text-inverse-foreground/80">
                 {sessionSize
                   ? `+ ${fresh.length} nouvelles à découvrir. Session de ${sessionSize} cartes, environ ${Math.max(1, Math.round(sessionSize * 0.25))} min. Les cartes « À revoir » reviennent dans la session.`
-                  : 'Tout est à jour, bravo ! Vous pouvez tout de même vous entraîner sur un paquet.'}
+                  : 'Vos révisions sont à jour. Vous pouvez vous entraîner librement sur un paquet.'}
               </p>
               <div className="flex flex-wrap gap-2">
-                <Button asChild variant="accent" size="lg">
+                <Button asChild size="lg">
                   <Link to={collabPath('flashcards/session')}>
                     <Play className="fill-current" /> Commencer
                   </Link>
                 </Button>
-                <Button asChild size="lg" variant="ghost" className="text-white hover:bg-white/10">
+                <Button
+                  asChild
+                  size="lg"
+                  variant="outline"
+                  className="border-white/30 bg-transparent text-inverse-foreground hover:bg-white/10"
+                >
                   <Link to={collabPath('flashcards/session?mode=all')}>
                     <Repeat /> Mode libre
                   </Link>
@@ -68,12 +77,13 @@ export default function FlashcardsPage() {
               </div>
             </div>
             <motion.div
+              aria-hidden
               className="hidden sm:block"
-              initial={{ scale: 0, rotate: 20 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 14, delay: 0.2 }}
+              initial={{ opacity: 0, x: 16 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
             >
-              <Mascot mood="happy" className="size-28 animate-float" />
+              <Layers className="size-28 text-inverse-foreground/15" strokeWidth={1} />
             </motion.div>
           </CardContent>
         </Card>
@@ -128,7 +138,7 @@ export default function FlashcardsPage() {
         </Card>
       </div>
 
-      <h2 className="mb-3 text-lg font-extrabold">Paquets par thématique</h2>
+      <h2 className="mb-3 text-lg font-bold">Paquets par thématique</h2>
       <Stagger className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3" stagger={0.05} delay={0.15}>
         {THEMES.map((t) => {
           const deck = FLASHCARDS.filter((c) => c.themeId === t.id)
@@ -137,24 +147,13 @@ export default function FlashcardsPage() {
           return (
             <Reveal key={t.id} whileHover={{ y: -4 }}>
               <Card className="group overflow-hidden transition-shadow hover:shadow-md">
-                <div
-                  className={cn(
-                    'flex items-center gap-3 bg-gradient-to-r p-4 text-white',
-                    t.tone.gradient,
-                  )}
-                >
-                  <span className="text-3xl" aria-hidden>
-                    {t.emoji}
-                  </span>
+                <div className="flex items-center gap-3 border-b p-4">
+                  <ThemeIcon themeId={t.id} />
                   <div className="min-w-0 flex-1">
-                    <div className="truncate font-bold">{t.title}</div>
-                    <div className="text-xs text-white/85">{deck.length} cartes</div>
+                    <div className="truncate font-semibold">{t.title}</div>
+                    <div className="text-xs text-muted-foreground">{deck.length} cartes</div>
                   </div>
-                  {deckDue > 0 && (
-                    <span className="rounded-full bg-white px-2 py-0.5 text-xs font-bold text-slate-900">
-                      {deckDue} à voir
-                    </span>
-                  )}
+                  {deckDue > 0 && <Badge>{deckDue} à voir</Badge>}
                 </div>
                 <CardContent className="p-4">
                   <div className="mb-1 flex justify-between text-xs font-semibold text-muted-foreground">

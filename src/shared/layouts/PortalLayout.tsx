@@ -1,7 +1,7 @@
 import { Suspense, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router'
-import { Menu, Moon, Sun, Monitor, X, ChevronsUpDown, Check } from 'lucide-react'
+import { Menu, Moon, Sun, Monitor, X, ChevronsUpDown, Check, ShieldPlus } from 'lucide-react'
 import { useAuth } from '@/app/auth/AuthProvider'
 import { useTheme } from '@/app/theme/ThemeProvider'
 import { PORTALS, portalsForRole } from '@/app/portals'
@@ -24,12 +24,12 @@ function PageLoader() {
 function Brand() {
   return (
     <Link to="/" className="flex items-center gap-2.5 px-2">
-      <span className="grid size-9 place-items-center rounded-xl bg-gradient-to-br from-teal-400 to-teal-700 text-lg shadow-md">
-        🦺
+      <span className="grid size-9 place-items-center rounded-md bg-primary text-primary-foreground">
+        <ShieldPlus className="size-5" strokeWidth={2} />
       </span>
       <span className="leading-tight">
-        <span className="block text-[15px] font-extrabold tracking-tight">Acculturator</span>
-        <span className="block text-[11px] font-semibold text-sidebar-muted">
+        <span className="block text-[15px] font-bold tracking-tight">Acculturator</span>
+        <span className="block text-[11px] font-medium text-sidebar-muted">
           Santé & Sécurité au travail
         </span>
       </span>
@@ -51,7 +51,7 @@ function SidebarNav({
       {portal.nav.map((section, i) => (
         <div key={i}>
           {section.title && (
-            <div className="mb-1.5 px-3 text-[11px] font-bold tracking-wider text-sidebar-muted uppercase">
+            <div className="mb-1.5 px-3 text-[11px] font-semibold tracking-wider text-sidebar-muted uppercase">
               {section.title}
             </div>
           )}
@@ -66,10 +66,10 @@ function SidebarNav({
                     onClick={onNavigate}
                     className={({ isActive }) =>
                       cn(
-                        'group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors',
+                        'group relative flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors',
                         isActive
-                          ? 'text-white'
-                          : 'text-sidebar-foreground/80 hover:bg-sidebar-accent/40 hover:text-white',
+                          ? 'font-semibold text-sidebar-primary'
+                          : 'text-sidebar-foreground hover:bg-muted',
                       )
                     }
                   >
@@ -78,9 +78,11 @@ function SidebarNav({
                         {isActive && (
                           <motion.span
                             layoutId={`${idPrefix}-nav-active`}
-                            className="absolute inset-0 rounded-lg bg-sidebar-accent shadow-inner"
+                            className="absolute inset-0 rounded-md bg-sidebar-accent"
                             transition={spring}
-                          />
+                          >
+                            <span className="absolute inset-y-1.5 left-0 w-[3px] rounded-r-sm bg-sidebar-primary" />
+                          </motion.span>
                         )}
                         <item.icon
                           className={cn('relative size-[18px]', isActive && 'text-sidebar-primary')}
@@ -92,7 +94,7 @@ function SidebarNav({
                             initial={{ scale: 0.5 }}
                             animate={{ scale: 1 }}
                             transition={{ type: 'spring', stiffness: 600, damping: 15 }}
-                            className="relative rounded-full bg-accent px-2 py-0.5 text-[11px] font-bold text-accent-foreground"
+                            className="relative rounded-sm bg-primary px-1.5 py-0.5 text-[11px] font-semibold text-primary-foreground tabular-nums"
                           >
                             {badge}
                           </motion.span>
@@ -120,15 +122,15 @@ function PortalSwitcher({ current }: { current: PortalDefinition }) {
     <div className="relative">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center gap-3 rounded-xl bg-sidebar-accent/70 p-2.5 text-left transition-colors hover:bg-sidebar-accent"
+        className="flex w-full items-center gap-3 rounded-md border border-sidebar-border p-2.5 text-left transition-colors hover:bg-muted"
         aria-expanded={open}
       >
         <Avatar
           name={`${user.firstName} ${user.lastName}`}
-          className="bg-sidebar-primary/20 text-sidebar-primary"
+          className="bg-primary/10 text-primary"
         />
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm font-bold text-white">
+          <span className="block truncate text-sm font-semibold text-foreground">
             {user.firstName} {user.lastName}
           </span>
           <span className="block truncate text-xs text-sidebar-muted">{current.label}</span>
@@ -140,9 +142,9 @@ function PortalSwitcher({ current }: { current: PortalDefinition }) {
           initial={{ opacity: 0, y: 8, scale: 0.97 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={spring}
-          className="absolute right-0 bottom-full left-0 z-20 mb-2 rounded-xl border border-white/10 bg-sidebar p-2 shadow-2xl"
+          className="absolute right-0 bottom-full left-0 z-20 mb-2 rounded-md border bg-popover p-2 shadow-xl"
         >
-          <div className="px-2 py-1 text-[11px] font-bold tracking-wider text-sidebar-muted uppercase">
+          <div className="px-2 py-1 text-[11px] font-semibold tracking-wider text-sidebar-muted uppercase">
             Mes portails
           </div>
           {available.map((p) => (
@@ -152,7 +154,7 @@ function PortalSwitcher({ current }: { current: PortalDefinition }) {
                 setOpen(false)
                 navigate(p.basePath)
               }}
-              className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-sm text-sidebar-foreground hover:bg-sidebar-accent"
+              className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-sm text-sidebar-foreground hover:bg-muted"
             >
               <p.icon className="size-4" />
               <span className="flex-1 text-left">{p.label}</span>
@@ -161,7 +163,7 @@ function PortalSwitcher({ current }: { current: PortalDefinition }) {
           ))}
           {DEMO_SWITCHER && (
             <>
-              <div className="mt-2 border-t border-white/10 px-2 pt-2 pb-1 text-[11px] font-bold tracking-wider text-sidebar-muted uppercase">
+              <div className="mt-2 border-t px-2 pt-2 pb-1 text-[11px] font-semibold tracking-wider text-sidebar-muted uppercase">
                 Démo · changer de profil
               </div>
               {(Object.keys(ROLE_LABELS) as Role[]).map((r) => (
@@ -175,7 +177,7 @@ function PortalSwitcher({ current }: { current: PortalDefinition }) {
                         '/',
                     )
                   }}
-                  className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-sidebar-foreground hover:bg-sidebar-accent"
+                  className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-sidebar-foreground hover:bg-muted"
                 >
                   <span className="flex-1 text-left">{ROLE_LABELS[r]}</span>
                   {user.role === r && <Check className="size-4 text-sidebar-primary" />}
@@ -221,7 +223,7 @@ export function PortalLayout({ portal }: { portal: PortalDefinition }) {
   const HeaderSlot = portal.HeaderSlot
 
   const sidebar = (idPrefix: string) => (
-    <div className="flex h-full flex-col gap-6 bg-sidebar p-4 text-sidebar-foreground">
+    <div className="flex h-full flex-col gap-6 border-r border-sidebar-border bg-sidebar p-4 text-sidebar-foreground">
       <Brand />
       <div className="flex-1 overflow-y-auto">
         <SidebarNav portal={portal} idPrefix={idPrefix} onNavigate={() => setMobileOpen(false)} />
@@ -262,7 +264,7 @@ export function PortalLayout({ portal }: { portal: PortalDefinition }) {
               variant="ghost"
               size="icon"
               onClick={() => setMobileOpen(false)}
-              className="absolute top-3 left-72 ml-2 text-white hover:bg-white/10"
+              className="absolute top-3 left-72 ml-2 bg-card hover:bg-muted"
               aria-label="Fermer le menu"
             >
               <X />

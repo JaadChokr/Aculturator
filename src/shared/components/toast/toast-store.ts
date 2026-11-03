@@ -1,3 +1,4 @@
+import type { LucideIcon } from 'lucide-react'
 import { create } from 'zustand'
 
 export type ToastTone = 'default' | 'xp' | 'badge' | 'success' | 'warning'
@@ -7,7 +8,7 @@ export interface Toast {
   title: string
   description?: string
   tone: ToastTone
-  icon?: string
+  icon?: LucideIcon
 }
 
 interface ToastState {

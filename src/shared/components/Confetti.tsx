@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-const COLORS = ['#14b8a6', '#f59e0b', '#8b5cf6', '#ef4444', '#22c55e', '#0ea5e9']
+const COLORS = ['#c8102e', '#e5484d', '#1f2328', '#9ca3af', '#ffffff', '#c8102e']
 
 /** Petite pluie de confettis en CSS pur (respecte prefers-reduced-motion). */
 function makePieces(count: number) {
