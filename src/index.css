@@ -1,0 +1,213 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import '@fontsource-variable/plus-jakarta-sans';
+
+/*
+ * ─────────────────────────────────────────────────────────────
+ *  Acculturator — Design tokens (identité visuelle commune)
+ *  Tous les portails (collaborateur, référent, admin) consomment
+ *  ces variables : ne jamais coder une couleur en dur dans une page.
+ *  Convention shadcn/ui : `bg-primary`, `text-muted-foreground`, etc.
+ * ─────────────────────────────────────────────────────────────
+ */
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --radius: 0.875rem;
+
+  --background: oklch(0.985 0.004 180);
+  --foreground: oklch(0.22 0.03 230);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.22 0.03 230);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.22 0.03 230);
+
+  /* Santé → sarcelle */
+  --primary: oklch(0.52 0.1 185);
+  --primary-foreground: oklch(0.99 0 0);
+  /* Sécurité → jaune signalétique */
+  --accent: oklch(0.83 0.16 80);
+  --accent-foreground: oklch(0.25 0.05 60);
+
+  --secondary: oklch(0.955 0.012 190);
+  --secondary-foreground: oklch(0.3 0.04 220);
+  --muted: oklch(0.96 0.008 200);
+  --muted-foreground: oklch(0.5 0.025 230);
+  --border: oklch(0.91 0.012 210);
+  --input: oklch(0.91 0.012 210);
+  --ring: oklch(0.52 0.1 185);
+
+  --destructive: oklch(0.58 0.21 25);
+  --destructive-foreground: oklch(0.99 0 0);
+  --success: oklch(0.6 0.15 150);
+  --success-foreground: oklch(0.99 0 0);
+  --warning: oklch(0.75 0.16 65);
+  --warning-foreground: oklch(0.25 0.05 60);
+
+  /* Gamification */
+  --xp: oklch(0.56 0.2 290);
+  --xp-foreground: oklch(0.99 0 0);
+  --streak: oklch(0.68 0.2 45);
+
+  /* Navigation latérale */
+  --sidebar: oklch(0.27 0.045 220);
+  --sidebar-foreground: oklch(0.93 0.01 200);
+  --sidebar-muted: oklch(0.7 0.03 210);
+  --sidebar-accent: oklch(0.34 0.05 215);
+  --sidebar-primary: oklch(0.8 0.12 180);
+}
+
+.dark {
+  --background: oklch(0.18 0.02 230);
+  --foreground: oklch(0.95 0.01 200);
+  --card: oklch(0.22 0.025 230);
+  --card-foreground: oklch(0.95 0.01 200);
+  --popover: oklch(0.22 0.025 230);
+  --popover-foreground: oklch(0.95 0.01 200);
+
+  --primary: oklch(0.72 0.12 182);
+  --primary-foreground: oklch(0.18 0.03 220);
+  --accent: oklch(0.83 0.15 82);
+  --accent-foreground: oklch(0.22 0.04 60);
+
+  --secondary: oklch(0.28 0.03 220);
+  --secondary-foreground: oklch(0.92 0.01 200);
+  --muted: oklch(0.26 0.025 225);
+  --muted-foreground: oklch(0.7 0.02 220);
+  --border: oklch(0.32 0.03 225);
+  --input: oklch(0.32 0.03 225);
+  --ring: oklch(0.72 0.12 182);
+
+  --destructive: oklch(0.66 0.19 25);
+  --success: oklch(0.7 0.15 150);
+  --success-foreground: oklch(0.18 0.03 160);
+  --warning: oklch(0.8 0.15 70);
+
+  --xp: oklch(0.7 0.16 290);
+  --xp-foreground: oklch(0.18 0.03 290);
+  --streak: oklch(0.74 0.17 50);
+
+  --sidebar: oklch(0.15 0.02 230);
+  --sidebar-foreground: oklch(0.92 0.01 200);
+  --sidebar-muted: oklch(0.65 0.02 215);
+  --sidebar-accent: oklch(0.24 0.03 225);
+  --sidebar-primary: oklch(0.78 0.12 180);
+}
+
+@theme inline {
+  --font-sans: 'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, sans-serif;
+
+  --radius-sm: calc(var(--radius) - 6px);
+  --radius-md: calc(var(--radius) - 4px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 10px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-xp: var(--xp);
+  --color-xp-foreground: var(--xp-foreground);
+  --color-streak: var(--streak);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-muted: var(--sidebar-muted);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary: var(--sidebar-primary);
+
+  --animate-float: float 4s ease-in-out infinite;
+  --animate-pop: pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  --animate-shake: shake 0.4s ease-in-out;
+  --animate-confetti: confetti 1.6s ease-out forwards;
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+  @keyframes pop {
+    0% { transform: scale(0.85); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-6px); }
+    40%, 80% { transform: translateX(6px); }
+  }
+  @keyframes confetti {
+    0% { transform: translate3d(0, 0, 0) rotate(0); opacity: 1; }
+    100% { transform: translate3d(var(--dx), var(--dy), 0) rotate(var(--rot)); opacity: 0; }
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+@layer utilities {
+  /* Flashcards : retournement 3D */
+  .perspective {
+    perspective: 1200px;
+  }
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+  .backface-hidden {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+  .rotate-y-180 {
+    transform: rotateY(180deg);
+  }
+  .bg-grid {
+    background-image:
+      linear-gradient(to right, color-mix(in oklch, currentColor 8%, transparent) 1px, transparent 1px),
+      linear-gradient(to bottom, color-mix(in oklch, currentColor 8%, transparent) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
