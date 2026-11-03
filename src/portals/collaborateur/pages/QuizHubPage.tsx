@@ -12,7 +12,6 @@ import {
 } from 'lucide-react'
 import { HAZARD_SCENES, THEMES, getTheme } from '@/shared/content'
 import { PageHeader } from '@/shared/components/PageHeader'
-import { PillarTags, type Pillar } from '@/shared/components/PillarTag'
 import {
   Badge,
   Button,
@@ -44,7 +43,6 @@ function ModeCard({
   meta,
   to,
   cta,
-  pillars,
   done,
 }: {
   title: string
@@ -54,7 +52,6 @@ function ModeCard({
   meta: React.ReactNode
   to: string
   cta: string
-  pillars: Pillar[]
   done?: boolean
 }) {
   return (
@@ -89,7 +86,6 @@ function ModeCard({
         <CardContent className="flex flex-1 flex-col gap-3 p-5">
           <p className="text-sm text-muted-foreground">{description}</p>
           <div className="flex flex-wrap gap-2 text-xs font-semibold">{meta}</div>
-          <PillarTags pillars={pillars} />
           <Button asChild className="mt-auto">
             <Link to={to}>
               {cta} <ArrowRight />
@@ -128,7 +124,6 @@ export default function QuizHubPage() {
           }
           to={collabPath('quiz/jouer?mode=defi-du-jour')}
           cta={dailyDone ? 'Rejouer' : 'Relever le défi'}
-          pillars={['engagement', 'feedback', 'consolidation']}
           done={dailyDone}
         />
         <ModeCard
@@ -145,7 +140,6 @@ export default function QuizHubPage() {
           }
           to={collabPath('quiz/jouer?mode=chrono')}
           cta="Lancer le chrono"
-          pillars={['attention', 'engagement']}
         />
         <ModeCard
           title="Chasse aux risques"
@@ -161,7 +155,6 @@ export default function QuizHubPage() {
           }
           to={collabPath('quiz/chasse-aux-risques')}
           cta="Commencer la chasse"
-          pillars={['attention', 'engagement', 'feedback']}
         />
         <ModeCard
           title="Entraînement libre"
@@ -170,7 +163,6 @@ export default function QuizHubPage() {
           meta={<Badge variant="secondary">8 questions · sans limite de temps</Badge>}
           to={collabPath('quiz/jouer?mode=entrainement')}
           cta="Toutes thématiques"
-          pillars={['engagement', 'feedback']}
         />
       </Stagger>
 

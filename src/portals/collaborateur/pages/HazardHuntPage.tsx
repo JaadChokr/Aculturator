@@ -5,7 +5,6 @@ import { ArrowLeft, Clock, Crosshair, Lightbulb, RotateCcw, Target } from 'lucid
 import { DECOY_SPOTS, HAZARD_SCENES, XP } from '@/shared/content'
 import { Confetti } from '@/shared/components/Confetti'
 import { Mascot } from '@/shared/components/Mascot'
-import { PillarTags } from '@/shared/components/PillarTag'
 import {
   Badge,
   Button,
@@ -331,7 +330,6 @@ export default function HazardHuntPage() {
               </ol>
             </CardContent>
           </Card>
-          <PillarTags pillars={['attention', 'engagement', 'feedback']} />
         </div>
       </div>
     </div>

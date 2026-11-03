@@ -27,7 +27,7 @@ const SECTIONS = {
     description: 'Analyse des résultats pour cibler les actions de prévention.',
     features: [
       'Questions les plus échouées',
-      'Indicateurs des 4 piliers de l’apprentissage',
+      'Indicateurs pédagogiques (engagement, réussite, ancrage des connaissances)',
       'Évolution dans le temps',
       'Questions posées au chatbot (anonymisées)',
     ],

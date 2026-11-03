@@ -4,17 +4,18 @@ import {
   ArrowRight,
   CalendarCheck,
   Check,
+  Crosshair,
   Flame,
   Layers,
   Lightbulb,
   Medal,
+  PlayCircle,
   Sparkles,
   Target,
 } from 'lucide-react'
 import { useAuth } from '@/app/auth/AuthProvider'
 import { RESOURCES, levelFromXp } from '@/shared/content'
 import { ProgressRing } from '@/shared/components/ProgressRing'
-import { PILLAR_META } from '@/shared/components/PillarTag'
 import {
   Badge,
   Button,
@@ -30,7 +31,7 @@ import { AnimatedNumber, Reveal, Stagger, hoverLift } from '@/shared/motion'
 import { collabPath } from '../paths'
 import { ThemeBadge } from '../components/ThemeBadge'
 import { BADGES } from '../store/badges'
-import { allThemeMastery, computePillars } from '../store/insights'
+import { allThemeMastery, nextSteps } from '../store/insights'
 import { MISSIONS } from '../store/missions'
 import { countDue, useProgress } from '../store/progress'
 
@@ -260,56 +261,48 @@ function DailyMissions() {
   )
 }
 
-function Pillars() {
+const STEP_ICON = { review: Layers, watch: PlayCircle, practice: Target, hunt: Crosshair }
+
+function NextSteps() {
   const s = useProgress()
-  const pillars = computePillars(s)
-  const weakest = [...pillars].sort((a, b) => a.score - b.score)[0]
+  const steps = nextSteps(s, countDue(s.cards))
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Les 4 piliers de votre apprentissage</CardTitle>
-        <CardDescription>
-          La plateforme s’appuie sur les sciences cognitives : chaque activité mobilise un ou
-          plusieurs piliers.
-        </CardDescription>
+        <CardTitle>Recommandé pour vous</CardTitle>
+        <CardDescription>Vos prochaines étapes, selon votre progression.</CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="grid gap-3 sm:grid-cols-2">
-          {pillars.map((p) => {
-            const Icon = PILLAR_META[p.id].icon
-            return (
-              <div
-                key={p.id}
+      <CardContent className="flex flex-col gap-2">
+        {steps.map((step, i) => {
+          const Icon = STEP_ICON[step.kind]
+          return (
+            <Link
+              key={step.id}
+              to={collabPath(step.to)}
+              className={cn(
+                'group flex items-center gap-4 rounded-md border p-4 transition-colors hover:border-primary/40 hover:bg-muted/40',
+                i === 0 && 'border-primary/30 bg-primary/[0.03]',
+              )}
+            >
+              <span
                 className={cn(
-                  'rounded-md border p-4',
-                  p.id === weakest.id && 'border-warning/60 bg-warning/5',
+                  'grid size-10 shrink-0 place-items-center rounded-md',
+                  i === 0 ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground',
                 )}
               >
-                <div className="mb-2 flex items-center gap-2">
-                  <span className="grid size-8 place-items-center rounded-lg bg-primary/10 text-primary">
-                    <Icon className="size-4" />
-                  </span>
-                  <span className="flex-1 text-sm font-bold">{p.label}</span>
-                  <span className="text-lg font-bold tabular-nums">{p.score}%</span>
-                </div>
-                <Progress value={p.score} className="mb-2 h-2" />
-                <p className="text-xs text-muted-foreground">{p.metric}</p>
-              </div>
-            )
-          })}
-        </div>
-        <div className="mt-4 flex flex-col gap-3 rounded-md bg-muted/70 p-4 sm:flex-row sm:items-center">
-          <Lightbulb className="size-5 shrink-0 text-warning" />
-          <p className="flex-1 text-sm">
-            <span className="font-bold">
-              Votre levier de progression : {weakest.label.toLowerCase()}.
-            </span>{' '}
-            {weakest.advice.text}
-          </p>
-          <Button asChild size="sm" variant="outline">
-            <Link to={collabPath(weakest.advice.to)}>{weakest.advice.cta}</Link>
-          </Button>
-        </div>
+                <Icon className="size-5" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block font-semibold">{step.title}</span>
+                <span className="block text-sm text-muted-foreground">{step.detail}</span>
+              </span>
+              <span className="hidden items-center gap-1 text-sm font-semibold text-primary sm:inline-flex">
+                {step.cta}
+                <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+              </span>
+            </Link>
+          )
+        })}
       </CardContent>
     </Card>
   )
@@ -537,7 +530,7 @@ export default function DashboardPage() {
       <div className="grid gap-6 lg:grid-cols-3">
         <Stagger className="flex flex-col gap-6 lg:col-span-2" stagger={0.08} delay={0.15}>
           <Reveal>
-            <Pillars />
+            <NextSteps />
           </Reveal>
           <Reveal>
             <ThemesProgress />

@@ -56,7 +56,7 @@ src/
 │   │   ├── index.tsx         # PortalDefinition : navigation + routes
 │   │   ├── pages/            # Une page = une rubrique
 │   │   ├── components/       # Composants propres au portail
-│   │   └── store/            # Progression, badges, missions, indicateurs des 4 piliers
+│   │   └── store/            # Progression, badges, missions, recommandations
 │   ├── referent/             # Squelette
 │   └── admin/                # Squelette
 └── index.css                 # ⭐ Design tokens (couleurs, rayons, animations)
@@ -103,26 +103,30 @@ marqueurs de la chasse aux risques à ressort, notifications empilées.
 
 ## Espace collaborateur — fonctionnalités
 
-| Rubrique | Contenu | Piliers mobilisés |
+| Rubrique | Contenu | Piliers mobilisés (conception) |
 |---|---|---|
-| **Tableau de bord** | Niveau & XP, série de jours, missions du jour, indicateurs des 4 piliers + levier de progression conseillé, maîtrise par thématique, activité 14 j, contenus obligatoires, défi d’équipe, « Le saviez-vous ? » | tous |
+| **Tableau de bord** | Niveau & XP, série de jours, missions du jour, « Recommandé pour vous » (prochaines étapes personnalisées), maîtrise par thématique, activité 14 j, contenus obligatoires, défi d’équipe, « Le saviez-vous ? » | tous |
 | **Vidéos & ressources** | Vidéos, fiches, infographies, podcasts ; filtres (type, thématique, non consultées, favoris), recherche ; lecteur (média réel via `mediaUrl`, sinon aperçu simulé) ; résumé « À retenir » débloqué après lecture ; **check express** corrigé | attention, engagement, retour d’information |
 | **Flashcards** | Répétition espacée (**système de Leitner**, 5 boîtes : 1-3-7-14-30 j), session du jour, paquets par thématique, carte 3D **glissable** (geste « swipe »), indice, auto-évaluation (À revoir / Hésitant / Je sais), combos, raccourcis clavier | consolidation, engagement |
 | **Quiz & défis** | **Défi du jour** adaptatif (thématiques les plus faibles, XP ×2), **Défi chrono** (15 s, 3 vies, combos), **Entraînement** par thématique sans pression, **Chasse aux risques** (scène illustrée, 6 dangers à repérer + leurres) ; correction expliquée + lien vers la ressource ; écran « revoir mes erreurs » | engagement, retour d’information, attention |
-| **Prévi (chatbot)** | Assistant SST avec suggestions, réponses sourcées renvoyant vers les ressources, retour 👍/👎, encart urgences (15/18/112/114) | engagement, retour d’information |
+| **Prévi (chatbot)** | Assistant SST avec suggestions, réponses sourcées renvoyant vers les ressources, retour utile / pas utile, encart urgences (15/18/112/114) | engagement, retour d’information |
 | **Trophées & niveaux** | 6 niveaux (Éveil → Ambassadeur·rice SST), 9 badges, statistiques personnelles | motivation |
 
-### Les 4 piliers de l’apprentissage (S. Dehaene)
+### Les 4 piliers de l’apprentissage (S. Dehaene) — principes implicites
 
-Chaque activité est étiquetée par les piliers qu’elle mobilise (`<PillarTags />`) et le tableau de bord
-calcule un score par pilier (`src/portals/collaborateur/store/insights.ts`) :
+Les piliers guident la **conception** des rubriques ; ils ne sont **jamais nommés ni affichés** dans
+l’interface collaborateur. Ils se traduisent par l’expérience :
 
-- **Attention** — formats ≤ 5 min, une idée à la fois, part de ressources suivies.
-- **Engagement actif** — répondre, chercher, questionner : volume d’interactions.
-- **Retour d’information** — correction immédiate et expliquée : taux de bonnes réponses.
-- **Consolidation** — répétition espacée et régularité : cartes ancrées (boîte ≥ 3) + série de jours.
+- **Attention** — formats courts (≤ 5 min), un message à la fois, résumé « À retenir » après lecture.
+- **Engagement actif** — l’utilisateur agit : quiz, chasse aux risques, check express, questions à Prévi.
+- **Retour d’information** — chaque réponse est corrigée et expliquée immédiatement, avec un lien vers la ressource.
+- **Consolidation** — répétition espacée des flashcards, missions du jour, séries de jours.
 
-Le pilier le plus faible donne un **levier de progression** avec une action concrète.
+En coulisses, `src/portals/collaborateur/store/insights.ts` calcule des scores internes par pilier
+pour ordonner les **prochaines étapes** du tableau de bord (« Réviser 8 cartes », « S’entraîner :
+Risque routier »…). Ces scores pourront alimenter les statistiques du portail référent.
+**Règle d’équipe :** ne pas introduire de libellé « pilier » ou de jargon pédagogique dans l’interface
+collaborateur ; exprimer le principe par la fonctionnalité elle-même.
 
 ### Gamification (paramétrable)
 

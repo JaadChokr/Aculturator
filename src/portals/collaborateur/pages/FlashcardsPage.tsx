@@ -3,7 +3,6 @@ import { Link } from 'react-router'
 import { Layers, Play, Repeat, Sparkles } from 'lucide-react'
 import { FLASHCARDS, THEMES } from '@/shared/content'
 import { PageHeader } from '@/shared/components/PageHeader'
-import { PillarTags } from '@/shared/components/PillarTag'
 import {
   Badge,
   Button,
@@ -181,8 +180,6 @@ export default function FlashcardsPage() {
           )
         })}
       </Stagger>
-
-      <PillarTags pillars={['consolidation', 'engagement', 'feedback']} className="mt-6" />
     </div>
   )
 }

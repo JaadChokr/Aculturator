@@ -26,7 +26,6 @@ import {
   type ThemeId,
 } from '@/shared/content'
 import { PageHeader } from '@/shared/components/PageHeader'
-import { PillarTags } from '@/shared/components/PillarTag'
 import {
   Badge,
   Button,
@@ -281,8 +280,6 @@ function ResourceDialog({ r, onClose }: { r: Resource | null; onClose: () => voi
               onAnswered={(ok) => ok && checkPassed()}
             />
           )}
-
-          <PillarTags pillars={r.check ? ['attention', 'engagement', 'feedback'] : ['attention']} />
         </DialogContent>
       )}
     </Dialog>

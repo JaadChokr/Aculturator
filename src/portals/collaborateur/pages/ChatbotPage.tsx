@@ -6,7 +6,6 @@ import { CHAT_SUGGESTIONS } from '@/shared/content'
 import { chatService, type ChatReply } from '@/shared/api/chat'
 import { Mascot } from '@/shared/components/Mascot'
 import { PageHeader } from '@/shared/components/PageHeader'
-import { PillarTags } from '@/shared/components/PillarTag'
 import { Avatar, Button, Card, CardContent, CardHeader, CardTitle } from '@/shared/ui'
 import { cn } from '@/shared/lib/utils'
 import { spring } from '@/shared/motion'
@@ -311,7 +310,6 @@ export default function ChatbotPage() {
               référent SST, ni le médecin du travail, ni les secours.
             </p>
           </div>
-          <PillarTags pillars={['engagement', 'feedback']} />
         </div>
       </div>
     </div>
