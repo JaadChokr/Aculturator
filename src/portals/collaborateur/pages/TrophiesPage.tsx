@@ -1,10 +1,12 @@
 import { useState } from 'react'
+import { motion } from 'motion/react'
 import { Flame, Layers, Lock, RotateCcw, Trophy, Zap } from 'lucide-react'
 import { LEVELS, levelFromXp } from '@/shared/content'
 import { PageHeader } from '@/shared/components/PageHeader'
 import { ProgressRing } from '@/shared/components/ProgressRing'
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui'
 import { cn, formatNumber } from '@/shared/lib/utils'
+import { AnimatedNumber, Reveal, Stagger, springBouncy } from '@/shared/motion'
 import { BADGES } from '../store/badges'
 import { useProgress } from '../store/progress'
 
@@ -16,10 +18,28 @@ export default function TrophiesPage() {
   const unlocked = BADGES.filter((b) => s.badges[b.id]).length
 
   const stats = [
-    { label: 'XP totale', value: formatNumber(s.xp), icon: Zap, tone: 'text-xp bg-xp/10' },
-    { label: 'Meilleure série', value: `${s.streak.best} j`, icon: Flame, tone: 'text-streak bg-streak/12' },
-    { label: 'Parties jouées', value: s.quizHistory.length, icon: Trophy, tone: 'text-primary bg-primary/10' },
-    { label: 'Cartes révisées', value: reviews, icon: Layers, tone: 'text-success bg-success/12' },
+    { label: 'XP totale', value: s.xp, suffix: '', icon: Zap, tone: 'text-xp bg-xp/10' },
+    {
+      label: 'Meilleure série',
+      value: s.streak.best,
+      suffix: ' j',
+      icon: Flame,
+      tone: 'text-streak bg-streak/12',
+    },
+    {
+      label: 'Parties jouées',
+      value: s.quizHistory.length,
+      suffix: '',
+      icon: Trophy,
+      tone: 'text-primary bg-primary/10',
+    },
+    {
+      label: 'Cartes révisées',
+      value: reviews,
+      suffix: '',
+      icon: Layers,
+      tone: 'text-success bg-success/12',
+    },
   ]
 
   return (
@@ -56,7 +76,13 @@ export default function TrophiesPage() {
 
       <div className="mb-6 grid gap-6 lg:grid-cols-3">
         <Card className="flex flex-col items-center justify-center gap-3 p-6 text-center">
-          <ProgressRing value={progress} size={150} stroke={12} indicatorClassName="stroke-xp" label="Progression vers le niveau suivant">
+          <ProgressRing
+            value={progress}
+            size={150}
+            stroke={12}
+            indicatorClassName="stroke-xp"
+            label="Progression vers le niveau suivant"
+          >
             <div>
               <div className="text-4xl" aria-hidden>
                 {current.emoji}
@@ -66,14 +92,18 @@ export default function TrophiesPage() {
           </ProgressRing>
           <div>
             <div className="text-xl font-extrabold">{current.title}</div>
-            <div className="text-sm text-muted-foreground">{next ? `${toNext} XP avant « ${next.title} »` : 'Niveau maximum atteint 🎉'}</div>
+            <div className="text-sm text-muted-foreground">
+              {next ? `${toNext} XP avant « ${next.title} »` : 'Niveau maximum atteint 🎉'}
+            </div>
           </div>
         </Card>
 
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Le parcours des niveaux</CardTitle>
-            <CardDescription>Un palier = un nouveau statut… et la reconnaissance de votre engagement.</CardDescription>
+            <CardDescription>
+              Un palier = un nouveau statut… et la reconnaissance de votre engagement.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <ol className="relative flex flex-col gap-3 sm:flex-row sm:gap-0">
@@ -81,9 +111,18 @@ export default function TrophiesPage() {
                 const reached = s.xp >= l.minXp
                 const isCurrent = l.level === current.level
                 return (
-                  <li key={l.level} className="relative flex flex-1 items-center gap-3 sm:flex-col sm:text-center">
+                  <li
+                    key={l.level}
+                    className="relative flex flex-1 items-center gap-3 sm:flex-col sm:text-center"
+                  >
                     {i > 0 && (
-                      <span aria-hidden className={cn('absolute top-6 right-1/2 hidden h-1 w-full -translate-y-1/2 sm:block', reached ? 'bg-xp' : 'bg-muted')} />
+                      <span
+                        aria-hidden
+                        className={cn(
+                          'absolute top-6 right-1/2 hidden h-1 w-full -translate-y-1/2 sm:block',
+                          reached ? 'bg-xp' : 'bg-muted',
+                        )}
+                      />
                     )}
                     <span
                       className={cn(
@@ -95,8 +134,17 @@ export default function TrophiesPage() {
                       {l.emoji}
                     </span>
                     <span>
-                      <span className={cn('block text-sm font-bold', !reached && 'text-muted-foreground')}>{l.title}</span>
-                      <span className="block text-xs text-muted-foreground tabular-nums">{formatNumber(l.minXp)} XP</span>
+                      <span
+                        className={cn(
+                          'block text-sm font-bold',
+                          !reached && 'text-muted-foreground',
+                        )}
+                      >
+                        {l.title}
+                      </span>
+                      <span className="block text-xs text-muted-foreground tabular-nums">
+                        {formatNumber(l.minXp)} XP
+                      </span>
                     </span>
                   </li>
                 )
@@ -114,7 +162,10 @@ export default function TrophiesPage() {
                 <st.icon className="size-5" />
               </span>
               <span>
-                <span className="block text-2xl leading-none font-extrabold tabular-nums">{st.value}</span>
+                <span className="block text-2xl leading-none font-extrabold tabular-nums">
+                  <AnimatedNumber value={st.value} from={0} />
+                  {st.suffix}
+                </span>
                 <span className="text-xs font-semibold text-muted-foreground">{st.label}</span>
               </span>
             </CardContent>
@@ -123,34 +174,56 @@ export default function TrophiesPage() {
       </div>
 
       <h2 className="mb-3 text-lg font-extrabold">
-        Badges <span className="text-muted-foreground">· {unlocked}/{BADGES.length}</span>
+        Badges{' '}
+        <span className="text-muted-foreground">
+          · {unlocked}/{BADGES.length}
+        </span>
       </h2>
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+      <Stagger
+        className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5"
+        stagger={0.05}
+        delay={0.2}
+      >
         {BADGES.map((b) => {
           const date = s.badges[b.id]
           return (
-            <Card
+            <Reveal
               key={b.id}
-              className={cn(
-                'relative flex flex-col items-center gap-2 p-5 text-center transition-all',
-                date ? 'border-accent/60 bg-gradient-to-b from-accent/15 to-card hover:-translate-y-1 hover:shadow-lg' : 'opacity-70',
-              )}
+              variant="pop"
+              whileHover={
+                date ? { y: -6, rotate: [0, -2, 2, 0], transition: { duration: 0.4 } } : undefined
+              }
             >
-              <span className={cn('text-5xl', !date && 'opacity-40 grayscale')} aria-hidden>
-                {b.emoji}
-              </span>
-              {!date && <Lock className="absolute top-3 right-3 size-4 text-muted-foreground" />}
-              <span className="font-bold">{b.name}</span>
-              <span className="text-xs text-muted-foreground">{b.description}</span>
-              {date && (
-                <span className="text-[11px] font-semibold text-accent-foreground dark:text-accent">
-                  Obtenu le {new Date(date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
-                </span>
-              )}
-            </Card>
+              <Card
+                className={cn(
+                  'relative flex h-full flex-col items-center gap-2 p-5 text-center transition-shadow',
+                  date
+                    ? 'border-accent/60 bg-gradient-to-b from-accent/15 to-card hover:shadow-lg'
+                    : 'opacity-70',
+                )}
+              >
+                <motion.span
+                  className={cn('text-5xl', !date && 'opacity-40 grayscale')}
+                  aria-hidden
+                  whileHover={date ? { scale: 1.25, rotate: 12 } : undefined}
+                  transition={springBouncy}
+                >
+                  {b.emoji}
+                </motion.span>
+                {!date && <Lock className="absolute top-3 right-3 size-4 text-muted-foreground" />}
+                <span className="font-bold">{b.name}</span>
+                <span className="text-xs text-muted-foreground">{b.description}</span>
+                {date && (
+                  <span className="text-[11px] font-semibold text-accent-foreground dark:text-accent">
+                    Obtenu le{' '}
+                    {new Date(date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
+                  </span>
+                )}
+              </Card>
+            </Reveal>
           )
         })}
-      </div>
+      </Stagger>
     </div>
   )
 }

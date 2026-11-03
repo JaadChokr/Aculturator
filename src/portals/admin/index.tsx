@@ -1,5 +1,12 @@
 import { lazy } from 'react'
-import { BookOpenCheck, Building2, LayoutDashboard, Settings, ShieldCheck, UserCog } from 'lucide-react'
+import {
+  BookOpenCheck,
+  Building2,
+  LayoutDashboard,
+  Settings,
+  ShieldCheck,
+  UserCog,
+} from 'lucide-react'
 import type { PortalDefinition } from '@/shared/types/portal'
 
 const Page = lazy(() => import('./pages/AdminPlaceholder'))
@@ -17,8 +24,18 @@ export const adminPortal: PortalDefinition = {
     {
       items: [
         { label: 'Pilotage', short: 'Accueil', to: base, icon: LayoutDashboard, end: true },
-        { label: 'Contenus pédagogiques', short: 'Contenus', to: `${base}/contenus`, icon: BookOpenCheck },
-        { label: 'Utilisateurs & rôles', short: 'Utilisateurs', to: `${base}/utilisateurs`, icon: UserCog },
+        {
+          label: 'Contenus pédagogiques',
+          short: 'Contenus',
+          to: `${base}/contenus`,
+          icon: BookOpenCheck,
+        },
+        {
+          label: 'Utilisateurs & rôles',
+          short: 'Utilisateurs',
+          to: `${base}/utilisateurs`,
+          icon: UserCog,
+        },
         { label: 'Sites & équipes', short: 'Sites', to: `${base}/organisation`, icon: Building2 },
         { label: 'Paramètres', short: 'Réglages', to: `${base}/parametres`, icon: Settings },
       ],

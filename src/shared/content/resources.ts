@@ -7,7 +7,8 @@ export const RESOURCES: Resource[] = [
     themeId: 'fondamentaux',
     type: 'video',
     title: 'Qui fait quoi en santé-sécurité ?',
-    summary: 'Employeur, managers, CSE, médecin du travail, référents… et vous : le rôle de chacun en 4 minutes.',
+    summary:
+      'Employeur, managers, CSE, médecin du travail, référents… et vous : le rôle de chacun en 4 minutes.',
     durationMin: 4,
     mandatory: true,
     keyPoints: [
@@ -18,9 +19,15 @@ export const RESOURCES: Resource[] = [
     ],
     check: {
       question: 'Qui doit prendre soin de sa propre sécurité et de celle de ses collègues ?',
-      options: ['Uniquement les managers', 'Uniquement le référent SST', 'Chaque salarié', 'Le médecin du travail'],
+      options: [
+        'Uniquement les managers',
+        'Uniquement le référent SST',
+        'Chaque salarié',
+        'Le médecin du travail',
+      ],
       answer: 2,
-      explanation: 'Le Code du travail (art. L4122-1) prévoit que chaque travailleur prend soin de sa santé et de sa sécurité et de celles des autres personnes concernées par ses actes.',
+      explanation:
+        'Le Code du travail (art. L4122-1) prévoit que chaque travailleur prend soin de sa santé et de sa sécurité et de celles des autres personnes concernées par ses actes.',
     },
   },
   {
@@ -28,7 +35,8 @@ export const RESOURCES: Resource[] = [
     themeId: 'fondamentaux',
     type: 'fiche',
     title: 'Droit d’alerte et droit de retrait',
-    summary: 'Face à un danger grave et imminent : comment alerter et dans quelles conditions se retirer.',
+    summary:
+      'Face à un danger grave et imminent : comment alerter et dans quelles conditions se retirer.',
     durationMin: 3,
     keyPoints: [
       'Vous alertez immédiatement l’employeur de toute situation présentant un danger grave et imminent pour votre vie ou votre santé.',
@@ -36,10 +44,12 @@ export const RESOURCES: Resource[] = [
       'Le retrait ne doit pas créer de nouveau danger pour autrui.',
     ],
     check: {
-      question: 'Le droit de retrait peut-il entraîner une retenue sur salaire s’il est exercé de façon légitime ?',
+      question:
+        'Le droit de retrait peut-il entraîner une retenue sur salaire s’il est exercé de façon légitime ?',
       options: ['Oui, toujours', 'Non', 'Seulement après 24 h', 'Seulement pour les intérimaires'],
       answer: 1,
-      explanation: 'Aucune sanction ni retenue de salaire ne peut être prise contre un salarié qui s’est retiré d’une situation de travail dont il avait un motif raisonnable de penser qu’elle présentait un danger grave et imminent.',
+      explanation:
+        'Aucune sanction ni retenue de salaire ne peut être prise contre un salarié qui s’est retiré d’une situation de travail dont il avait un motif raisonnable de penser qu’elle présentait un danger grave et imminent.',
     },
   },
   {
@@ -79,7 +89,8 @@ export const RESOURCES: Resource[] = [
         'Tournez le buste pour le poser sur le côté',
       ],
       answer: 1,
-      explanation: 'Fléchir les jambes et garder le dos droit répartit l’effort sur les muscles des cuisses ; la charge près du corps limite la contrainte sur les lombaires.',
+      explanation:
+        'Fléchir les jambes et garder le dos droit répartit l’effort sur les muscles des cuisses ; la charge près du corps limite la contrainte sur les lombaires.',
     },
   },
   {
@@ -87,7 +98,8 @@ export const RESOURCES: Resource[] = [
     themeId: 'postures',
     type: 'infographie',
     title: 'TMS : comprendre pour prévenir',
-    summary: 'Les troubles musculosquelettiques expliqués en une image : causes, signes, prévention.',
+    summary:
+      'Les troubles musculosquelettiques expliqués en une image : causes, signes, prévention.',
     durationMin: 2,
     keyPoints: [
       'Les TMS représentent près de 9 maladies professionnelles reconnues sur 10 en France.',
@@ -110,9 +122,15 @@ export const RESOURCES: Resource[] = [
     ],
     check: {
       question: 'Où placer le haut de votre écran ?',
-      options: ['Au-dessus du niveau des yeux', 'Au niveau des yeux', 'Au niveau du menton', 'Peu importe'],
+      options: [
+        'Au-dessus du niveau des yeux',
+        'Au niveau des yeux',
+        'Au niveau du menton',
+        'Peu importe',
+      ],
       answer: 1,
-      explanation: 'Le haut de l’écran au niveau des yeux permet de garder la nuque dans une position neutre, le regard légèrement vers le bas.',
+      explanation:
+        'Le haut de l’écran au niveau des yeux permet de garder la nuque dans une position neutre, le regard légèrement vers le bas.',
     },
   },
   {
@@ -133,7 +151,8 @@ export const RESOURCES: Resource[] = [
     themeId: 'rps',
     type: 'podcast',
     title: 'Stress au travail : en parler, c’est déjà agir',
-    summary: 'Témoignages et conseils d’une psychologue du travail pour repérer les signaux d’alerte.',
+    summary:
+      'Témoignages et conseils d’une psychologue du travail pour repérer les signaux d’alerte.',
     durationMin: 12,
     keyPoints: [
       'Signaux d’alerte : troubles du sommeil, irritabilité, isolement, perte de motivation.',
@@ -172,7 +191,8 @@ export const RESOURCES: Resource[] = [
       question: 'Un départ de feu sur une multiprise : quel extincteur ?',
       options: ['Eau pulvérisée sans additif', 'CO₂', 'Un seau d’eau', 'Aucun, on souffle dessus'],
       answer: 1,
-      explanation: 'Le CO₂ est adapté aux feux d’origine électrique : il ne conduit pas l’électricité et ne laisse pas de résidu.',
+      explanation:
+        'Le CO₂ est adapté aux feux d’origine électrique : il ne conduit pas l’électricité et ne laisse pas de résidu.',
     },
   },
   {
@@ -203,9 +223,15 @@ export const RESOURCES: Resource[] = [
     ],
     check: {
       question: 'Dans quel ordre agir face à un accident ?',
-      options: ['Secourir, Alerter, Protéger', 'Alerter, Secourir, Protéger', 'Protéger, Alerter, Secourir', 'Protéger, Secourir, Alerter'],
+      options: [
+        'Secourir, Alerter, Protéger',
+        'Alerter, Secourir, Protéger',
+        'Protéger, Alerter, Secourir',
+        'Protéger, Secourir, Alerter',
+      ],
       answer: 2,
-      explanation: 'On protège d’abord (éviter le sur-accident), on alerte ensuite les secours, puis on secourt la victime.',
+      explanation:
+        'On protège d’abord (éviter le sur-accident), on alerte ensuite les secours, puis on secourt la victime.',
     },
   },
   {
@@ -227,7 +253,8 @@ export const RESOURCES: Resource[] = [
     themeId: 'routier',
     type: 'podcast',
     title: 'Sur la route du travail',
-    summary: 'Pourquoi le risque routier est la première cause de mortalité au travail, et comment s’en protéger.',
+    summary:
+      'Pourquoi le risque routier est la première cause de mortalité au travail, et comment s’en protéger.',
     durationMin: 8,
     keyPoints: [
       'Les accidents de la route (trajet et mission) sont la première cause de décès liés au travail en France.',

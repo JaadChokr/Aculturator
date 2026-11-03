@@ -15,7 +15,6 @@ const HazardHuntPage = lazy(() => import('./pages/HazardHuntPage'))
 const ChatbotPage = lazy(() => import('./pages/ChatbotPage'))
 const TrophiesPage = lazy(() => import('./pages/TrophiesPage'))
 
-
 export const collaborateurPortal: PortalDefinition = {
   id: 'collaborateur',
   label: 'Espace collaborateur',
@@ -29,8 +28,19 @@ export const collaborateurPortal: PortalDefinition = {
     {
       title: 'Apprendre',
       items: [
-        { label: 'Tableau de bord', short: 'Accueil', to: COLLAB_BASE, icon: LayoutDashboard, end: true },
-        { label: 'Vidéos & ressources', short: 'Ressources', to: collabPath('ressources'), icon: PlayCircle },
+        {
+          label: 'Tableau de bord',
+          short: 'Accueil',
+          to: COLLAB_BASE,
+          icon: LayoutDashboard,
+          end: true,
+        },
+        {
+          label: 'Vidéos & ressources',
+          short: 'Ressources',
+          to: collabPath('ressources'),
+          icon: PlayCircle,
+        },
         {
           label: 'Flashcards',
           short: 'Cartes',
@@ -44,7 +54,14 @@ export const collaborateurPortal: PortalDefinition = {
     },
     {
       title: 'Ma progression',
-      items: [{ label: 'Trophées & niveaux', short: 'Trophées', to: collabPath('trophees'), icon: GraduationCap }],
+      items: [
+        {
+          label: 'Trophées & niveaux',
+          short: 'Trophées',
+          to: collabPath('trophees'),
+          icon: GraduationCap,
+        },
+      ],
     },
   ],
   routes: [

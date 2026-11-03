@@ -5,7 +5,12 @@ type Mood = 'happy' | 'thinking' | 'cheer' | 'oops'
 /** « Prévi », la mascotte de la plateforme : un bouclier casqué bienveillant. */
 export function Mascot({ mood = 'happy', className }: { mood?: Mood; className?: string }) {
   return (
-    <svg viewBox="0 0 120 130" className={cn('size-20', className)} role="img" aria-label="Prévi, la mascotte">
+    <svg
+      viewBox="0 0 120 130"
+      className={cn('size-20', className)}
+      role="img"
+      aria-label="Prévi, la mascotte"
+    >
       <defs>
         <linearGradient id="prevBody" x1="0" x2="0" y1="0" y2="1">
           <stop offset="0" stopColor="#2dd4bf" />
@@ -21,8 +26,15 @@ export function Mascot({ mood = 'happy', className }: { mood?: Mood; className?:
         </g>
       )}
       {/* corps bouclier */}
-      <path d="M60 22 L100 36 V68 C100 94 82 114 60 124 C38 114 20 94 20 68 V36 Z" fill="url(#prevBody)" />
-      <path d="M60 30 L92 41 V68 C92 89 78 105 60 114 C42 105 28 89 28 68 V41 Z" fill="#ffffff" opacity="0.12" />
+      <path
+        d="M60 22 L100 36 V68 C100 94 82 114 60 124 C38 114 20 94 20 68 V36 Z"
+        fill="url(#prevBody)"
+      />
+      <path
+        d="M60 30 L92 41 V68 C92 89 78 105 60 114 C42 105 28 89 28 68 V41 Z"
+        fill="#ffffff"
+        opacity="0.12"
+      />
       {/* casque */}
       <path d="M30 34 C32 14 88 14 90 34 Z" fill="#fbbf24" />
       <rect x="24" y="32" width="72" height="8" rx="4" fill="#f59e0b" />
@@ -55,10 +67,20 @@ export function Mascot({ mood = 'happy', className }: { mood?: Mood; className?:
       ) : mood === 'oops' ? (
         <ellipse cx="60" cy="90" rx="6" ry="5" fill="#0b3b38" />
       ) : (
-        <path d="M48 84 Q60 98 72 84" stroke="#0b3b38" strokeWidth="4" strokeLinecap="round" fill="none" />
+        <path
+          d="M48 84 Q60 98 72 84"
+          stroke="#0b3b38"
+          strokeWidth="4"
+          strokeLinecap="round"
+          fill="none"
+        />
       )}
       {/* croix santé */}
-      <path d="M57.5 98 h5 v4.5 h4.5 v5 h-4.5 v4.5 h-5 v-4.5 h-4.5 v-5 h4.5 z" fill="#fff" opacity="0.9" />
+      <path
+        d="M57.5 98 h5 v4.5 h4.5 v5 h-4.5 v4.5 h-5 v-4.5 h-4.5 v-5 h4.5 z"
+        fill="#fff"
+        opacity="0.9"
+      />
     </svg>
   )
 }

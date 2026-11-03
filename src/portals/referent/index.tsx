@@ -1,5 +1,11 @@
 import { lazy } from 'react'
-import { BarChart3, ClipboardCheck, LayoutDashboard, MessageCircleWarning, Users } from 'lucide-react'
+import {
+  BarChart3,
+  ClipboardCheck,
+  LayoutDashboard,
+  MessageCircleWarning,
+  Users,
+} from 'lucide-react'
 import type { PortalDefinition } from '@/shared/types/portal'
 
 const Page = lazy(() => import('./pages/ReferentPlaceholder'))
@@ -22,8 +28,18 @@ export const referentPortal: PortalDefinition = {
         { label: 'Vue d’ensemble', short: 'Accueil', to: base, icon: LayoutDashboard, end: true },
         { label: 'Mon équipe', short: 'Équipe', to: `${base}/equipe`, icon: Users },
         { label: 'Statistiques', short: 'Stats', to: `${base}/statistiques`, icon: BarChart3 },
-        { label: 'Campagnes & défis', short: 'Défis', to: `${base}/campagnes`, icon: ClipboardCheck },
-        { label: 'Remontées terrain', short: 'Remontées', to: `${base}/remontees`, icon: MessageCircleWarning },
+        {
+          label: 'Campagnes & défis',
+          short: 'Défis',
+          to: `${base}/campagnes`,
+          icon: ClipboardCheck,
+        },
+        {
+          label: 'Remontées terrain',
+          short: 'Remontées',
+          to: `${base}/remontees`,
+          icon: MessageCircleWarning,
+        },
       ],
     },
   ],

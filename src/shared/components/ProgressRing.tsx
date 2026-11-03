@@ -1,3 +1,4 @@
+import { motion } from 'motion/react'
 import { cn } from '@/shared/lib/utils'
 
 export function ProgressRing({
@@ -33,8 +34,15 @@ export function ProgressRing({
       aria-label={label}
     >
       <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" strokeWidth={stroke} className={trackClassName} />
         <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          fill="none"
+          strokeWidth={stroke}
+          className={trackClassName}
+        />
+        <motion.circle
           cx={size / 2}
           cy={size / 2}
           r={r}
@@ -42,8 +50,10 @@ export function ProgressRing({
           strokeWidth={stroke}
           strokeLinecap="round"
           strokeDasharray={c}
-          strokeDashoffset={c - (v / 100) * c}
-          className={cn('transition-[stroke-dashoffset] duration-700', indicatorClassName)}
+          initial={{ strokeDashoffset: c }}
+          animate={{ strokeDashoffset: c - (v / 100) * c }}
+          transition={{ type: 'spring', stiffness: 60, damping: 18 }}
+          className={indicatorClassName}
         />
       </svg>
       <div className="absolute inset-0 grid place-items-center text-center">{children}</div>

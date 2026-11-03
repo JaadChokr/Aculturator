@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { AnimatePresence, motion } from 'motion/react'
 import { useSearchParams } from 'react-router'
 import {
   Bookmark,
@@ -42,6 +43,7 @@ import {
   TabsTrigger,
 } from '@/shared/ui'
 import { cn } from '@/shared/lib/utils'
+import { spring } from '@/shared/motion'
 import { CheckQuestionBlock } from '../components/CheckQuestionBlock'
 import { ThemeBadge } from '../components/ThemeBadge'
 import { useProgress } from '../store/progress'
@@ -63,16 +65,27 @@ function ResourceCard({ r, onOpen }: { r: Resource; onOpen: () => void }) {
   const Icon = TYPE_ICON[r.type]
 
   return (
-    <Card className="group flex flex-col overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-lg">
-      <button onClick={onOpen} className="relative block aspect-video w-full overflow-hidden text-left" aria-label={`Ouvrir ${r.title}`}>
+    <Card className="group flex h-full flex-col overflow-hidden transition-all hover:-translate-y-1 hover:shadow-lg">
+      <button
+        onClick={onOpen}
+        className="relative block aspect-video w-full overflow-hidden text-left"
+        aria-label={`Ouvrir ${r.title}`}
+      >
         <div className={cn('absolute inset-0 bg-gradient-to-br', theme.tone.gradient)} />
         <div aria-hidden className="bg-grid absolute inset-0 text-white opacity-50" />
-        <span aria-hidden className="absolute -right-4 -bottom-6 text-8xl opacity-30 transition-transform group-hover:scale-110">
+        <span
+          aria-hidden
+          className="absolute -right-4 -bottom-6 text-8xl opacity-30 transition-transform group-hover:scale-110"
+        >
           {theme.emoji}
         </span>
         <span className="absolute inset-0 grid place-items-center">
           <span className="grid size-14 place-items-center rounded-full bg-white/90 text-slate-900 shadow-lg transition-transform group-hover:scale-110">
-            {r.type === 'video' || r.type === 'podcast' ? <Play className="ml-0.5 size-6 fill-current" /> : <Icon className="size-6" />}
+            {r.type === 'video' || r.type === 'podcast' ? (
+              <Play className="ml-0.5 size-6 fill-current" />
+            ) : (
+              <Icon className="size-6" />
+            )}
           </span>
         </span>
         <span className="absolute top-3 left-3 flex gap-1.5">
@@ -140,12 +153,24 @@ function MediaPlayer({ r, onComplete }: { r: Resource; onComplete: () => void })
   }, [playing, onComplete])
 
   if (r.mediaUrl && r.type === 'video') {
-    return <video src={r.mediaUrl} controls className="aspect-video w-full rounded-xl bg-black" onEnded={onComplete} />
+    return (
+      <video
+        src={r.mediaUrl}
+        controls
+        className="aspect-video w-full rounded-xl bg-black"
+        onEnded={onComplete}
+      />
+    )
   }
 
   const step = Math.min(r.keyPoints.length - 1, Math.floor((pct / 100) * r.keyPoints.length))
   return (
-    <div className={cn('relative overflow-hidden rounded-xl bg-gradient-to-br text-white', theme.tone.gradient)}>
+    <div
+      className={cn(
+        'relative overflow-hidden rounded-xl bg-gradient-to-br text-white',
+        theme.tone.gradient,
+      )}
+    >
       <div aria-hidden className="bg-grid absolute inset-0 text-white opacity-40" />
       <div className="relative flex aspect-video flex-col justify-between p-5">
         <div className="text-xs font-bold tracking-wider uppercase opacity-80">
@@ -161,9 +186,17 @@ function MediaPlayer({ r, onComplete }: { r: Resource; onComplete: () => void })
             className="rounded-full bg-white text-slate-900 hover:bg-white/90"
             aria-label={playing ? 'Pause' : 'Lecture'}
           >
-            {playing ? <Pause className="fill-current" /> : <Play className="ml-0.5 fill-current" />}
+            {playing ? (
+              <Pause className="fill-current" />
+            ) : (
+              <Play className="ml-0.5 fill-current" />
+            )}
           </Button>
-          <Progress value={pct} className="h-1.5 flex-1 bg-white/25" indicatorClassName="bg-white" />
+          <Progress
+            value={pct}
+            className="h-1.5 flex-1 bg-white/25"
+            indicatorClassName="bg-white"
+          />
           <span className="text-xs font-semibold tabular-nums">{r.durationMin}:00</span>
         </div>
       </div>
@@ -209,7 +242,12 @@ function ResourceDialog({ r, onClose }: { r: Resource | null; onClose: () => voi
             />
           )}
 
-          <div className={cn('transition-opacity', !showContent && 'pointer-events-none opacity-40 blur-[2px]')}>
+          <div
+            className={cn(
+              'transition-opacity',
+              !showContent && 'pointer-events-none opacity-40 blur-[2px]',
+            )}
+          >
             <h4 className="mb-2 text-sm font-bold">{isMedia ? 'À retenir' : 'L’essentiel'}</h4>
             <ul className="flex flex-col gap-2">
               {r.keyPoints.map((k, i) => (
@@ -222,7 +260,11 @@ function ResourceDialog({ r, onClose }: { r: Resource | null; onClose: () => voi
               ))}
             </ul>
           </div>
-          {!showContent && <p className="-mt-2 text-center text-xs text-muted-foreground">Lancez la lecture pour débloquer le résumé.</p>}
+          {!showContent && (
+            <p className="-mt-2 text-center text-xs text-muted-foreground">
+              Lancez la lecture pour débloquer le résumé.
+            </p>
+          )}
 
           {!isMedia && !viewed && (
             <Button onClick={() => markViewed(r.id)} className="justify-self-start">
@@ -230,7 +272,13 @@ function ResourceDialog({ r, onClose }: { r: Resource | null; onClose: () => voi
             </Button>
           )}
 
-          {r.check && (viewed || unlocked) && <CheckQuestionBlock key={r.id} check={r.check} onAnswered={(ok) => ok && checkPassed()} />}
+          {r.check && (viewed || unlocked) && (
+            <CheckQuestionBlock
+              key={r.id}
+              check={r.check}
+              onAnswered={(ok) => ok && checkPassed()}
+            />
+          )}
 
           <PillarTags pillars={r.check ? ['attention', 'engagement', 'feedback'] : ['attention']} />
         </DialogContent>
@@ -281,7 +329,9 @@ export default function ResourcesPage() {
         actions={
           <div className="flex items-center gap-3 rounded-xl border bg-card px-4 py-2">
             <div className="text-right">
-              <div className="text-xs font-semibold text-muted-foreground">Ressources consultées</div>
+              <div className="text-xs font-semibold text-muted-foreground">
+                Ressources consultées
+              </div>
               <div className="font-extrabold tabular-nums">
                 {viewed.length}/{RESOURCES.length}
               </div>
@@ -294,9 +344,18 @@ export default function ResourcesPage() {
       <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center">
         <div className="relative flex-1">
           <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Rechercher : extincteur, écran, stress…" className="pl-9" />
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Rechercher : extincteur, écran, stress…"
+            className="pl-9"
+          />
         </div>
-        <Tabs value={type} onValueChange={(v) => setType(v as TypeFilter)} className="max-w-full overflow-x-auto">
+        <Tabs
+          value={type}
+          onValueChange={(v) => setType(v as TypeFilter)}
+          className="max-w-full overflow-x-auto"
+        >
           <TabsList>
             <TabsTrigger value="all">Tout</TabsTrigger>
             <TabsTrigger value="video">
@@ -322,41 +381,80 @@ export default function ResourcesPage() {
         <button
           onClick={() => setTheme('all')}
           className={cn(
-            'rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors',
-            theme === 'all' ? 'border-foreground bg-foreground text-background' : 'bg-card hover:bg-muted',
+            'relative rounded-full border bg-card px-3 py-1.5 text-sm font-semibold transition-colors',
+            theme === 'all' ? 'border-foreground text-background' : 'hover:bg-muted',
           )}
         >
-          Toutes les thématiques
+          {theme === 'all' && (
+            <motion.span
+              layoutId="theme-chip"
+              className="absolute inset-0 rounded-full bg-foreground"
+              transition={spring}
+            />
+          )}
+          <span className="relative">Toutes les thématiques</span>
         </button>
         {THEMES.map((t) => (
           <button
             key={t.id}
             onClick={() => setTheme(t.id)}
             className={cn(
-              'rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors',
-              theme === t.id ? 'border-foreground bg-foreground text-background' : 'bg-card hover:bg-muted',
+              'relative rounded-full border bg-card px-3 py-1.5 text-sm font-semibold transition-colors',
+              theme === t.id ? 'border-foreground text-background' : 'hover:bg-muted',
             )}
           >
-            <span aria-hidden>{t.emoji}</span> {t.short}
+            {theme === t.id && (
+              <motion.span
+                layoutId="theme-chip"
+                className="absolute inset-0 rounded-full bg-foreground"
+                transition={spring}
+              />
+            )}
+            <span className="relative">
+              <span aria-hidden>{t.emoji}</span> {t.short}
+            </span>
           </button>
         ))}
         <label className="ml-auto inline-flex cursor-pointer items-center gap-2 text-sm font-semibold">
-          <input type="checkbox" checked={unseenOnly} onChange={(e) => setUnseenOnly(e.target.checked)} className="size-4 accent-[var(--primary)]" />
+          <input
+            type="checkbox"
+            checked={unseenOnly}
+            onChange={(e) => setUnseenOnly(e.target.checked)}
+            className="size-4 accent-[var(--primary)]"
+          />
           Non consultées uniquement
         </label>
       </div>
 
       {list.length ? (
         <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-          {list.map((r) => (
-            <ResourceCard key={r.id} r={r} onOpen={() => setOpen(r.id)} />
-          ))}
+          <AnimatePresence mode="popLayout" initial={false}>
+            {list.map((r, i) => (
+              <motion.div
+                key={r.id}
+                layout
+                initial={{ opacity: 0, scale: 0.92, y: 12 }}
+                animate={{
+                  opacity: 1,
+                  scale: 1,
+                  y: 0,
+                  transition: { ...spring, delay: Math.min(i, 8) * 0.03 },
+                }}
+                exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.15 } }}
+                transition={spring}
+              >
+                <ResourceCard r={r} onOpen={() => setOpen(r.id)} />
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </div>
       ) : (
         <Card className="grid place-items-center gap-2 p-12 text-center">
           <SearchX className="size-10 text-muted-foreground" />
           <p className="font-bold">Aucune ressource ne correspond</p>
-          <p className="text-sm text-muted-foreground">Essayez d’autres mots-clés ou retirez un filtre.</p>
+          <p className="text-sm text-muted-foreground">
+            Essayez d’autres mots-clés ou retirez un filtre.
+          </p>
         </Card>
       )}
 

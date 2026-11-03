@@ -1,3 +1,4 @@
+import { MotionConfig } from 'motion/react'
 import { RouterProvider } from 'react-router'
 import { TooltipProvider } from '@/shared/ui'
 import { Toaster } from '@/shared/components/toast/Toaster'
@@ -9,10 +10,12 @@ export function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <TooltipProvider delayDuration={200}>
-          <RouterProvider router={router} />
-          <Toaster />
-        </TooltipProvider>
+        <MotionConfig reducedMotion="user">
+          <TooltipProvider delayDuration={200}>
+            <RouterProvider router={router} />
+            <Toaster />
+          </TooltipProvider>
+        </MotionConfig>
       </AuthProvider>
     </ThemeProvider>
   )

@@ -6,9 +6,21 @@ export type Pillar = 'attention' | 'engagement' | 'feedback' | 'consolidation'
 
 export const PILLAR_META: Record<Pillar, { label: string; icon: typeof Eye; hint: string }> = {
   attention: { label: 'Attention', icon: Eye, hint: 'Formats courts, un message clé à la fois.' },
-  engagement: { label: 'Engagement actif', icon: Brain, hint: 'Vous agissez : répondre, chercher, questionner.' },
-  feedback: { label: 'Retour d’information', icon: MessageSquareReply, hint: 'Correction immédiate et expliquée.' },
-  consolidation: { label: 'Consolidation', icon: Repeat, hint: 'Répétition espacée pour ancrer durablement.' },
+  engagement: {
+    label: 'Engagement actif',
+    icon: Brain,
+    hint: 'Vous agissez : répondre, chercher, questionner.',
+  },
+  feedback: {
+    label: 'Retour d’information',
+    icon: MessageSquareReply,
+    hint: 'Correction immédiate et expliquée.',
+  },
+  consolidation: {
+    label: 'Consolidation',
+    icon: Repeat,
+    hint: 'Répétition espacée pour ancrer durablement.',
+  },
 }
 
 /** Indique quel(s) pilier(s) de l'apprentissage une activité mobilise. */

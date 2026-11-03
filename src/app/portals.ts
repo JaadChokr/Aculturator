@@ -10,4 +10,5 @@ export const PORTALS: PortalDefinition[] = [collaborateurPortal, referentPortal,
 export const portalsForRole = (role: Role) => PORTALS.filter((p) => p.allowedRoles.includes(role))
 
 /** Portail d'atterrissage par défaut selon le rôle. */
-export const homePortalFor = (role: Role) => PORTALS.find((p) => p.id === role) ?? portalsForRole(role)[0]
+export const homePortalFor = (role: Role) =>
+  PORTALS.find((p) => p.id === role) ?? portalsForRole(role)[0]

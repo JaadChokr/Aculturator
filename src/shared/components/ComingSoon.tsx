@@ -3,7 +3,15 @@ import { Badge, Card, CardContent } from '@/shared/ui'
 import { PageHeader } from './PageHeader'
 
 /** Gabarit pour les rubriques à développer par l'équipe (portails référent / admin). */
-export function ComingSoon({ title, description, features }: { title: string; description: string; features: string[] }) {
+export function ComingSoon({
+  title,
+  description,
+  features,
+}: {
+  title: string
+  description: string
+  features: string[]
+}) {
   return (
     <div>
       <PageHeader eyebrow="À développer" title={title} description={description} />

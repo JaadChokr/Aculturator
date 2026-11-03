@@ -5,7 +5,8 @@ export const HAZARD_SCENES: HazardScene[] = [
   {
     id: 'open-space',
     title: 'L’open space du lundi matin',
-    description: 'Six situations dangereuses se cachent dans ce bureau. Saurez-vous toutes les repérer ?',
+    description:
+      'Six situations dangereuses se cachent dans ce bureau. Saurez-vous toutes les repérer ?',
     hazards: [
       {
         id: 'exit',
@@ -14,7 +15,8 @@ export const HAZARD_SCENES: HazardScene[] = [
         r: 80,
         themeId: 'incendie',
         label: 'Issue de secours encombrée',
-        explanation: 'Les cartons bloquent la sortie de secours : en cas d’évacuation, chaque seconde compte. Les dégagements doivent rester libres en permanence.',
+        explanation:
+          'Les cartons bloquent la sortie de secours : en cas d’évacuation, chaque seconde compte. Les dégagements doivent rester libres en permanence.',
       },
       {
         id: 'chair',
@@ -23,7 +25,8 @@ export const HAZARD_SCENES: HazardScene[] = [
         r: 85,
         themeId: 'fondamentaux',
         label: 'Chaise à roulettes utilisée comme escabeau',
-        explanation: 'Monter sur une chaise à roulettes expose à une chute de hauteur. On utilise un escabeau ou un marchepied stable.',
+        explanation:
+          'Monter sur une chaise à roulettes expose à une chute de hauteur. On utilise un escabeau ou un marchepied stable.',
       },
       {
         id: 'cable',
@@ -32,7 +35,8 @@ export const HAZARD_SCENES: HazardScene[] = [
         r: 60,
         themeId: 'fondamentaux',
         label: 'Câble en travers du passage',
-        explanation: 'Les chutes de plain-pied sont l’une des premières causes d’accidents du travail. On fait passer les câbles dans des goulottes.',
+        explanation:
+          'Les chutes de plain-pied sont l’une des premières causes d’accidents du travail. On fait passer les câbles dans des goulottes.',
       },
       {
         id: 'plug',
@@ -41,7 +45,8 @@ export const HAZARD_SCENES: HazardScene[] = [
         r: 45,
         themeId: 'incendie',
         label: 'Multiprises en cascade surchargées',
-        explanation: 'Brancher des multiprises les unes sur les autres provoque des surchauffes : c’est une cause fréquente de départ de feu.',
+        explanation:
+          'Brancher des multiprises les unes sur les autres provoque des surchauffes : c’est une cause fréquente de départ de feu.',
       },
       {
         id: 'spill',
@@ -50,7 +55,8 @@ export const HAZARD_SCENES: HazardScene[] = [
         r: 55,
         themeId: 'fondamentaux',
         label: 'Liquide renversé au sol',
-        explanation: 'Un sol mouillé est glissant : on nettoie ou on balise immédiatement, et on signale si on ne peut pas intervenir.',
+        explanation:
+          'Un sol mouillé est glissant : on nettoie ou on balise immédiatement, et on signale si on ne peut pas intervenir.',
       },
       {
         id: 'drawer',
@@ -59,7 +65,8 @@ export const HAZARD_SCENES: HazardScene[] = [
         r: 50,
         themeId: 'postures',
         label: 'Tiroir bas laissé ouvert',
-        explanation: 'Un tiroir ouvert dans un passage provoque chocs et chutes. On referme systématiquement après usage.',
+        explanation:
+          'Un tiroir ouvert dans un passage provoque chocs et chutes. On referme systématiquement après usage.',
       },
     ],
   },
@@ -71,13 +78,15 @@ export const DECOY_SPOTS = [
     y: 320,
     r: 35,
     label: 'Extincteur',
-    explanation: 'Bien vu de le remarquer, mais tout va bien ici : il est accroché, signalé et accessible.',
+    explanation:
+      'Bien vu de le remarquer, mais tout va bien ici : il est accroché, signalé et accessible.',
   },
   {
     x: 140,
     y: 160,
     r: 70,
     label: 'Fenêtre',
-    explanation: 'Rien à signaler : l’écran est placé perpendiculairement à la fenêtre, sans reflet.',
+    explanation:
+      'Rien à signaler : l’écran est placé perpendiculairement à la fenêtre, sans reflet.',
   },
 ]

@@ -14,6 +14,7 @@ Ce dépôt contient le **front-end**, organisé en **portails** selon le rôle d
 - **React 19 + TypeScript** (Vite)
 - **Tailwind CSS v4** + composants **shadcn/ui** (Radix UI) pour une identité visuelle unifiée
 - **React Router 7** (routes déclarées par portail, pages chargées à la demande)
+- **Motion** (ex-Framer Motion) pour les animations et gestes
 - **Zustand** (état de progression du collaborateur, persisté en `localStorage` pour la démo)
 - **lucide-react** (icônes), police **Plus Jakarta Sans** (embarquée)
 
@@ -25,6 +26,7 @@ npm run dev          # http://localhost:5173 (sélecteur de profil de démo acti
 npm run build        # build de production → dist/
 npm run build:demo   # build statique autonome (routeur en mémoire, chemins relatifs) → dist-demo/
 npm run lint && npm run typecheck
+npm run format       # Prettier
 ```
 
 En développement, le menu utilisateur (en bas de la barre latérale) permet de **changer de profil**
@@ -78,13 +80,28 @@ src/
 - Couleurs des thématiques SST : `THEMES[x].tone` (`src/shared/content/themes.ts`).
 - Sur mobile : barre de navigation basse (5 premières entrées de la `nav`), libellés courts via `short`.
 
+### Animations (Motion)
+
+Les réglages d'animation communs sont dans `src/shared/motion/` : ressorts (`spring`, `springBouncy`),
+apparitions (`fadeUp`, `popIn`), `hoverLift`, et les composants `<Stagger>` / `<Reveal>` (apparition en cascade)
+et `<AnimatedNumber>` (compteurs). Règles d'équipe :
+
+- Utiliser ces réglages plutôt que des valeurs ad hoc, pour garder une identité de mouvement unique.
+- Animer pour **signifier** (apparition, feedback, récompense), en restant court (≤ 450 ms hors ressorts).
+- `MotionConfig reducedMotion="user"` (dans `App.tsx`) coupe les animations si l'utilisateur le demande au système.
+
+Exemples dans l'espace collaborateur : indicateur de navigation qui glisse (`layoutId`), transitions de page,
+flashcards **glissables** (droite = « Je sais », gauche = « À revoir ») empilées en paquet, questions de quiz
+qui défilent, cœurs et combos animés, scores et XP qui comptent, grille de ressources qui se réorganise au filtrage,
+marqueurs de la chasse aux risques à ressort, notifications empilées.
+
 ## Espace collaborateur — fonctionnalités
 
 | Rubrique | Contenu | Piliers mobilisés |
 |---|---|---|
 | **Tableau de bord** | Niveau & XP, série de jours, missions du jour, indicateurs des 4 piliers + levier de progression conseillé, maîtrise par thématique, activité 14 j, contenus obligatoires, défi d’équipe, « Le saviez-vous ? » | tous |
 | **Vidéos & ressources** | Vidéos, fiches, infographies, podcasts ; filtres (type, thématique, non consultées, favoris), recherche ; lecteur (média réel via `mediaUrl`, sinon aperçu simulé) ; résumé « À retenir » débloqué après lecture ; **check express** corrigé | attention, engagement, retour d’information |
-| **Flashcards** | Répétition espacée (**système de Leitner**, 5 boîtes : 1-3-7-14-30 j), session du jour, paquets par thématique, carte 3D, indice, auto-évaluation (À revoir / Hésitant / Je sais), combos, raccourcis clavier | consolidation, engagement |
+| **Flashcards** | Répétition espacée (**système de Leitner**, 5 boîtes : 1-3-7-14-30 j), session du jour, paquets par thématique, carte 3D **glissable** (geste « swipe »), indice, auto-évaluation (À revoir / Hésitant / Je sais), combos, raccourcis clavier | consolidation, engagement |
 | **Quiz & défis** | **Défi du jour** adaptatif (thématiques les plus faibles, XP ×2), **Défi chrono** (15 s, 3 vies, combos), **Entraînement** par thématique sans pression, **Chasse aux risques** (scène illustrée, 6 dangers à repérer + leurres) ; correction expliquée + lien vers la ressource ; écran « revoir mes erreurs » | engagement, retour d’information, attention |
 | **Prévi (chatbot)** | Assistant SST avec suggestions, réponses sourcées renvoyant vers les ressources, retour 👍/👎, encart urgences (15/18/112/114) | engagement, retour d’information |
 | **Trophées & niveaux** | 6 niveaux (Éveil → Ambassadeur·rice SST), 9 badges, statistiques personnelles | motivation |

@@ -24,7 +24,9 @@ function score(q: string, k: ChatKnowledge) {
   const words = ` ${q} `
   return k.keywords.reduce((acc, kw) => {
     const n = normalize(kw)
-    return words.includes(` ${n} `) || (n.length > 4 && q.includes(n)) ? acc + (n.includes(' ') ? 2 : 1) : acc
+    return words.includes(` ${n} `) || (n.length > 4 && q.includes(n))
+      ? acc + (n.includes(' ') ? 2 : 1)
+      : acc
   }, 0)
 }
 
@@ -34,7 +36,9 @@ export class MockChatService implements ChatService {
     await new Promise((r) => setTimeout(r, 700 + Math.random() * 600))
     const q = normalize(question)
     if (/^(bonjour|salut|hello|coucou|bonsoir)\b/.test(q) && q.split(' ').length < 4) {
-      return { text: 'Bonjour 👋 Je suis **Prévi**, votre assistant santé-sécurité. Posez-moi une question sur les risques, les bons gestes ou les démarches !' }
+      return {
+        text: 'Bonjour 👋 Je suis **Prévi**, votre assistant santé-sécurité. Posez-moi une question sur les risques, les bons gestes ou les démarches !',
+      }
     }
     if (/\bmerci\b/.test(q)) return { text: 'Avec plaisir ! Prenez soin de vous 🦺' }
     const best = CHAT_KB.map((k) => ({ k, s: score(q, k) }))

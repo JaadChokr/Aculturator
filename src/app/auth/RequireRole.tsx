@@ -14,8 +14,8 @@ export function RequireRole({ roles, children }: { roles: Role[]; children: Reac
         <ShieldAlert className="mx-auto mb-4 size-12 text-destructive" />
         <h1 className="mb-2 text-xl font-bold">Accès restreint</h1>
         <p className="mb-6 text-muted-foreground">
-          Votre profil ne vous donne pas accès à ce portail. Contactez votre administrateur si vous pensez qu’il s’agit
-          d’une erreur.
+          Votre profil ne vous donne pas accès à ce portail. Contactez votre administrateur si vous
+          pensez qu’il s’agit d’une erreur.
         </p>
         <Button asChild>
           <Link to="/">Retour à mon espace</Link>

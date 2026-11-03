@@ -1,10 +1,29 @@
+import { motion } from 'motion/react'
 import { Link } from 'react-router'
-import { ArrowRight, CalendarHeart, Crosshair, Dumbbell, Heart, History, Timer, Zap } from 'lucide-react'
+import {
+  ArrowRight,
+  CalendarHeart,
+  Crosshair,
+  Dumbbell,
+  Heart,
+  History,
+  Timer,
+  Zap,
+} from 'lucide-react'
 import { HAZARD_SCENES, THEMES, getTheme } from '@/shared/content'
 import { PageHeader } from '@/shared/components/PageHeader'
 import { PillarTags, type Pillar } from '@/shared/components/PillarTag'
-import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui'
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/shared/ui'
 import { cn, todayISO } from '@/shared/lib/utils'
+import { Reveal, Stagger, spring } from '@/shared/motion'
 import { collabPath } from '../paths'
 import { themeMastery } from '../store/insights'
 import { useProgress, type QuizMode } from '../store/progress'
@@ -38,24 +57,38 @@ function ModeCard({
   done?: boolean
 }) {
   return (
-    <Card className="group flex flex-col overflow-hidden transition-all hover:-translate-y-1 hover:shadow-xl">
-      <div className={cn('relative flex h-28 items-end bg-gradient-to-br p-5 text-white', gradient)}>
-        <div aria-hidden className="bg-grid absolute inset-0 text-white opacity-40" />
-        <Icon className="absolute top-4 right-4 size-14 opacity-25 transition-transform group-hover:scale-110 group-hover:rotate-6" />
-        <h3 className="relative text-xl font-extrabold">{title}</h3>
-        {done && <Badge className="absolute top-4 left-4 bg-white text-emerald-700">✓ Fait aujourd’hui</Badge>}
-      </div>
-      <CardContent className="flex flex-1 flex-col gap-3 p-5">
-        <p className="text-sm text-muted-foreground">{description}</p>
-        <div className="flex flex-wrap gap-2 text-xs font-semibold">{meta}</div>
-        <PillarTags pillars={pillars} />
-        <Button asChild className="mt-auto">
-          <Link to={to}>
-            {cta} <ArrowRight />
-          </Link>
-        </Button>
-      </CardContent>
-    </Card>
+    <Reveal className="h-full" whileHover={{ y: -6, transition: spring }}>
+      <Card className="group flex h-full flex-col overflow-hidden transition-shadow hover:shadow-xl">
+        <div
+          className={cn('relative flex h-28 items-end bg-gradient-to-br p-5 text-white', gradient)}
+        >
+          <div aria-hidden className="bg-grid absolute inset-0 text-white opacity-40" />
+          <motion.span
+            className="absolute top-4 right-4"
+            animate={{ y: [0, -5, 0], rotate: [0, 4, 0] }}
+            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+          >
+            <Icon className="size-14 opacity-25 transition-transform group-hover:scale-125 group-hover:rotate-12" />
+          </motion.span>
+          <h3 className="relative text-xl font-extrabold">{title}</h3>
+          {done && (
+            <Badge className="absolute top-4 left-4 bg-white text-emerald-700">
+              ✓ Fait aujourd’hui
+            </Badge>
+          )}
+        </div>
+        <CardContent className="flex flex-1 flex-col gap-3 p-5">
+          <p className="text-sm text-muted-foreground">{description}</p>
+          <div className="flex flex-wrap gap-2 text-xs font-semibold">{meta}</div>
+          <PillarTags pillars={pillars} />
+          <Button asChild className="mt-auto">
+            <Link to={to}>
+              {cta} <ArrowRight />
+            </Link>
+          </Button>
+        </CardContent>
+      </Card>
+    </Reveal>
   )
 }
 
@@ -72,7 +105,7 @@ export default function QuizHubPage() {
         description="Chaque réponse est corrigée et expliquée immédiatement. Ici, se tromper fait partie de l’apprentissage !"
       />
 
-      <div className="mb-8 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+      <Stagger className="mb-8 grid gap-5 md:grid-cols-2 xl:grid-cols-4" stagger={0.08}>
         <ModeCard
           title="Défi du jour"
           description="5 questions choisies sur vos thématiques à renforcer. XP doublée !"
@@ -133,7 +166,7 @@ export default function QuizHubPage() {
           cta="Toutes thématiques"
           pillars={['engagement', 'feedback']}
         />
-      </div>
+      </Stagger>
 
       <div className="grid gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
@@ -152,14 +185,23 @@ export default function QuizHubPage() {
                   to={collabPath(`quiz/jouer?mode=entrainement&theme=${t.id}`)}
                   className="group flex items-center gap-3 rounded-xl border p-3 transition-colors hover:bg-muted/60"
                 >
-                  <span className={cn('grid size-10 place-items-center rounded-lg text-xl', t.tone.soft)} aria-hidden>
+                  <span
+                    className={cn(
+                      'grid size-10 place-items-center rounded-lg text-xl',
+                      t.tone.soft,
+                    )}
+                    aria-hidden
+                  >
                     {t.emoji}
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-bold">{t.title}</span>
                     <span className="mt-1 flex items-center gap-2">
                       <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
-                        <span className="block h-full rounded-full bg-primary" style={{ width: `${m}%` }} />
+                        <span
+                          className="block h-full rounded-full bg-primary"
+                          style={{ width: `${m}%` }}
+                        />
                       </span>
                       <span className="text-xs font-bold tabular-nums">{m}%</span>
                     </span>
@@ -178,7 +220,9 @@ export default function QuizHubPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-2">
-            {s.quizHistory.length === 0 && <p className="text-sm text-muted-foreground">Aucune partie pour l’instant.</p>}
+            {s.quizHistory.length === 0 && (
+              <p className="text-sm text-muted-foreground">Aucune partie pour l’instant.</p>
+            )}
             {s.quizHistory.slice(0, 6).map((q) => {
               const pct = Math.round((q.score / q.total) * 100)
               return (
@@ -186,7 +230,9 @@ export default function QuizHubPage() {
                   <span
                     className={cn(
                       'grid size-10 shrink-0 place-items-center rounded-lg text-xs font-extrabold tabular-nums',
-                      pct >= 70 ? 'bg-success/12 text-success' : 'bg-warning/15 text-warning-foreground dark:text-warning',
+                      pct >= 70
+                        ? 'bg-success/12 text-success'
+                        : 'bg-warning/15 text-warning-foreground dark:text-warning',
                     )}
                   >
                     {q.score}/{q.total}
@@ -197,7 +243,10 @@ export default function QuizHubPage() {
                       {q.themeId && ` · ${getTheme(q.themeId).short}`}
                     </span>
                     <span className="text-xs text-muted-foreground">
-                      {new Date(q.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
+                      {new Date(q.date).toLocaleDateString('fr-FR', {
+                        day: 'numeric',
+                        month: 'short',
+                      })}
                     </span>
                   </span>
                   <span className="text-xs font-bold text-xp">+{q.xp} XP</span>

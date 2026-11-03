@@ -3,7 +3,14 @@
  * Le portail admin éditera ces objets, le portail référent en suivra l'usage,
  * le portail collaborateur les consomme.
  */
-export type ThemeId = 'fondamentaux' | 'postures' | 'ecran' | 'rps' | 'incendie' | 'secours' | 'routier'
+export type ThemeId =
+  | 'fondamentaux'
+  | 'postures'
+  | 'ecran'
+  | 'rps'
+  | 'incendie'
+  | 'secours'
+  | 'routier'
 
 export interface Theme {
   id: ThemeId

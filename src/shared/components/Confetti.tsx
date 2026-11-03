@@ -5,14 +5,14 @@ const COLORS = ['#14b8a6', '#f59e0b', '#8b5cf6', '#ef4444', '#22c55e', '#0ea5e9'
 /** Petite pluie de confettis en CSS pur (respecte prefers-reduced-motion). */
 function makePieces(count: number) {
   return Array.from({ length: count }, (_, i) => ({
-        id: i,
-        left: 50 + (Math.random() - 0.5) * 20,
-        dx: `${(Math.random() - 0.5) * 900}px`,
-        dy: `${300 + Math.random() * 500}px`,
-        rot: `${Math.random() * 720 - 360}deg`,
-        delay: Math.random() * 0.25,
-        color: COLORS[i % COLORS.length],
-        w: 6 + Math.random() * 6,
+    id: i,
+    left: 50 + (Math.random() - 0.5) * 20,
+    dx: `${(Math.random() - 0.5) * 900}px`,
+    dy: `${300 + Math.random() * 500}px`,
+    rot: `${Math.random() * 720 - 360}deg`,
+    delay: Math.random() * 0.25,
+    color: COLORS[i % COLORS.length],
+    w: 6 + Math.random() * 6,
   }))
 }
 

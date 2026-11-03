@@ -1,4 +1,11 @@
-import { createBrowserRouter, createHashRouter, createMemoryRouter, Link, Navigate, type RouteObject } from 'react-router'
+import {
+  createBrowserRouter,
+  createHashRouter,
+  createMemoryRouter,
+  Link,
+  Navigate,
+  type RouteObject,
+} from 'react-router'
 import { PortalLayout } from '@/shared/layouts/PortalLayout'
 import { Button } from '@/shared/ui'
 import { Mascot } from '@/shared/components/Mascot'
@@ -17,7 +24,9 @@ function NotFound() {
       <div>
         <Mascot mood="oops" className="mx-auto mb-4 size-28" />
         <h1 className="mb-2 text-2xl font-extrabold">Page introuvable</h1>
-        <p className="mb-6 text-muted-foreground">Cette zone n’est pas balisée… revenons en lieu sûr.</p>
+        <p className="mb-6 text-muted-foreground">
+          Cette zone n’est pas balisée… revenons en lieu sûr.
+        </p>
         <Button asChild>
           <Link to="/">Retour à l’accueil</Link>
         </Button>
@@ -43,4 +52,8 @@ const routes: RouteObject[] = [
 // Browser router en production ; hash ou mémoire pour les builds de démo statiques (iframe, fichier local…)
 const mode = import.meta.env.VITE_ROUTER_MODE
 export const router =
-  mode === 'memory' ? createMemoryRouter(routes) : mode === 'hash' ? createHashRouter(routes) : createBrowserRouter(routes)
+  mode === 'memory'
+    ? createMemoryRouter(routes)
+    : mode === 'hash'
+      ? createHashRouter(routes)
+      : createBrowserRouter(routes)

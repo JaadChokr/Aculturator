@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useRef, useState } from 'react'
+import { motion } from 'motion/react'
 import { Link } from 'react-router'
 import { ArrowRight, Info, Phone, SendHorizontal, ThumbsDown, ThumbsUp } from 'lucide-react'
 import { CHAT_SUGGESTIONS } from '@/shared/content'
@@ -8,6 +9,7 @@ import { PageHeader } from '@/shared/components/PageHeader'
 import { PillarTags } from '@/shared/components/PillarTag'
 import { Avatar, Button, Card, CardContent, CardHeader, CardTitle } from '@/shared/ui'
 import { cn } from '@/shared/lib/utils'
+import { spring } from '@/shared/motion'
 import { useAuth } from '@/app/auth/AuthProvider'
 import { collabPath } from '../paths'
 import { useProgress } from '../store/progress'
@@ -27,9 +29,15 @@ function RichText({ text }: { text: string }) {
       {text.split('\n').map((line, i) => (
         <Fragment key={i}>
           {i > 0 && <br />}
-          {line.split(/(\*\*[^*]+\*\*)/g).map((part, j) =>
-            part.startsWith('**') ? <strong key={j}>{part.slice(2, -2)}</strong> : <Fragment key={j}>{part}</Fragment>,
-          )}
+          {line
+            .split(/(\*\*[^*]+\*\*)/g)
+            .map((part, j) =>
+              part.startsWith('**') ? (
+                <strong key={j}>{part.slice(2, -2)}</strong>
+              ) : (
+                <Fragment key={j}>{part}</Fragment>
+              ),
+            )}
         </Fragment>
       ))}
     </>
@@ -64,9 +72,19 @@ export default function ChatbotPage() {
     recordChat()
     try {
       const reply = await chatService.ask(q)
-      setMessages((m) => [...m, { id: Date.now() + 1, role: 'bot', text: reply.text, links: reply.links }])
+      setMessages((m) => [
+        ...m,
+        { id: Date.now() + 1, role: 'bot', text: reply.text, links: reply.links },
+      ])
     } catch {
-      setMessages((m) => [...m, { id: Date.now() + 1, role: 'bot', text: 'Oups, je n’ai pas pu répondre. Réessayez dans un instant.' }])
+      setMessages((m) => [
+        ...m,
+        {
+          id: Date.now() + 1,
+          role: 'bot',
+          text: 'Oups, je n’ai pas pu répondre. Réessayez dans un instant.',
+        },
+      ])
     } finally {
       setTyping(false)
       inputRef.current?.focus()
@@ -100,14 +118,31 @@ export default function ChatbotPage() {
             <div className="flex flex-col gap-4">
               {messages.map((m) =>
                 m.role === 'user' ? (
-                  <div key={m.id} className="flex animate-pop justify-end gap-2">
+                  <motion.div
+                    key={m.id}
+                    className="flex justify-end gap-2"
+                    initial={{ opacity: 0, x: 24, scale: 0.95 }}
+                    animate={{ opacity: 1, x: 0, scale: 1 }}
+                    transition={spring}
+                    style={{ originX: 1 }}
+                  >
                     <div className="max-w-[80%] rounded-2xl rounded-br-md bg-primary px-4 py-2.5 text-sm text-primary-foreground shadow-sm">
                       {m.text}
                     </div>
-                    <Avatar name={`${user.firstName} ${user.lastName}`} className="size-8 text-xs" />
-                  </div>
+                    <Avatar
+                      name={`${user.firstName} ${user.lastName}`}
+                      className="size-8 text-xs"
+                    />
+                  </motion.div>
                 ) : (
-                  <div key={m.id} className="flex animate-pop gap-2">
+                  <motion.div
+                    key={m.id}
+                    className="flex gap-2"
+                    initial={{ opacity: 0, x: -24, scale: 0.95 }}
+                    animate={{ opacity: 1, x: 0, scale: 1 }}
+                    transition={spring}
+                    style={{ originX: 0 }}
+                  >
                     <Mascot className="size-9 shrink-0" />
                     <div className="max-w-[85%]">
                       <div className="rounded-2xl rounded-bl-md border bg-card px-4 py-3 text-sm leading-relaxed shadow-sm">
@@ -133,10 +168,18 @@ export default function ChatbotPage() {
                           ) : (
                             <>
                               <span>Utile ?</span>
-                              <button onClick={() => rate(m.id, 'up')} className="rounded p-1 hover:bg-muted" aria-label="Réponse utile">
+                              <button
+                                onClick={() => rate(m.id, 'up')}
+                                className="rounded p-1 hover:bg-muted"
+                                aria-label="Réponse utile"
+                              >
                                 <ThumbsUp className="size-3.5" />
                               </button>
-                              <button onClick={() => rate(m.id, 'down')} className="rounded p-1 hover:bg-muted" aria-label="Réponse pas utile">
+                              <button
+                                onClick={() => rate(m.id, 'down')}
+                                className="rounded p-1 hover:bg-muted"
+                                aria-label="Réponse pas utile"
+                              >
                                 <ThumbsDown className="size-3.5" />
                               </button>
                             </>
@@ -144,15 +187,20 @@ export default function ChatbotPage() {
                         </div>
                       )}
                     </div>
-                  </div>
+                  </motion.div>
                 ),
               )}
               {typing && (
                 <div className="flex gap-2">
                   <Mascot mood="thinking" className="size-9 shrink-0" />
                   <div className="flex items-center gap-1 rounded-2xl rounded-bl-md border bg-card px-4 py-3">
-                    {[0, 150, 300].map((d) => (
-                      <span key={d} className="size-2 animate-bounce rounded-full bg-muted-foreground/60" style={{ animationDelay: `${d}ms` }} />
+                    {[0, 0.15, 0.3].map((d) => (
+                      <motion.span
+                        key={d}
+                        className="size-2 rounded-full bg-muted-foreground/60"
+                        animate={{ y: [0, -5, 0], opacity: [0.5, 1, 0.5] }}
+                        transition={{ duration: 0.8, repeat: Infinity, delay: d }}
+                      />
                     ))}
                   </div>
                 </div>
@@ -164,13 +212,15 @@ export default function ChatbotPage() {
           {messages.length <= 1 && (
             <div className="flex gap-2 overflow-x-auto border-t px-4 py-3">
               {CHAT_SUGGESTIONS.slice(0, 4).map((s) => (
-                <button
+                <motion.button
                   key={s}
                   onClick={() => send(s)}
+                  whileHover={{ y: -2 }}
+                  whileTap={{ scale: 0.95 }}
                   className="shrink-0 rounded-full border bg-card px-3 py-1.5 text-xs font-semibold hover:border-primary/50 hover:bg-primary/5"
                 >
                   {s}
-                </button>
+                </motion.button>
               ))}
             </div>
           )}
@@ -197,7 +247,12 @@ export default function ChatbotPage() {
               className="max-h-32 min-h-10 flex-1 resize-none rounded-lg border bg-background px-3 py-2.5 text-sm focus-visible:ring-[3px] focus-visible:ring-ring/40 focus-visible:outline-none"
               aria-label="Votre question"
             />
-            <Button type="submit" size="icon" disabled={!input.trim() || typing} aria-label="Envoyer">
+            <Button
+              type="submit"
+              size="icon"
+              disabled={!input.trim() || typing}
+              aria-label="Envoyer"
+            >
               <SendHorizontal />
             </Button>
           </form>
@@ -217,7 +272,11 @@ export default function ChatbotPage() {
                 ['112', 'Europe'],
                 ['114', 'Par SMS'],
               ].map(([n, l]) => (
-                <a key={n} href={`tel:${n}`} className="rounded-lg border bg-card p-2 text-center hover:border-destructive/50">
+                <a
+                  key={n}
+                  href={`tel:${n}`}
+                  className="rounded-lg border bg-card p-2 text-center hover:border-destructive/50"
+                >
                   <div className="text-xl font-extrabold text-destructive">{n}</div>
                   <div className="text-xs font-semibold text-muted-foreground">{l}</div>
                 </a>
@@ -234,7 +293,10 @@ export default function ChatbotPage() {
                 <button
                   key={s}
                   onClick={() => send(s)}
-                  className={cn('rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors hover:bg-muted', typing && 'pointer-events-none opacity-50')}
+                  className={cn(
+                    'rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors hover:bg-muted',
+                    typing && 'pointer-events-none opacity-50',
+                  )}
                 >
                   « {s} »
                 </button>
@@ -245,7 +307,8 @@ export default function ChatbotPage() {
           <div className="flex gap-2 rounded-xl border border-dashed p-3 text-xs text-muted-foreground">
             <Info className="size-4 shrink-0" />
             <p>
-              Prévi donne des repères généraux validés par l’équipe QHSE. Il ne remplace ni votre référent SST, ni le médecin du travail, ni les secours.
+              Prévi donne des repères généraux validés par l’équipe QHSE. Il ne remplace ni votre
+              référent SST, ni le médecin du travail, ni les secours.
             </p>
           </div>
           <PillarTags pillars={['engagement', 'feedback']} />

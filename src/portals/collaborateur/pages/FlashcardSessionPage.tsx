@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { AnimatePresence, motion, useMotionValue, useTransform, type PanInfo } from 'motion/react'
 import { Link, useSearchParams } from 'react-router'
 import { ArrowLeft, Lightbulb, RotateCcw } from 'lucide-react'
 import { FLASHCARDS, THEME_BY_ID, type Flashcard, type ThemeId } from '@/shared/content'
@@ -6,21 +7,170 @@ import { Confetti } from '@/shared/components/Confetti'
 import { Mascot } from '@/shared/components/Mascot'
 import { Button, Card, CardContent, Progress } from '@/shared/ui'
 import { cn, shuffle } from '@/shared/lib/utils'
+import { AnimatedNumber, Reveal, Stagger, spring, springBouncy } from '@/shared/motion'
 import { collabPath } from '../paths'
 import { ThemeBadge } from '../components/ThemeBadge'
 import { dueCards, useProgress, type CardGrade } from '../store/progress'
 
-const GRADES: { grade: CardGrade; label: string; key: string; className: string; emoji: string }[] = [
-  { grade: 'again', label: 'À revoir', key: '1', emoji: '😕', className: 'border-destructive/40 hover:bg-destructive/10 text-destructive' },
-  { grade: 'hard', label: 'Hésitant', key: '2', emoji: '🤔', className: 'border-warning/60 hover:bg-warning/10 text-warning-foreground dark:text-warning' },
-  { grade: 'good', label: 'Je sais !', key: '3', emoji: '😎', className: 'border-success/50 hover:bg-success/10 text-success' },
-]
+const GRADES: { grade: CardGrade; label: string; key: string; className: string; emoji: string }[] =
+  [
+    {
+      grade: 'again',
+      label: 'À revoir',
+      key: '1',
+      emoji: '😕',
+      className: 'border-destructive/40 hover:bg-destructive/10 text-destructive',
+    },
+    {
+      grade: 'hard',
+      label: 'Hésitant',
+      key: '2',
+      emoji: '🤔',
+      className: 'border-warning/60 hover:bg-warning/10 text-warning-foreground dark:text-warning',
+    },
+    {
+      grade: 'good',
+      label: 'Je sais !',
+      key: '3',
+      emoji: '😎',
+      className: 'border-success/50 hover:bg-success/10 text-success',
+    },
+  ]
 
-function buildQueue(theme: ThemeId | null, mode: string | null, cards: ReturnType<typeof useProgress.getState>['cards']) {
+function buildQueue(
+  theme: ThemeId | null,
+  mode: string | null,
+  cards: ReturnType<typeof useProgress.getState>['cards'],
+) {
   const max = theme || mode === 'all' ? 20 : 12
-  if (mode === 'all') return shuffle(FLASHCARDS.filter((c) => !theme || c.themeId === theme)).slice(0, max)
+  if (mode === 'all')
+    return shuffle(FLASHCARDS.filter((c) => !theme || c.themeId === theme)).slice(0, max)
   const { review, fresh } = dueCards(cards, theme ?? undefined)
   return [...shuffle(review), ...shuffle(fresh)].slice(0, max)
+}
+
+const SWIPE_THRESHOLD = 110
+
+/** Direction de sortie : 1 = droite (Je sais), -1 = gauche (À revoir), 0 = haut (Hésitant). */
+const exitVariants = {
+  exit: (dir: number) =>
+    dir === 0
+      ? { y: -80, opacity: 0, scale: 0.9, transition: { duration: 0.3 } }
+      : {
+          x: dir * 640,
+          rotate: dir * 22,
+          opacity: 0,
+          transition: { duration: 0.38, ease: 'easeIn' as const },
+        },
+}
+
+/** Carte glissable : à droite « Je sais », à gauche « À revoir » (une fois retournée). */
+function SwipeCard({
+  card,
+  flipped,
+  hint,
+  onFlip,
+  onSwipe,
+}: {
+  card: Flashcard
+  flipped: boolean
+  hint: boolean
+  onFlip: () => void
+  onSwipe: (g: CardGrade) => void
+}) {
+  const t = THEME_BY_ID[card.themeId]
+  const x = useMotionValue(0)
+  const rotate = useTransform(x, [-260, 260], [-14, 14])
+  const goodOpacity = useTransform(x, [25, SWIPE_THRESHOLD], [0, 1])
+  const againOpacity = useTransform(x, [-SWIPE_THRESHOLD, -25], [1, 0])
+
+  const onDragEnd = (_: unknown, info: PanInfo) => {
+    if (info.offset.x > SWIPE_THRESHOLD || info.velocity.x > 700) onSwipe('good')
+    else if (info.offset.x < -SWIPE_THRESHOLD || info.velocity.x < -700) onSwipe('again')
+  }
+
+  return (
+    <motion.div
+      className="perspective absolute inset-0 touch-pan-y"
+      style={{ x, rotate }}
+      drag={flipped ? 'x' : false}
+      dragConstraints={{ left: 0, right: 0 }}
+      dragElastic={0.85}
+      onDragEnd={onDragEnd}
+      onTap={onFlip}
+      variants={exitVariants}
+      initial={{ opacity: 0, scale: 0.94, y: 18 }}
+      animate={{ opacity: 1, scale: 1, y: 0, transition: spring }}
+      exit="exit"
+      whileDrag={{ scale: 1.03, cursor: 'grabbing' }}
+      role="button"
+      tabIndex={0}
+      aria-label={
+        flipped ? 'Réponse affichée : glissez ou choisissez une évaluation' : 'Retourner la carte'
+      }
+    >
+      <motion.div
+        className="preserve-3d relative h-full w-full"
+        animate={{ rotateY: flipped ? 180 : 0 }}
+        transition={{ type: 'spring', stiffness: 260, damping: 24 }}
+      >
+        <Card className="backface-hidden absolute inset-0 flex flex-col overflow-hidden border-2 shadow-xl">
+          <div className={cn('h-2 bg-gradient-to-r', t.tone.gradient)} />
+          <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
+            <motion.span
+              className="text-5xl"
+              aria-hidden
+              animate={{ rotate: [0, -8, 8, 0] }}
+              transition={{ duration: 0.6, delay: 0.25 }}
+            >
+              {t.emoji}
+            </motion.span>
+            <p className="text-xl leading-snug font-bold sm:text-2xl">{card.front}</p>
+            <AnimatePresence>
+              {hint && card.hint && (
+                <motion.p
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="text-sm text-muted-foreground italic"
+                >
+                  💡 {card.hint}
+                </motion.p>
+              )}
+            </AnimatePresence>
+          </div>
+          <div className="pb-4 text-center text-xs font-semibold text-muted-foreground">
+            Touchez la carte ou appuyez sur Espace pour retourner
+          </div>
+        </Card>
+        <Card className="backface-hidden rotate-y-180 absolute inset-0 flex flex-col overflow-hidden border-2 border-primary/40 bg-gradient-to-br from-primary/5 to-card shadow-xl">
+          <div className="h-2 bg-primary" />
+          <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center">
+            <span className="text-xs font-bold tracking-wider text-primary uppercase">Réponse</span>
+            <p className="text-lg leading-relaxed font-semibold whitespace-pre-line sm:text-xl">
+              {card.back}
+            </p>
+          </div>
+          <div className="pb-4 text-center text-xs font-semibold text-muted-foreground">
+            ← Glissez à gauche : à revoir · à droite : je sais →
+          </div>
+        </Card>
+      </motion.div>
+
+      {/* Tampons qui apparaissent pendant le glissement */}
+      <motion.span
+        style={{ opacity: goodOpacity }}
+        className="pointer-events-none absolute top-6 left-6 -rotate-12 rounded-lg border-4 border-success bg-card/80 px-3 py-1 text-xl font-extrabold text-success uppercase"
+      >
+        Je sais !
+      </motion.span>
+      <motion.span
+        style={{ opacity: againOpacity }}
+        className="pointer-events-none absolute top-6 right-6 rotate-12 rounded-lg border-4 border-destructive bg-card/80 px-3 py-1 text-xl font-extrabold text-destructive uppercase"
+      >
+        À revoir
+      </motion.span>
+    </motion.div>
+  )
 }
 
 export default function FlashcardSessionPage() {
@@ -34,19 +184,26 @@ function Session() {
   const mode = params.get('mode')
   const reviewCard = useProgress((s) => s.reviewCard)
 
-  const [queue, setQueue] = useState<Flashcard[]>(() => buildQueue(theme, mode, useProgress.getState().cards))
+  const [queue, setQueue] = useState<Flashcard[]>(() =>
+    buildQueue(theme, mode, useProgress.getState().cards),
+  )
   const [initialSize] = useState(queue.length)
   const [flipped, setFlipped] = useState(false)
   const [hint, setHint] = useState(false)
   const [stats, setStats] = useState({ again: 0, hard: 0, good: 0 })
   const [combo, setCombo] = useState(0)
+  const [turn, setTurn] = useState(0)
+  const [exitDir, setExitDir] = useState(0)
 
   const card = queue[0]
-  const doneCount = initialSize - queue.filter((c, i) => queue.findIndex((x) => x.id === c.id) === i).length
+  const doneCount =
+    initialSize - queue.filter((c, i) => queue.findIndex((x) => x.id === c.id) === i).length
 
   const grade = useCallback(
     (g: CardGrade) => {
       if (!card || !flipped) return
+      setExitDir(g === 'good' ? 1 : g === 'again' ? -1 : 0)
+      setTurn((n) => n + 1)
       reviewCard(card.id, g)
       setStats((s) => ({ ...s, [g]: s[g] + 1 }))
       setCombo((c) => (g === 'good' ? c + 1 : 0))
@@ -85,9 +242,13 @@ function Session() {
         {backLink}
         <Mascot mood="cheer" className="mx-auto my-6 size-28" />
         <h1 className="mb-2 text-2xl font-extrabold">Rien à réviser pour le moment 🎉</h1>
-        <p className="mb-6 text-muted-foreground">Vos cartes reviendront au bon moment. Envie de continuer ? Passez en mode libre.</p>
+        <p className="mb-6 text-muted-foreground">
+          Vos cartes reviendront au bon moment. Envie de continuer ? Passez en mode libre.
+        </p>
         <Button asChild>
-          <Link to={collabPath(`flashcards/session?mode=all${theme ? `&theme=${theme}` : ''}`)}>Mode libre</Link>
+          <Link to={collabPath(`flashcards/session?mode=all${theme ? `&theme=${theme}` : ''}`)}>
+            Mode libre
+          </Link>
         </Button>
       </div>
     )
@@ -98,22 +259,34 @@ function Session() {
     return (
       <div className="mx-auto max-w-xl text-center">
         <Confetti />
-        <Mascot mood="cheer" className="mx-auto mb-4 size-32 animate-float" />
+        <motion.div
+          initial={{ scale: 0, rotate: -20 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={springBouncy}
+        >
+          <Mascot mood="cheer" className="mx-auto mb-4 size-32 animate-float" />
+        </motion.div>
         <h1 className="mb-2 text-3xl font-extrabold">Session terminée !</h1>
         <p className="mb-6 text-muted-foreground">
           {total} révisions · votre mémoire vous dit merci. Revenez demain pour consolider.
         </p>
-        <div className="mb-8 grid grid-cols-3 gap-3">
+        <Stagger className="mb-8 grid grid-cols-3 gap-3" delay={0.2} stagger={0.1}>
           {GRADES.map((g) => (
-            <Card key={g.grade}>
-              <CardContent className="p-4">
-                <div className="text-2xl">{g.emoji}</div>
-                <div className="text-2xl font-extrabold tabular-nums">{stats[g.grade]}</div>
-                <div className="text-xs font-semibold text-muted-foreground">{g.label}</div>
-              </CardContent>
-            </Card>
+            <Reveal key={g.grade} variant="pop">
+              <Card>
+                <CardContent className="p-4">
+                  <div className="text-2xl">{g.emoji}</div>
+                  <AnimatedNumber
+                    value={stats[g.grade]}
+                    from={0}
+                    className="block text-2xl font-extrabold tabular-nums"
+                  />
+                  <div className="text-xs font-semibold text-muted-foreground">{g.label}</div>
+                </CardContent>
+              </Card>
+            </Reveal>
           ))}
-        </div>
+        </Stagger>
         <div className="flex justify-center gap-2">
           <Button asChild variant="outline">
             <Link to={collabPath('flashcards')}>Retour aux paquets</Link>
@@ -126,13 +299,17 @@ function Session() {
     )
   }
 
-  const t = THEME_BY_ID[card.themeId]
+  const remaining = queue.length
 
   return (
     <div className="mx-auto max-w-2xl">
       <div className="mb-4 flex items-center gap-3">
         {backLink}
-        <Progress value={(doneCount / initialSize) * 100} className="h-2.5 flex-1" indicatorClassName="bg-xp" />
+        <Progress
+          value={(doneCount / initialSize) * 100}
+          className="h-2.5 flex-1"
+          indicatorClassName="bg-xp"
+        />
         <span className="text-sm font-bold tabular-nums">
           {doneCount}/{initialSize}
         </span>
@@ -140,62 +317,85 @@ function Session() {
 
       <div className="mb-3 flex h-7 items-center justify-between">
         <ThemeBadge themeId={card.themeId} />
-        {combo >= 2 && <span className="animate-pop text-sm font-extrabold text-streak">🔥 Combo x{combo}</span>}
+        <AnimatePresence mode="popLayout">
+          {combo >= 2 && (
+            <motion.span
+              key={combo}
+              initial={{ scale: 0.4, opacity: 0, rotate: -12 }}
+              animate={{ scale: 1, opacity: 1, rotate: 0 }}
+              exit={{ scale: 0.6, opacity: 0 }}
+              transition={springBouncy}
+              className="text-sm font-extrabold text-streak"
+            >
+              🔥 Combo x{combo}
+            </motion.span>
+          )}
+        </AnimatePresence>
       </div>
 
-      <button
-        onClick={() => setFlipped((f) => !f)}
-        className="perspective block h-80 w-full text-left sm:h-96"
-        aria-label={flipped ? 'Voir la question' : 'Voir la réponse'}
-      >
-        <div className={cn('preserve-3d relative h-full w-full transition-transform duration-500', flipped && 'rotate-y-180')}>
-          <Card className={'backface-hidden absolute inset-0 flex flex-col overflow-hidden border-2 shadow-xl'}>
-            <div className={cn('h-2 bg-gradient-to-r', t.tone.gradient)} />
-            <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
-              <span className="text-5xl" aria-hidden>
-                {t.emoji}
-              </span>
-              <p className="text-xl leading-snug font-bold sm:text-2xl">{card.front}</p>
-              {hint && card.hint && <p className="animate-pop text-sm text-muted-foreground italic">💡 {card.hint}</p>}
-            </div>
-            <div className="pb-4 text-center text-xs font-semibold text-muted-foreground">Touchez la carte ou appuyez sur Espace pour retourner</div>
-          </Card>
-          <Card className="backface-hidden rotate-y-180 absolute inset-0 flex flex-col overflow-hidden border-2 border-primary/40 bg-gradient-to-br from-primary/5 to-card shadow-xl">
-            <div className="h-2 bg-primary" />
-            <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center">
-              <span className="text-xs font-bold tracking-wider text-primary uppercase">Réponse</span>
-              <p className="text-lg leading-relaxed font-semibold whitespace-pre-line sm:text-xl">{card.back}</p>
-            </div>
-          </Card>
-        </div>
-      </button>
-
-      <div className="mt-5 min-h-24">
-        {flipped ? (
-          <div className="grid animate-pop grid-cols-3 gap-2 sm:gap-3">
-            {GRADES.map((g) => (
-              <Button key={g.grade} variant="outline" onClick={() => grade(g.grade)} className={cn('h-auto flex-col gap-0.5 border-2 py-3', g.className)}>
-                <span className="text-xl">{g.emoji}</span>
-                <span>{g.label}</span>
-                <span className="hidden text-[10px] font-medium opacity-60 sm:block">touche {g.key}</span>
-              </Button>
-            ))}
-          </div>
-        ) : (
-          <div className="flex justify-center gap-2">
-            {card.hint && !hint && (
-              <Button variant="ghost" onClick={() => setHint(true)}>
-                <Lightbulb /> Un indice ?
-              </Button>
-            )}
-            <Button size="lg" onClick={() => setFlipped(true)}>
-              <RotateCcw /> Retourner la carte
-            </Button>
-          </div>
+      {/* Paquet : les cartes suivantes sont visibles derrière la carte active */}
+      <div className="relative h-80 sm:h-96">
+        {remaining > 2 && (
+          <div className="absolute inset-x-6 top-5 bottom-0 translate-y-3 rounded-xl border bg-card/60 shadow-sm" />
         )}
+        {remaining > 1 && (
+          <div className="absolute inset-x-3 top-2.5 bottom-0 translate-y-1.5 rounded-xl border bg-card/80 shadow-md" />
+        )}
+        <AnimatePresence custom={exitDir} initial={false}>
+          <SwipeCard
+            key={`${card.id}-${turn}`}
+            card={card}
+            flipped={flipped}
+            hint={hint}
+            onFlip={() => setFlipped((f) => !f)}
+            onSwipe={grade}
+          />
+        </AnimatePresence>
+      </div>
+
+      <div className="mt-6 min-h-24">
+        <AnimatePresence mode="wait" initial={false}>
+          {flipped ? (
+            <Stagger key="grades" className="grid grid-cols-3 gap-2 sm:gap-3" stagger={0.05}>
+              {GRADES.map((g) => (
+                <Reveal key={g.grade} variant="pop">
+                  <Button
+                    variant="outline"
+                    onClick={() => grade(g.grade)}
+                    className={cn('h-auto w-full flex-col gap-0.5 border-2 py-3', g.className)}
+                  >
+                    <span className="text-xl">{g.emoji}</span>
+                    <span>{g.label}</span>
+                    <span className="hidden text-[10px] font-medium opacity-60 sm:block">
+                      touche {g.key}
+                    </span>
+                  </Button>
+                </Reveal>
+              ))}
+            </Stagger>
+          ) : (
+            <motion.div
+              key="actions"
+              className="flex justify-center gap-2"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8, transition: { duration: 0.12 } }}
+            >
+              {card.hint && !hint && (
+                <Button variant="ghost" onClick={() => setHint(true)}>
+                  <Lightbulb /> Un indice ?
+                </Button>
+              )}
+              <Button size="lg" onClick={() => setFlipped(true)}>
+                <RotateCcw /> Retourner la carte
+              </Button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
       <p className="mt-2 text-center text-xs text-muted-foreground">
-        Essayez de formuler la réponse dans votre tête avant de retourner : c’est l’effort de rappel qui fait mémoriser.
+        Essayez de formuler la réponse dans votre tête avant de retourner : c’est l’effort de rappel
+        qui fait mémoriser.
       </p>
     </div>
   )

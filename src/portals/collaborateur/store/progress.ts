@@ -72,7 +72,12 @@ function seed(): ProgressData {
   const cards: Record<string, CardState> = {}
   FLASHCARDS.slice(0, 18).forEach((c, i) => {
     const box = ((i % 5) + 1) as CardState['box']
-    cards[c.id] = { box, due: addDays(today, i % 3 === 0 ? -1 : LEITNER_INTERVALS[box] - 1), reviews: box + 1, lapses: i % 4 === 0 ? 1 : 0 }
+    cards[c.id] = {
+      box,
+      due: addDays(today, i % 3 === 0 ? -1 : LEITNER_INTERVALS[box] - 1),
+      reviews: box + 1,
+      lapses: i % 4 === 0 ? 1 : 0,
+    }
   })
   return {
     xp: 640,
@@ -90,17 +95,39 @@ function seed(): ProgressData {
       secours: { correct: 6, total: 7 },
     },
     quizHistory: [
-      { id: 'h1', mode: 'entrainement', themeId: 'postures', score: 4, total: 4, xp: 70, date: addDays(today, -6) },
+      {
+        id: 'h1',
+        mode: 'entrainement',
+        themeId: 'postures',
+        score: 4,
+        total: 4,
+        xp: 70,
+        date: addDays(today, -6),
+      },
       { id: 'h2', mode: 'chrono', score: 7, total: 10, xp: 95, date: addDays(today, -3) },
-      { id: 'h3', mode: 'entrainement', themeId: 'rps', score: 2, total: 5, xp: 20, date: addDays(today, -1) },
+      {
+        id: 'h3',
+        mode: 'entrainement',
+        themeId: 'rps',
+        score: 2,
+        total: 5,
+        xp: 20,
+        date: addDays(today, -1),
+      },
     ],
     bestChrono: 7,
     hazardsFound: {},
     chatQuestions: 2,
-    badges: { 'premiers-pas': addDays(today, -12), 'sans-faute': addDays(today, -6), cinephile: addDays(today, -2) },
+    badges: {
+      'premiers-pas': addDays(today, -12),
+      'sans-faute': addDays(today, -6),
+      cinephile: addDays(today, -2),
+    },
     missions: { day: today, progress: {}, claimed: [] },
   }
 }
+
+const DATA_KEYS = Object.keys(seed()) as (keyof ProgressData)[]
 
 /* ───────────── Store ───────────── */
 export const useProgress = create<ProgressState>()(
@@ -114,7 +141,13 @@ export const useProgress = create<ProgressState>()(
         if (streak.lastDay !== today) {
           const count = streak.lastDay === addDays(today, -1) ? streak.count + 1 : 1
           nextStreak = { count, best: Math.max(streak.best, count), lastDay: today }
-          if (count > 1) toast({ title: `Série de ${count} jours !`, description: 'Continuez demain pour l’entretenir.', icon: '🔥', tone: 'xp' })
+          if (count > 1)
+            toast({
+              title: `Série de ${count} jours !`,
+              description: 'Continuez demain pour l’entretenir.',
+              icon: '🔥',
+              tone: 'xp',
+            })
         }
         set({
           streak: nextStreak,
@@ -130,7 +163,12 @@ export const useProgress = create<ProgressState>()(
         set({ missions: { ...missions, progress: { ...missions.progress, [id]: value } } })
         if (!claimed && value >= def.target) {
           set({ missions: { ...get().missions, claimed: [...get().missions.claimed, id] } })
-          toast({ title: 'Mission du jour accomplie', description: def.label, icon: '🎯', tone: 'success' })
+          toast({
+            title: 'Mission du jour accomplie',
+            description: def.label,
+            icon: '🎯',
+            tone: 'success',
+          })
           get().addXp(XP.dailyMission, undefined, true)
         }
       }
@@ -141,7 +179,14 @@ export const useProgress = create<ProgressState>()(
         if (!unlocked.length) return
         const date = todayISO()
         set({ badges: { ...s.badges, ...Object.fromEntries(unlocked.map((b) => [b.id, date])) } })
-        unlocked.forEach((b) => toast({ title: `Badge débloqué : ${b.name}`, description: b.description, icon: b.emoji, tone: 'badge' }))
+        unlocked.forEach((b) =>
+          toast({
+            title: `Badge débloqué : ${b.name}`,
+            description: b.description,
+            icon: b.emoji,
+            tone: 'badge',
+          }),
+        )
       }
 
       return {
@@ -150,10 +195,20 @@ export const useProgress = create<ProgressState>()(
         addXp: (amount, reason, silent) => {
           const before = levelFromXp(get().xp).current.level
           const today = todayISO()
-          set((s) => ({ xp: s.xp + amount, activity: { ...s.activity, [today]: (s.activity[today] ?? 0) + amount } }))
-          if (!silent && reason) toast({ title: `+${amount} XP`, description: reason, icon: '⚡', tone: 'xp' })
+          set((s) => ({
+            xp: s.xp + amount,
+            activity: { ...s.activity, [today]: (s.activity[today] ?? 0) + amount },
+          }))
+          if (!silent && reason)
+            toast({ title: `+${amount} XP`, description: reason, icon: '⚡', tone: 'xp' })
           const after = levelFromXp(get().xp).current
-          if (after.level > before) toast({ title: `Niveau ${after.level} : ${after.title}`, description: 'Nouveau palier atteint, bravo !', icon: after.emoji, tone: 'badge' })
+          if (after.level > before)
+            toast({
+              title: `Niveau ${after.level} : ${after.title}`,
+              description: 'Nouveau palier atteint, bravo !',
+              icon: after.emoji,
+              tone: 'badge',
+            })
         },
 
         markResourceViewed: (id) => {
@@ -168,12 +223,18 @@ export const useProgress = create<ProgressState>()(
         resourceCheckPassed: () => get().addXp(XP.resourceCheckOk, 'Bonne réponse !'),
 
         toggleBookmark: (id) =>
-          set((s) => ({ bookmarks: s.bookmarks.includes(id) ? s.bookmarks.filter((b) => b !== id) : [...s.bookmarks, id] })),
+          set((s) => ({
+            bookmarks: s.bookmarks.includes(id)
+              ? s.bookmarks.filter((b) => b !== id)
+              : [...s.bookmarks, id],
+          })),
 
         reviewCard: (id, grade) => {
           touch()
           const prev = get().cards[id] ?? { box: 1, due: todayISO(), reviews: 0, lapses: 0 }
-          const box = (grade === 'good' ? Math.min(5, prev.box + 1) : grade === 'hard' ? prev.box : 1) as CardState['box']
+          const box = (
+            grade === 'good' ? Math.min(5, prev.box + 1) : grade === 'hard' ? prev.box : 1
+          ) as CardState['box']
           const next: CardState = {
             box,
             due: addDays(todayISO(), grade === 'again' ? 0 : LEITNER_INTERVALS[box]),
@@ -181,7 +242,11 @@ export const useProgress = create<ProgressState>()(
             lapses: prev.lapses + (grade === 'again' ? 1 : 0),
           }
           set((s) => ({ cards: { ...s.cards, [id]: next } }))
-          get().addXp(grade === 'good' && box === 5 ? XP.cardMastered : XP.cardReviewed, undefined, true)
+          get().addXp(
+            grade === 'good' && box === 5 ? XP.cardMastered : XP.cardReviewed,
+            undefined,
+            true,
+          )
           progressMission('cards')
           checkBadges()
         },
@@ -190,14 +255,22 @@ export const useProgress = create<ProgressState>()(
           touch()
           set((s) => {
             const a = s.answers[themeId] ?? { correct: 0, total: 0 }
-            return { answers: { ...s.answers, [themeId]: { correct: a.correct + (correct ? 1 : 0), total: a.total + 1 } } }
+            return {
+              answers: {
+                ...s.answers,
+                [themeId]: { correct: a.correct + (correct ? 1 : 0), total: a.total + 1 },
+              },
+            }
           })
         },
 
         recordQuiz: (r) => {
           touch()
           set((s) => ({
-            quizHistory: [{ ...r, id: crypto.randomUUID(), date: todayISO() }, ...s.quizHistory].slice(0, 50),
+            quizHistory: [
+              { ...r, id: crypto.randomUUID(), date: todayISO() },
+              ...s.quizHistory,
+            ].slice(0, 50),
             bestChrono: r.mode === 'chrono' ? Math.max(s.bestChrono, r.score) : s.bestChrono,
           }))
           if (r.xp > 0) get().addXp(r.xp, 'Quiz terminé')
@@ -226,11 +299,9 @@ export const useProgress = create<ProgressState>()(
     {
       name: 'acculturator.collaborateur.progress',
       version: 1,
-      partialize: (s) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { addXp, markResourceViewed, resourceCheckPassed, toggleBookmark, reviewCard, recordAnswer, recordQuiz, recordHazard, recordChat, resetDemo, ...data } = s
-        return data
-      },
+      // On ne persiste que les données (jamais les actions)
+      partialize: (s) =>
+        Object.fromEntries(DATA_KEYS.map((k) => [k, s[k]])) as unknown as ProgressData,
     },
   ),
 )

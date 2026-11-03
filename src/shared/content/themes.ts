@@ -5,7 +5,8 @@ export const THEMES: Theme[] = [
     id: 'fondamentaux',
     title: 'Fondamentaux SST',
     short: 'Fondamentaux',
-    description: 'Acteurs, droits et obligations : DUERP, droit d’alerte et de retrait, accident du travail.',
+    description:
+      'Acteurs, droits et obligations : DUERP, droit d’alerte et de retrait, accident du travail.',
     emoji: '🛡️',
     tone: {
       solid: 'bg-teal-600',
@@ -101,5 +102,8 @@ export const THEMES: Theme[] = [
   },
 ]
 
-export const THEME_BY_ID = Object.fromEntries(THEMES.map((t) => [t.id, t])) as Record<ThemeId, Theme>
+export const THEME_BY_ID = Object.fromEntries(THEMES.map((t) => [t.id, t])) as Record<
+  ThemeId,
+  Theme
+>
 export const getTheme = (id: ThemeId) => THEME_BY_ID[id]
