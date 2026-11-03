@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Flame, Layers, Lock, RotateCcw, Trophy, Zap } from 'lucide-react'
 import { LEVELS, levelFromXp } from '@/shared/content'
 import { PageHeader } from '@/shared/components/PageHeader'
@@ -9,6 +10,7 @@ import { useProgress } from '../store/progress'
 
 export default function TrophiesPage() {
   const s = useProgress()
+  const [confirmReset, setConfirmReset] = useState(false)
   const { current, next, progress, toNext } = levelFromXp(s.xp)
   const reviews = Object.values(s.cards).reduce((a, c) => a + c.reviews, 0)
   const unlocked = BADGES.filter((b) => s.badges[b.id]).length
@@ -27,15 +29,28 @@ export default function TrophiesPage() {
         title="Trophées & niveaux"
         description="Chaque action compte : regardez, révisez, jouez… et devenez ambassadeur·rice de la prévention."
         actions={
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              if (confirm('Réinitialiser les données de démonstration ?')) s.resetDemo()
-            }}
-          >
-            <RotateCcw /> Réinitialiser la démo
-          </Button>
+          confirmReset ? (
+            <div className="flex items-center gap-2 text-sm">
+              <span className="font-semibold">Effacer votre progression de démo ?</span>
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={() => {
+                  s.resetDemo()
+                  setConfirmReset(false)
+                }}
+              >
+                Réinitialiser
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => setConfirmReset(false)}>
+                Annuler
+              </Button>
+            </div>
+          ) : (
+            <Button variant="ghost" size="sm" onClick={() => setConfirmReset(true)}>
+              <RotateCcw /> Réinitialiser la démo
+            </Button>
+          )
         }
       />
 

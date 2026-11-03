@@ -16,7 +16,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const mq = window.matchMedia('(prefers-color-scheme: dark)')
     const apply = () => {
-      const dark = theme === 'dark' || (theme === 'system' && mq.matches)
+      // En mode « système », un thème imposé par l'hôte (attribut data-theme) prime sur l'OS.
+      const host = document.documentElement.dataset.theme
+      const systemDark = host ? host === 'dark' : mq.matches
+      const dark = theme === 'dark' || (theme === 'system' && systemDark)
       document.documentElement.classList.toggle('dark', dark)
     }
     apply()

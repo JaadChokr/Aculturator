@@ -1,4 +1,4 @@
-import { createBrowserRouter, createHashRouter, Link, Navigate, type RouteObject } from 'react-router'
+import { createBrowserRouter, createHashRouter, createMemoryRouter, Link, Navigate, type RouteObject } from 'react-router'
 import { PortalLayout } from '@/shared/layouts/PortalLayout'
 import { Button } from '@/shared/ui'
 import { Mascot } from '@/shared/components/Mascot'
@@ -40,6 +40,7 @@ const routes: RouteObject[] = [
   { path: '*', element: <NotFound /> },
 ]
 
-// Hash router pour le build de démo statique, Browser router sinon.
+// Browser router en production ; hash ou mémoire pour les builds de démo statiques (iframe, fichier local…)
+const mode = import.meta.env.VITE_ROUTER_MODE
 export const router =
-  import.meta.env.VITE_ROUTER_MODE === 'hash' ? createHashRouter(routes) : createBrowserRouter(routes)
+  mode === 'memory' ? createMemoryRouter(routes) : mode === 'hash' ? createHashRouter(routes) : createBrowserRouter(routes)

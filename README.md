@@ -23,7 +23,7 @@ Ce dépôt contient le **front-end**, organisé en **portails** selon le rôle d
 npm install
 npm run dev          # http://localhost:5173 (sélecteur de profil de démo activé)
 npm run build        # build de production → dist/
-npm run build:demo   # build statique autonome (HashRouter, chemins relatifs) → dist-demo/
+npm run build:demo   # build statique autonome (routeur en mémoire, chemins relatifs) → dist-demo/
 npm run lint && npm run typecheck
 ```
 
