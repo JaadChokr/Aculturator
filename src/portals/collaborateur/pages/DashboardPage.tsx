@@ -7,7 +7,6 @@ import {
   Crosshair,
   Flame,
   Layers,
-  Lightbulb,
   Medal,
   PlayCircle,
   Sparkles,
@@ -33,15 +32,6 @@ import { BADGES } from '../store/badges'
 import { allThemeMastery, nextSteps } from '../store/insights'
 import { MISSIONS } from '../store/missions'
 import { countDue, useProgress } from '../store/progress'
-
-const TIPS = [
-  'Les chutes de plain-pied (glissades, trébuchements) font partie des premières causes d’accidents du travail.',
-  'Le 114 permet d’alerter les secours par SMS : utile si vous ne pouvez pas parler.',
-  'Toutes les 20 minutes devant un écran, regardez au loin pendant 20 secondes.',
-  'Un presqu’accident signalé, c’est peut-être un accident évité demain.',
-  'On ne prend jamais l’ascenseur lors d’une évacuation incendie.',
-  'Tout le monde peut utiliser un défibrillateur : il guide vocalement chaque étape.',
-]
 
 const TEAM = [
   { name: 'Inès R.', xp: 1240 },
@@ -466,23 +456,6 @@ function Leaderboard() {
   )
 }
 
-function DidYouKnow() {
-  const tip = TIPS[new Date().getDate() % TIPS.length]
-  return (
-    <Card className="border-l-4 border-l-primary">
-      <CardContent className="flex gap-3 p-5">
-        <Lightbulb className="mt-0.5 size-5 shrink-0 text-primary" />
-        <div>
-          <div className="mb-1 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
-            Repère prévention
-          </div>
-          <p className="text-sm font-medium">{tip}</p>
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
-
 export default function DashboardPage() {
   return (
     <Stagger className="flex flex-col gap-6" stagger={0.07}>
@@ -510,9 +483,6 @@ export default function DashboardPage() {
           </Reveal>
           <Reveal>
             <Leaderboard />
-          </Reveal>
-          <Reveal>
-            <DidYouKnow />
           </Reveal>
         </Stagger>
       </div>
