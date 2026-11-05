@@ -13,6 +13,7 @@ commun est partagé, et les **contrats de données** sont isolés pour être ré
 │   ├── collaborateur/        @acculturator/portal-collaborateur
 │   ├── referent/             @acculturator/portal-referent
 │   └── admin/                @acculturator/portal-admin
+├── mock-server/              @acculturator/mock-server — faux backend de démo (hors frontend)
 ├── backend/                  emplacement réservé au futur backend (voir backend/README.md)
 └── docs/                     architecture, contrat d'API
 ```
@@ -20,10 +21,16 @@ commun est partagé, et les **contrats de données** sont isolés pour être ré
 ## Graphe de dépendances
 
 ```
-contracts  ←  shared  ←  portails (collaborateur, referent, admin)  ←  shell
-    ↑
- backend (futur)
+Frontend :   contracts  ←  shared  ←  portails (collaborateur, referent, admin)  ←  shell
+Backends :   contracts  ←  mock-server (démo)
+             contracts  ←  backend (futur)
+
+Seul lien entre les deux mondes : des requêtes HTTP sur /api.
+(Exception : en démo, le shell installe mock-server dans le navigateur.)
 ```
+
+Le frontend et les backends (faux ou vrai) ne partagent **que les contrats** et ne communiquent
+**qu'en HTTP**.
 
 Ces frontières sont **vérifiées par ESLint** (`eslint.config.js`, règle `no-restricted-imports`) :
 
@@ -33,6 +40,10 @@ Ces frontières sont **vérifiées par ESLint** (`eslint.config.js`, règle `no-
 | `frontend/shared`    | `contracts`, bibliothèques                       | un portail, le shell, lui-même par nom de paquet                    |
 | `frontend/<portail>` | `contracts`, points d'entrée publics de `shared` | un autre portail, le shell, des chemins internes (`shared/src/...`) |
 | `frontend/shell`     | tout                                             | —                                                                   |
+| `mock-server`        | `contracts`, `node:*`                            | toute bibliothèque, tout paquet frontend                            |
+
+Seul le shell connaît `mock-server`, et uniquement pour l'installer en démo/développement :
+`shared` et les portails ne peuvent pas l'importer.
 
 Conséquence : un portail peut être confié à une équipe, refondu ou retiré sans toucher aux autres.
 Ce qui doit être partagé passe par `@acculturator/shared` (ou `contracts` pour les types).
@@ -68,12 +79,18 @@ api.notifications.list()         api.notifications.markRead(ids)
 api.progress.track(event)
 ```
 
-Deux implémentations, choisies par `VITE_API_MODE` :
+Une seule implémentation : **HTTP** (`frontend/shared/src/api/http/`), sur `VITE_API_URL`
+(défaut `/api`). Endpoints : [`api-contract.md`](./api-contract.md). Qui répond à ces appels ne
+concerne pas le frontend :
 
-- `mock` (défaut) — `frontend/shared/src/api/mock/` : données de démonstration et latence simulée,
-  aucun serveur requis. Les données de démo vivent dans `mock/data/`.
-- `http` — `frontend/shared/src/api/http/` : appels au backend sur `VITE_API_URL` (défaut `/api`,
-  relayé vers `http://localhost:3000` par le serveur de dev Vite). Endpoints : [`api-contract.md`](./api-contract.md).
+| Contexte                     | Qui répond sur `/api`                                                               | Réglage                                                |
+| ---------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| `npm run dev` (défaut)       | **mock-server dans le navigateur** : il intercepte `fetch` et répond localement     | `VITE_MOCK_SERVER=true` (`.env.development`)           |
+| Dev avec serveur             | Vite relaie `/api` vers `localhost:3000` : `npm run mock-server` ou le vrai backend | `VITE_MOCK_SERVER=false` dans `.env.development.local` |
+| Démo statique (`build:demo`) | mock-server dans le navigateur                                                      | `.env.demo`                                            |
+| Production (`build`)         | le vrai backend ; **mock-server n'est pas embarqué**                                | —                                                      |
+
+Voir [`mock-server/README.md`](../mock-server/README.md).
 
 L'état serveur est géré par **TanStack Query** (cache, rechargement, états de chargement/erreur) :
 utilisateur courant (`['me']`), catalogue, notifications, suggestions de l'assistant.
@@ -105,7 +122,7 @@ Variables d'environnement (`frontend/shell/.env.*`) :
 
 | Variable                  | Valeurs                         | Effet                                                |
 | ------------------------- | ------------------------------- | ---------------------------------------------------- |
-| `VITE_API_MODE`           | `mock` \| `http`                | Source des données                                   |
+| `VITE_MOCK_SERVER`        | `true` \| `false`               | Faux backend de démo servi dans le navigateur        |
 | `VITE_API_URL`            | URL                             | Préfixe des appels HTTP (défaut `/api`)              |
 | `VITE_ROUTER_MODE`        | `browser` \| `hash` \| `memory` | Type de routeur (`memory` pour la démo autonome)     |
 | `VITE_DEMO_ROLE_SWITCHER` | `true` \| `false`               | Sélecteur de profil de démo dans le menu utilisateur |
@@ -131,8 +148,9 @@ Variables d'environnement (`frontend/shell/.env.*`) :
 
 1. Déclarer les types échangés dans `packages/contracts/src/`.
 2. Ajouter la méthode à l'interface concernée dans `frontend/shared/src/api/types.ts`.
-3. L'implémenter dans `api/mock/` **et** `api/http/` (TypeScript signale l'oubli).
-4. Documenter l'endpoint dans [`api-contract.md`](./api-contract.md).
+3. L'implémenter dans `frontend/shared/src/api/http/index.ts`.
+4. Documenter l'endpoint dans [`api-contract.md`](./api-contract.md) et ajouter sa route de
+   démonstration dans `mock-server/src/routes.ts`.
 5. Consommer depuis un composant avec `useQuery` / `useMutation`.
 
 ### Ajouter un composant shadcn/ui

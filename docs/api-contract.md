@@ -1,7 +1,8 @@
 # Contrat d'API (frontend ↔ backend)
 
-Ce document décrit les endpoints attendus par l'implémentation `http` du frontend
-(`frontend/shared/src/api/http/index.ts`). Les types cités sont définis dans
+Ce document décrit les endpoints appelés par le frontend
+(`frontend/shared/src/api/http/index.ts`). `mock-server/src/routes.ts` en est une implémentation de
+référence avec des données d'exemple. Les types cités sont définis dans
 **`packages/contracts`** (`@acculturator/contracts`), source de vérité partagée : le backend
 devrait les importer (s'il est en TypeScript) ou les reproduire à l'identique.
 
@@ -26,6 +27,9 @@ devrait les importer (s'il est en TypeScript) ou les reproduire à l'identique.
 | `GET`   | `/notifications`      | —                   | `AppNotification[]` | Notifications de l'utilisateur (le contenu dépend du rôle)     |
 | `POST`  | `/notifications/read` | `{ ids: string[] }` | `204`               | Marquer des notifications comme lues                           |
 | `POST`  | `/progress/events`    | `LearningEvent`     | `204`               | Événement d'apprentissage (envoi « fire and forget »)          |
+
+> Hors contrat : `POST /demo/role` (`{ role }` → `204`) n'existe que dans `mock-server`, pour le
+> sélecteur de profil de la démo. Le vrai backend ne l'implémente pas : le rôle vient du SSO.
 
 ### `User`
 

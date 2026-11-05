@@ -6,16 +6,18 @@
   "description": "Acculturator v2 – plateforme interne d'acculturation (parcours Santé & Sécurité au Travail)",
   "workspaces": [
     "packages/*",
-    "frontend/*"
+    "frontend/*",
+    "mock-server"
   ],
   "scripts": {
     "dev": "npm run dev -w @acculturator/shell",
+    "mock-server": "npm run start -w @acculturator/mock-server",
     "build": "npm run typecheck && npm run build -w @acculturator/shell",
     "build:demo": "npm run typecheck && npm run build:demo -w @acculturator/shell",
     "preview": "npm run preview -w @acculturator/shell",
     "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.node.json",
     "lint": "eslint .",
-    "format": "prettier --write \"frontend/*/src/**/*.{ts,tsx,css}\" \"packages/*/src/**/*.ts\""
+    "format": "prettier --write \"frontend/*/src/**/*.{ts,tsx,css}\" \"packages/*/src/**/*.ts\" \"mock-server/src/**/*.ts\""
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",

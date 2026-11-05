@@ -1,7 +1,7 @@
 import type { Role, User } from '@acculturator/contracts'
 
-// ⚠️ Données de démonstration — à remplacer par l'API d'authentification (SSO / Azure AD…)
-export const MOCK_USERS: Record<Role, User> = {
+// Comptes de démonstration (un par rôle). En production : SSO de l’entreprise.
+export const DEMO_USERS: Record<Role, User> = {
   collaborateur: {
     id: 'u-001',
     firstName: 'Camille',

@@ -1,14 +1,17 @@
-import type { AppNotification, Catalog, ChatReply, User } from '@acculturator/contracts'
+import type { AppNotification, Catalog, ChatReply, Role, User } from '@acculturator/contracts'
 import type { Api } from '../types'
 import { get, post } from './client'
 
-/**
- * Implémentation HTTP : à utiliser dès que le backend expose les endpoints
- * décrits dans docs/api-contract.md (activer avec VITE_API_MODE=http).
- */
+const DEMO_ROLE_SWITCHER = import.meta.env.VITE_DEMO_ROLE_SWITCHER === 'true'
+
+/** Endpoints décrits dans docs/api-contract.md. */
 export const httpApi: Api = {
   auth: {
     getCurrentUser: () => get<User>('/me'),
+    // Démo uniquement (servi par mock-server, hors contrat de production)
+    ...(DEMO_ROLE_SWITCHER && {
+      switchDemoRole: (role: Role) => post<void>('/demo/role', { role }),
+    }),
   },
   content: {
     getCatalog: () => get<Catalog>('/catalog'),

@@ -5,7 +5,7 @@ Ce dépôt contient le **front-end**, organisé en **portails** selon le rôle d
 
 | Portail                | Route            | Rôles autorisés                | État                             |
 | ---------------------- | ---------------- | ------------------------------ | -------------------------------- |
-| Espace collaborateur   | `/collaborateur` | collaborateur, référent, admin | ✅ Fonctionnel (données mockées) |
+| Espace collaborateur   | `/collaborateur` | collaborateur, référent, admin | ✅ Fonctionnel (données de démo) |
 | Portail référent       | `/referent`      | référent, admin                | 🧱 Squelette + périmètre décrit  |
 | Portail administrateur | `/admin`         | admin                          | 🧱 Squelette + périmètre décrit  |
 
@@ -23,7 +23,8 @@ Ce dépôt contient le **front-end**, organisé en **portails** selon le rôle d
 
 ```bash
 npm install
-npm run dev          # http://localhost:5173 — données de démo, sélecteur de profil activé
+npm run dev          # http://localhost:5173 — faux backend de démo intégré, sélecteur de profil activé
+npm run mock-server  # optionnel : le faux backend en serveur Node sur http://localhost:3000/api
 npm run build        # build de production → frontend/shell/dist/
 npm run build:demo   # build statique autonome (routeur en mémoire) → frontend/shell/dist-demo/
 npm run lint && npm run typecheck
@@ -34,7 +35,8 @@ En développement, le menu utilisateur (en haut à droite) permet de **changer d
 (collaborateur / référent / admin) pour visiter les trois portails. Ce sélecteur est piloté par
 `VITE_DEMO_ROLE_SWITCHER` et n'est pas actif dans le build de production.
 
-Pour travailler avec un backend : `VITE_API_MODE=http` (voir [`backend/README.md`](backend/README.md)).
+Pour travailler avec un serveur (faux backend Node ou vrai backend) : `VITE_MOCK_SERVER=false`
+dans `frontend/shell/.env.development.local` (voir [`backend/README.md`](backend/README.md)).
 
 ## Architecture
 
@@ -50,6 +52,7 @@ frontend/
 │   └── src/          index.tsx (PortalDefinition) · pages/ · components/ · store/
 ├── referent/         @acculturator/portal-referent   (squelette)
 └── admin/            @acculturator/portal-admin      (squelette)
+mock-server/          @acculturator/mock-server Faux backend de démo (données d'exemple), hors frontend
 backend/              Emplacement réservé au backend
 docs/                 architecture.md · api-contract.md
 ```
@@ -58,9 +61,10 @@ Règles de dépendance, **vérifiées par ESLint** :
 `contracts ← shared ← portails ← shell`. Un portail n'importe jamais un autre portail ni le shell,
 et n'utilise que les points d'entrée publics de `@acculturator/shared` (`/ui`, `/api`, `/catalog`…).
 
-Les pages n'accèdent aux données que via `api` (`@acculturator/shared/api`) : implémentation
-**mock** (défaut, données de démo) ou **http** (backend), sélectionnée par `VITE_API_MODE`.
-Le passage au vrai backend ne modifie aucune page.
+Le frontend ne contient **aucune donnée ni logique serveur** : les pages passent par `api`
+(`@acculturator/shared/api`), qui appelle toujours `/api` en HTTP. En démo et en développement,
+c'est `mock-server` qui répond (directement dans le navigateur) ; en production, le vrai backend.
+Le passage au vrai backend ne modifie aucune ligne du frontend.
 
 ➡️ Détails, recettes (ajouter une rubrique, un portail, un appel API, un composant shadcn) :
 [`docs/architecture.md`](docs/architecture.md) · Endpoints : [`docs/api-contract.md`](docs/api-contract.md)
@@ -84,7 +88,7 @@ Chaque thématique SST a une icône et un repère couleur discret (`THEMES[x].ic
 ### En-tête commun
 
 Compteurs propres au portail (`HeaderSlot`), **notifications** (`frontend/shared/src/components/notifications/`,
-chargées via `api.notifications`, données de démo par rôle dans `frontend/shared/src/api/mock/data/notifications.ts`),
+chargées via `api.notifications`, données de démo par rôle dans `mock-server/src/data/notifications.ts`),
 bouton de thème, puis menu utilisateur (identité, apparence clair/sombre/système, portails, profil de démo).
 Sur mobile, l’en-tête est allégé : libellé court de la page, thème réglable depuis le menu utilisateur.
 
@@ -141,7 +145,7 @@ Le frontend est prêt : contrats de données (`packages/contracts`), client HTTP
 (`frontend/shared/src/api/http/`), événements d'apprentissage déjà émis par le portail collaborateur.
 
 - **Authentification** : SSO de l'entreprise derrière `GET /api/me` ; le rôle pilote l'accès aux portails.
-- **Contenus** : `GET /api/catalog` remplace les données de démo (`frontend/shared/src/api/mock/data/`).
+- **Contenus** : `GET /api/catalog` remplace les données de démo (`mock-server/src/data/`).
 - **Progression** : `POST /api/progress/events` reçoit chaque action (`LearningEvent`).
 - **Assistant** : `POST /api/chat`, LLM + RAG limité aux contenus validés QHSE.
 - **Médias** : renseigner `mediaUrl` sur les ressources pour lire les vraies vidéos/podcasts.

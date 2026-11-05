@@ -1,5 +1,5 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": { "lib": ["ES2023"], "types": ["node"] },
-  "include": ["frontend/shell/vite.config.ts"]
+  "include": ["frontend/shell/vite.config.ts", "mock-server/src/node.ts"]
 }

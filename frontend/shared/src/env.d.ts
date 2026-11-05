@@ -5,8 +5,8 @@ interface ImportMetaEnv {
   readonly VITE_ROUTER_MODE?: 'browser' | 'hash' | 'memory'
   /** Affiche le sélecteur de profil de démonstration */
   readonly VITE_DEMO_ROLE_SWITCHER?: 'true' | 'false'
-  /** mock (défaut) : données de démonstration — http : backend réel */
-  readonly VITE_API_MODE?: 'mock' | 'http'
+  /** true : l'API est servie dans le navigateur par le serveur de démo (mock-server) */
+  readonly VITE_MOCK_SERVER?: 'true' | 'false'
   /** URL de base de l'API (défaut : /api) */
   readonly VITE_API_URL?: string
 }

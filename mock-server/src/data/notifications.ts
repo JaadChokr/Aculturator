@@ -4,7 +4,7 @@ const ago = (minutes: number) => new Date(Date.now() - minutes * 60_000).toISOSt
 
 /**
  * Notifications de démonstration, par rôle.
- * En production : à remplacer par l'API (ou un flux temps réel).
+ * En production : générées par le backend (ou un flux temps réel).
  */
 const BY_ROLE: Record<Role, Omit<AppNotification, 'read'>[]> = {
   collaborateur: [

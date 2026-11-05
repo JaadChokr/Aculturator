@@ -1,0 +1,16 @@
+{
+  "name": "@acculturator/mock-server",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Faux backend de démonstration : implémente le contrat d'API (docs/api-contract.md) avec des données d'exemple. Ne fait pas partie du frontend.",
+  "exports": {
+    "./browser": "./src/browser.ts"
+  },
+  "scripts": {
+    "start": "node src/node.ts"
+  },
+  "dependencies": {
+    "@acculturator/contracts": "*"
+  }
+}

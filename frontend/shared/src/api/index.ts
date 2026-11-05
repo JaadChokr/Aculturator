@@ -1,11 +1,13 @@
-import { API_MODE } from './config'
 import { httpApi } from './http'
-import { mockApi } from './mock'
 import type { Api } from './types'
 
-/** Point d'accès unique aux données pour tous les portails. */
-export const api: Api = API_MODE === 'http' ? httpApi : mockApi
+/**
+ * Point d'accès unique aux données pour tous les portails.
+ * Le frontend parle toujours HTTP : vrai backend ou serveur de démo (mock-server), il ne fait pas
+ * la différence.
+ */
+export const api: Api = httpApi
 
-export { API_MODE, API_URL } from './config'
+export { API_URL } from './config'
 export { ApiError } from './http/client'
 export type * from './types'

@@ -1,6 +1,6 @@
 import type { Resource } from '@acculturator/contracts'
 
-// Contenus de démonstration — à alimenter par le portail admin / l'API.
+// Contenus de démonstration (à relire par l’équipe QHSE). En production : base de contenus gérée depuis le portail admin.
 export const RESOURCES: Resource[] = [
   {
     id: 'r-acteurs',

@@ -8,14 +8,13 @@ import type {
 } from '@acculturator/contracts'
 
 /**
- * Contrats des services consommés par les portails.
- * Les pages ne connaissent que ces interfaces : passer des données de démonstration
- * au vrai backend ne change que l'implémentation sélectionnée dans `api/index.ts`.
+ * Services consommés par les portails. Les pages ne connaissent que ces interfaces,
+ * implémentées en HTTP selon docs/api-contract.md.
  */
 export interface AuthApi {
   /** Utilisateur connecté (SSO en production). */
   getCurrentUser(): Promise<User>
-  /** Démo uniquement : changer de profil pour visiter les autres portails. */
+  /** Démo uniquement (VITE_DEMO_ROLE_SWITCHER) : changer de profil pour visiter les autres portails. */
   switchDemoRole?(role: Role): Promise<void>
 }
 
