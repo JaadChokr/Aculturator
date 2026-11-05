@@ -11,7 +11,6 @@ import {
 import { CHAT_SUGGESTIONS } from '@/shared/content'
 import { chatService, type ChatReply } from '@/shared/api/chat'
 import { Mascot } from '@/shared/components/Mascot'
-import { PageHeader } from '@/shared/components/PageHeader'
 import { Avatar, Button, Card } from '@/shared/ui'
 import { spring } from '@/shared/motion'
 import { useAuth } from '@/app/auth/AuthProvider'
@@ -107,26 +106,23 @@ export default function ChatbotPage() {
 
   return (
     <div>
-      <PageHeader
-        eyebrow="Assistant"
-        title="Une question ? Demandez à Prévi"
-        description="Réponses courtes et sourcées sur la santé et la sécurité au travail, disponibles à tout moment."
-      />
-
-      <div className="mx-auto max-w-4xl">
-        <Card className="flex h-[calc(100dvh-16rem)] min-h-[480px] flex-col overflow-hidden">
+      <div>
+        <Card className="flex h-[calc(100dvh-10.5rem)] min-h-[460px] flex-col overflow-hidden lg:h-[calc(100dvh-8rem)]">
           <div className="flex items-center gap-3 border-b bg-card px-5 py-3">
             <Mascot className="size-11" />
             <div>
               <div className="font-bold">Prévi</div>
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <span className="size-2 rounded-full bg-success" /> En ligne · assistant SST
+                <span className="size-2 shrink-0 rounded-full bg-success" /> En ligne
+                <span className="hidden sm:inline">
+                  · réponses courtes et sourcées sur la santé et la sécurité au travail
+                </span>
               </div>
             </div>
           </div>
 
           <div className="flex-1 overflow-y-auto bg-muted/30 p-4 sm:p-6" aria-live="polite">
-            <div className="flex flex-col gap-4">
+            <div className="mx-auto flex w-full max-w-5xl flex-col gap-4">
               {messages.map((m) =>
                 m.role === 'user' ? (
                   <motion.div
@@ -254,9 +250,9 @@ export default function ChatbotPage() {
               e.preventDefault()
               send(input)
             }}
-            className="flex flex-col gap-2 border-t bg-card p-3"
+            className="flex flex-col gap-2 border-t bg-card px-4 py-3 sm:px-6"
           >
-            <div className="flex items-end gap-2">
+            <div className="mx-auto flex w-full max-w-5xl items-end gap-2">
               <textarea
                 ref={inputRef}
                 value={input}
@@ -281,7 +277,7 @@ export default function ChatbotPage() {
                 <SendHorizontal />
               </Button>
             </div>
-            <p className="px-1 text-[11px] text-muted-foreground">
+            <p className="mx-auto w-full max-w-5xl px-1 text-[11px] text-muted-foreground">
               Prévi donne des repères généraux validés par l’équipe QHSE. Il ne remplace ni votre
               référent SST, ni le médecin du travail, ni les secours.
             </p>

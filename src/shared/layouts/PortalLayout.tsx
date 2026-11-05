@@ -1,7 +1,7 @@
-import { Suspense, useState } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router'
-import { Menu, Moon, Sun, Monitor, X, ChevronsUpDown, Check, ShieldPlus } from 'lucide-react'
+import { Menu, Moon, Sun, Monitor, X, ChevronDown, Check, ShieldPlus } from 'lucide-react'
 import { useAuth } from '@/app/auth/AuthProvider'
 import { useTheme } from '@/app/theme/ThemeProvider'
 import { PORTALS, portalsForRole } from '@/app/portals'
@@ -112,81 +112,115 @@ function SidebarNav({
   )
 }
 
-function PortalSwitcher({ current }: { current: PortalDefinition }) {
+/** Menu utilisateur (en-tête) : identité, changement de portail, profil de démo. */
+function UserMenu({ current }: { current: PortalDefinition }) {
   const { user, switchRole } = useAuth()
   const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
   const available = portalsForRole(user.role)
+  const fullName = `${user.firstName} ${user.lastName}`
+
+  useEffect(() => {
+    if (!open) return
+    const onDown = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false)
+    document.addEventListener('mousedown', onDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onDown)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [open])
 
   return (
-    <div className="relative">
+    <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center gap-3 rounded-md border border-sidebar-border p-2.5 text-left transition-colors hover:bg-muted"
+        className="flex items-center gap-2.5 rounded-md py-1 pr-2 pl-1 text-left transition-colors hover:bg-muted"
         aria-expanded={open}
+        aria-haspopup="menu"
+        aria-label={`Menu de ${fullName}`}
       >
-        <Avatar
-          name={`${user.firstName} ${user.lastName}`}
-          className="bg-primary/10 text-primary"
-        />
-        <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm font-semibold text-foreground">
-            {user.firstName} {user.lastName}
+        <Avatar name={fullName} className="size-8 bg-primary/10 text-xs text-primary" />
+        <span className="hidden min-w-0 leading-tight md:block">
+          <span className="block max-w-40 truncate text-sm font-semibold">{fullName}</span>
+          <span className="block max-w-40 truncate text-xs text-muted-foreground">
+            {ROLE_LABELS[user.role]}
           </span>
-          <span className="block truncate text-xs text-sidebar-muted">{current.label}</span>
         </span>
-        <ChevronsUpDown className="size-4 text-sidebar-muted" />
+        <ChevronDown
+          className={cn('size-4 text-muted-foreground transition-transform', open && 'rotate-180')}
+        />
       </button>
-      {open && (
-        <motion.div
-          initial={{ opacity: 0, y: 8, scale: 0.97 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={spring}
-          className="absolute right-0 bottom-full left-0 z-20 mb-2 rounded-md border bg-popover p-2 shadow-xl"
-        >
-          <div className="px-2 py-1 text-[11px] font-semibold tracking-wider text-sidebar-muted uppercase">
-            Mes portails
-          </div>
-          {available.map((p) => (
-            <button
-              key={p.id}
-              onClick={() => {
-                setOpen(false)
-                navigate(p.basePath)
-              }}
-              className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-sm text-sidebar-foreground hover:bg-muted"
-            >
-              <p.icon className="size-4" />
-              <span className="flex-1 text-left">{p.label}</span>
-              {p.id === current.id && <Check className="size-4 text-sidebar-primary" />}
-            </button>
-          ))}
-          {DEMO_SWITCHER && (
-            <>
-              <div className="mt-2 border-t px-2 pt-2 pb-1 text-[11px] font-semibold tracking-wider text-sidebar-muted uppercase">
-                Démo · changer de profil
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            role="menu"
+            initial={{ opacity: 0, y: -6, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -6, transition: { duration: 0.12 } }}
+            transition={spring}
+            className="absolute top-full right-0 z-40 mt-2 w-72 origin-top-right rounded-md border bg-popover p-2 text-popover-foreground shadow-xl"
+          >
+            <div className="flex items-center gap-3 border-b px-2 pt-1 pb-3">
+              <Avatar name={fullName} className="bg-primary/10 text-primary" />
+              <div className="min-w-0">
+                <div className="truncate text-sm font-semibold">{fullName}</div>
+                <div className="truncate text-xs text-muted-foreground">{user.email}</div>
+                <div className="truncate text-xs text-muted-foreground">
+                  {user.jobTitle} · {user.site}
+                </div>
               </div>
-              {(Object.keys(ROLE_LABELS) as Role[]).map((r) => (
-                <button
-                  key={r}
-                  onClick={() => {
-                    switchRole(r)
-                    setOpen(false)
-                    navigate(
-                      PORTALS.find((p) => p.allowedRoles.includes(r) && p.id === r)?.basePath ??
-                        '/',
-                    )
-                  }}
-                  className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-sidebar-foreground hover:bg-muted"
-                >
-                  <span className="flex-1 text-left">{ROLE_LABELS[r]}</span>
-                  {user.role === r && <Check className="size-4 text-sidebar-primary" />}
-                </button>
-              ))}
-            </>
-          )}
-        </motion.div>
-      )}
+            </div>
+            <div className="px-2 pt-2 pb-1 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
+              Mes portails
+            </div>
+            {available.map((p) => (
+              <button
+                key={p.id}
+                role="menuitem"
+                onClick={() => {
+                  setOpen(false)
+                  navigate(p.basePath)
+                }}
+                className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm hover:bg-muted"
+              >
+                <p.icon className="size-4 text-muted-foreground" />
+                <span className="flex-1 text-left">{p.label}</span>
+                {p.id === current.id && <Check className="size-4 text-primary" />}
+              </button>
+            ))}
+            {DEMO_SWITCHER && (
+              <>
+                <div className="mt-2 border-t px-2 pt-2 pb-1 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
+                  Démo · changer de profil
+                </div>
+                {(Object.keys(ROLE_LABELS) as Role[]).map((r) => (
+                  <button
+                    key={r}
+                    role="menuitem"
+                    onClick={() => {
+                      switchRole(r)
+                      setOpen(false)
+                      navigate(
+                        PORTALS.find((p) => p.allowedRoles.includes(r) && p.id === r)?.basePath ??
+                          '/',
+                      )
+                    }}
+                    className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted"
+                  >
+                    <span className="flex-1 text-left">{ROLE_LABELS[r]}</span>
+                    {user.role === r && <Check className="size-4 text-primary" />}
+                  </button>
+                ))}
+              </>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
@@ -228,7 +262,6 @@ export function PortalLayout({ portal }: { portal: PortalDefinition }) {
       <div className="flex-1 overflow-y-auto">
         <SidebarNav portal={portal} idPrefix={idPrefix} onNavigate={() => setMobileOpen(false)} />
       </div>
-      <PortalSwitcher current={portal} />
     </div>
   )
 
@@ -292,6 +325,8 @@ export function PortalLayout({ portal }: { portal: PortalDefinition }) {
           <div className="ml-auto flex items-center gap-2">
             {HeaderSlot && <HeaderSlot />}
             <ThemeToggle />
+            <span aria-hidden className="mx-1 hidden h-6 w-px bg-border sm:block" />
+            <UserMenu current={portal} />
           </div>
         </header>
 

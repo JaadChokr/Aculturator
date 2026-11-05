@@ -29,7 +29,7 @@ npm run lint && npm run typecheck
 npm run format       # Prettier
 ```
 
-En développement, le menu utilisateur (en bas de la barre latérale) permet de **changer de profil**
+En développement, le menu utilisateur (en haut à droite, dans l’en-tête) permet de **changer de profil**
 (collaborateur / référent / admin) pour visiter les trois portails. Ce sélecteur est piloté par
 `VITE_DEMO_ROLE_SWITCHER` et n’est pas actif dans le build de production.
 
