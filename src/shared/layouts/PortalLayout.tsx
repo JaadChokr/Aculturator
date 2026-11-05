@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useRef, useState } from 'react'
+import { Suspense, useCallback, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router'
 import { Menu, Moon, Sun, Monitor, X, ChevronDown, Check, ShieldPlus } from 'lucide-react'
@@ -10,6 +10,11 @@ import { cn } from '@/shared/lib/utils'
 import { ROLE_LABELS, type Role } from '@/shared/types/auth'
 import type { PortalDefinition } from '@/shared/types/portal'
 import { EASE_OUT, spring } from '@/shared/motion'
+import { useDismiss } from '@/shared/hooks/useDismiss'
+import {
+  NotificationsMenu,
+  headerIconButton,
+} from '@/shared/components/notifications/NotificationsMenu'
 
 const DEMO_SWITCHER = import.meta.env.VITE_DEMO_ROLE_SWITCHER === 'true'
 
@@ -115,25 +120,15 @@ function SidebarNav({
 /** Menu utilisateur (en-tête) : identité, changement de portail, profil de démo. */
 function UserMenu({ current }: { current: PortalDefinition }) {
   const { user, switchRole } = useAuth()
+  const { theme, setTheme } = useTheme()
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
   const available = portalsForRole(user.role)
   const fullName = `${user.firstName} ${user.lastName}`
 
-  useEffect(() => {
-    if (!open) return
-    const onDown = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
-    }
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false)
-    document.addEventListener('mousedown', onDown)
-    document.addEventListener('keydown', onKey)
-    return () => {
-      document.removeEventListener('mousedown', onDown)
-      document.removeEventListener('keydown', onKey)
-    }
-  }, [open])
+  const close = useCallback(() => setOpen(false), [])
+  useDismiss(ref, open, close)
 
   return (
     <div ref={ref} className="relative">
@@ -152,7 +147,10 @@ function UserMenu({ current }: { current: PortalDefinition }) {
           </span>
         </span>
         <ChevronDown
-          className={cn('size-4 text-muted-foreground transition-transform', open && 'rotate-180')}
+          className={cn(
+            'hidden size-4 text-muted-foreground transition-transform sm:block',
+            open && 'rotate-180',
+          )}
         />
       </button>
       <AnimatePresence>
@@ -176,6 +174,38 @@ function UserMenu({ current }: { current: PortalDefinition }) {
               </div>
             </div>
             <div className="px-2 pt-2 pb-1 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
+              Apparence
+            </div>
+            <div
+              className="mx-2 mb-1 grid grid-cols-3 gap-1 rounded-md bg-muted p-1"
+              role="radiogroup"
+              aria-label="Thème"
+            >
+              {(
+                [
+                  ['light', 'Clair', Sun],
+                  ['dark', 'Sombre', Moon],
+                  ['system', 'Système', Monitor],
+                ] as const
+              ).map(([value, label, Icon]) => (
+                <button
+                  key={value}
+                  role="radio"
+                  aria-checked={theme === value}
+                  onClick={() => setTheme(value)}
+                  className={cn(
+                    'flex items-center justify-center gap-1.5 rounded-sm px-2 py-1.5 text-xs font-medium transition-colors',
+                    theme === value
+                      ? 'bg-card text-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground',
+                  )}
+                >
+                  <Icon className="size-3.5" />
+                  {label}
+                </button>
+              ))}
+            </div>
+            <div className="mt-1 border-t px-2 pt-2 pb-1 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
               Mes portails
             </div>
             {available.map((p) => (
@@ -232,15 +262,14 @@ function ThemeToggle() {
   const label =
     theme === 'light' ? 'Thème clair' : theme === 'dark' ? 'Thème sombre' : 'Thème système'
   return (
-    <Button
-      variant="ghost"
-      size="icon-sm"
+    <button
       onClick={() => setTheme(next)}
+      className={headerIconButton}
       aria-label={`${label} (changer)`}
-      title={label}
+      title={`${label} — cliquer pour changer`}
     >
       <Icon />
-    </Button>
+    </button>
   )
 }
 
@@ -320,11 +349,18 @@ export function PortalLayout({ portal }: { portal: PortalDefinition }) {
           <div className="flex min-w-0 items-center gap-2 text-sm">
             <span className="hidden text-muted-foreground sm:inline">{portal.label}</span>
             <span className="hidden text-muted-foreground sm:inline">/</span>
-            <span className="truncate font-bold">{current?.label}</span>
+            <span className="truncate font-bold">
+              <span className="sm:hidden">{current?.short ?? current?.label}</span>
+              <span className="hidden sm:inline">{current?.label}</span>
+            </span>
           </div>
           <div className="ml-auto flex items-center gap-2">
             {HeaderSlot && <HeaderSlot />}
-            <ThemeToggle />
+            <NotificationsMenu />
+            {/* Sur mobile, le thème se règle depuis le menu utilisateur (en-tête plus léger) */}
+            <span className="hidden sm:contents">
+              <ThemeToggle />
+            </span>
             <span aria-hidden className="mx-1 hidden h-6 w-px bg-border sm:block" />
             <UserMenu current={portal} />
           </div>

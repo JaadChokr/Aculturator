@@ -86,6 +86,13 @@ Chaque thématique SST a une icône et un repère couleur discret (`THEMES[x].ic
 - Icône et repère couleur des thématiques : `THEMES[x].icon` / `.dot` (`src/shared/content/themes.ts`).
 - Sur mobile : barre de navigation basse (5 premières entrées de la `nav`), libellés courts via `short`.
 
+### En-tête commun
+
+Compteurs propres au portail (`HeaderSlot`), **notifications** (`src/shared/components/notifications/`,
+données de démo par rôle dans `src/shared/api/notifications.ts`, état lu/non lu mémorisé par utilisateur),
+bouton de thème, puis menu utilisateur (identité, apparence clair/sombre/système, portails, profil de démo).
+Sur mobile, l’en-tête est allégé : libellé court de la page, thème réglable depuis le menu utilisateur.
+
 ### Animations (Motion)
 
 Les réglages d'animation communs sont dans `src/shared/motion/` : ressorts (`spring`, `springBouncy`),
