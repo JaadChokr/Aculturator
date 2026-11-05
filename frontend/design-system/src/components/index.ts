@@ -6,8 +6,4 @@ export { PageHeader } from './PageHeader'
 export { ProgressRing } from './ProgressRing'
 export { Toaster } from './toast/Toaster'
 export { toast, useToastStore, type Toast, type ToastTone } from './toast/toast-store'
-export {
-  NOTIFICATIONS_QUERY_KEY,
-  NotificationsMenu,
-  headerIconButton,
-} from './notifications/NotificationsMenu'
+export { NotificationsMenu, headerIconButton } from './notifications/NotificationsMenu'

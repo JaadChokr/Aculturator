@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { create } from 'zustand'
 import type { Catalog } from '@acculturator/contracts'
 import { api } from '../api'
-import { LoadError } from '../components/LoadState'
+import { LoadError } from '@acculturator/design-system/components'
 
 /**
  * Catalogue pédagogique chargé une fois au démarrage via l'API, puis lu de façon

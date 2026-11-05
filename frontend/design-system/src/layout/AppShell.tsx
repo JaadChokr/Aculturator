@@ -1,18 +1,15 @@
-import { Suspense, useCallback, useRef, useState } from 'react'
+import { Suspense, useCallback, useRef, useState, type ReactNode } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router'
+import { Link, NavLink, useLocation } from 'react-router'
 import { Menu, Moon, Sun, Monitor, X, ChevronDown, Check, ShieldPlus } from 'lucide-react'
-import { ROLE_LABELS, useAuth } from '../auth'
+import type { LucideIcon } from 'lucide-react'
 import { useTheme } from '../theme'
 import { Avatar, Button } from '../ui'
 import { cn } from '../lib'
-import type { Role } from '@acculturator/contracts'
-import { homePortalFor, portalsForRole, usePortalRegistry, type PortalDefinition } from '../portal'
 import { EASE_OUT, spring } from '../motion'
 import { useDismiss } from '../hooks'
-import { NotificationsMenu, headerIconButton } from '../components/notifications/NotificationsMenu'
-
-const DEMO_SWITCHER = import.meta.env.VITE_DEMO_ROLE_SWITCHER === 'true'
+import { headerIconButton } from '../components/notifications/NotificationsMenu'
+import type { NavSection } from './types'
 
 function PageLoader() {
   return (
@@ -39,17 +36,17 @@ function Brand() {
 }
 
 function SidebarNav({
-  portal,
+  nav,
   onNavigate,
   idPrefix,
 }: {
-  portal: PortalDefinition
+  nav: NavSection[]
   onNavigate?: () => void
   idPrefix: string
 }) {
   return (
     <nav className="flex flex-col gap-5">
-      {portal.nav.map((section, i) => (
+      {nav.map((section, i) => (
         <div key={i}>
           {section.title && (
             <div className="mb-1.5 px-3 text-[11px] font-semibold tracking-wider text-sidebar-muted uppercase">
@@ -113,16 +110,28 @@ function SidebarNav({
   )
 }
 
-/** Menu utilisateur (en-tête) : identité, changement de portail, profil de démo. */
-function UserMenu({ current }: { current: PortalDefinition }) {
-  const { user, switchRole } = useAuth()
+export interface UserMenuProps {
+  user: { name: string; roleLabel: string; email: string; details?: string }
+  /** Portails accessibles (changement de portail) */
+  portals: { id: string; label: string; icon: LucideIcon; current: boolean }[]
+  onSelectPortal: (id: string) => void
+  /** Démo uniquement : profils proposés au changement */
+  demoRoles?: { id: string; label: string; current: boolean }[]
+  onSelectDemoRole?: (id: string) => void
+}
+
+/** Menu utilisateur (en-tête) : identité, apparence, changement de portail, profil de démo. */
+export function UserMenu({
+  user,
+  portals,
+  onSelectPortal,
+  demoRoles,
+  onSelectDemoRole,
+}: UserMenuProps) {
   const { theme, setTheme } = useTheme()
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
-  const navigate = useNavigate()
-  const portals = usePortalRegistry()
-  const available = portalsForRole(portals, user.role)
-  const fullName = `${user.firstName} ${user.lastName}`
+  const fullName = user.name
 
   const close = useCallback(() => setOpen(false), [])
   useDismiss(ref, open, close)
@@ -140,7 +149,7 @@ function UserMenu({ current }: { current: PortalDefinition }) {
         <span className="hidden min-w-0 leading-tight md:block">
           <span className="block max-w-40 truncate text-sm font-semibold">{fullName}</span>
           <span className="block max-w-40 truncate text-xs text-muted-foreground">
-            {ROLE_LABELS[user.role]}
+            {user.roleLabel}
           </span>
         </span>
         <ChevronDown
@@ -165,9 +174,9 @@ function UserMenu({ current }: { current: PortalDefinition }) {
               <div className="min-w-0">
                 <div className="truncate text-sm font-semibold">{fullName}</div>
                 <div className="truncate text-xs text-muted-foreground">{user.email}</div>
-                <div className="truncate text-xs text-muted-foreground">
-                  {user.jobTitle} · {user.site}
-                </div>
+                {user.details && (
+                  <div className="truncate text-xs text-muted-foreground">{user.details}</div>
+                )}
               </div>
             </div>
             <div className="px-2 pt-2 pb-1 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
@@ -205,39 +214,38 @@ function UserMenu({ current }: { current: PortalDefinition }) {
             <div className="mt-1 border-t px-2 pt-2 pb-1 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
               Mes portails
             </div>
-            {available.map((p) => (
+            {portals.map((p) => (
               <button
                 key={p.id}
                 role="menuitem"
                 onClick={() => {
                   setOpen(false)
-                  navigate(p.basePath)
+                  onSelectPortal(p.id)
                 }}
                 className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm hover:bg-muted"
               >
                 <p.icon className="size-4 text-muted-foreground" />
                 <span className="flex-1 text-left">{p.label}</span>
-                {p.id === current.id && <Check className="size-4 text-primary" />}
+                {p.current && <Check className="size-4 text-primary" />}
               </button>
             ))}
-            {DEMO_SWITCHER && switchRole && (
+            {demoRoles && onSelectDemoRole && (
               <>
                 <div className="mt-2 border-t px-2 pt-2 pb-1 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
                   Démo · changer de profil
                 </div>
-                {(Object.keys(ROLE_LABELS) as Role[]).map((r) => (
+                {demoRoles.map((r) => (
                   <button
-                    key={r}
+                    key={r.id}
                     role="menuitem"
-                    onClick={async () => {
+                    onClick={() => {
                       setOpen(false)
-                      await switchRole(r)
-                      navigate(homePortalFor(portals, r)?.basePath ?? '/')
+                      onSelectDemoRole(r.id)
                     }}
                     className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted"
                   >
-                    <span className="flex-1 text-left">{ROLE_LABELS[r]}</span>
-                    {user.role === r && <Check className="size-4 text-primary" />}
+                    <span className="flex-1 text-left">{r.label}</span>
+                    {r.current && <Check className="size-4 text-primary" />}
                   </button>
                 ))}
               </>
@@ -267,23 +275,44 @@ function ThemeToggle() {
   )
 }
 
+export interface AppShellProps {
+  /** Libellé de la section courante (ex. nom du portail), affiché dans le fil d'Ariane */
+  sectionLabel: string
+  nav: NavSection[]
+  /** Contenu spécifique en haut à droite (ex. compteurs du portail) */
+  headerSlot?: ReactNode
+  /** Menu de notifications */
+  notifications?: ReactNode
+  /** Menu utilisateur (voir `UserMenu`) */
+  userMenu: ReactNode
+  /** Contenu de la page (ex. `<Outlet />`) */
+  children: ReactNode
+}
+
 /**
- * Layout commun à tous les portails : identité visuelle unifiée,
- * navigation déclarée par chaque portail (`PortalDefinition.nav`).
+ * Mise en page commune à tous les portails (présentation uniquement) : barre latérale,
+ * en-tête, navigation mobile, transitions de page. Les données (utilisateur, notifications,
+ * navigation) sont fournies par l'application hôte.
  */
-export function PortalLayout({ portal }: { portal: PortalDefinition }) {
+export function AppShell({
+  sectionLabel,
+  nav,
+  headerSlot,
+  notifications,
+  userMenu,
+  children,
+}: AppShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const location = useLocation()
-  const flatItems = portal.nav.flatMap((s) => s.items)
+  const flatItems = nav.flatMap((s) => s.items)
   const current =
     [...flatItems].reverse().find((i) => location.pathname.startsWith(i.to)) ?? flatItems[0]
-  const HeaderSlot = portal.HeaderSlot
 
   const sidebar = (idPrefix: string) => (
     <div className="flex h-full flex-col gap-6 border-r border-sidebar-border bg-sidebar p-4 text-sidebar-foreground">
       <Brand />
       <div className="flex-1 overflow-y-auto">
-        <SidebarNav portal={portal} idPrefix={idPrefix} onNavigate={() => setMobileOpen(false)} />
+        <SidebarNav nav={nav} idPrefix={idPrefix} onNavigate={() => setMobileOpen(false)} />
       </div>
     </div>
   )
@@ -341,7 +370,7 @@ export function PortalLayout({ portal }: { portal: PortalDefinition }) {
             <Menu />
           </Button>
           <div className="flex min-w-0 items-center gap-2 text-sm">
-            <span className="hidden text-muted-foreground sm:inline">{portal.label}</span>
+            <span className="hidden text-muted-foreground sm:inline">{sectionLabel}</span>
             <span className="hidden text-muted-foreground sm:inline">/</span>
             <span className="truncate font-bold">
               <span className="sm:hidden">{current?.short ?? current?.label}</span>
@@ -349,14 +378,14 @@ export function PortalLayout({ portal }: { portal: PortalDefinition }) {
             </span>
           </div>
           <div className="ml-auto flex items-center gap-2">
-            {HeaderSlot && <HeaderSlot />}
-            <NotificationsMenu />
+            {headerSlot}
+            {notifications}
             {/* Sur mobile, le thème se règle depuis le menu utilisateur (en-tête plus léger) */}
             <span className="hidden sm:contents">
               <ThemeToggle />
             </span>
             <span aria-hidden className="mx-1 hidden h-6 w-px bg-border sm:block" />
-            <UserMenu current={portal} />
+            {userMenu}
           </div>
         </header>
 
@@ -368,7 +397,7 @@ export function PortalLayout({ portal }: { portal: PortalDefinition }) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.35, ease: EASE_OUT }}
             >
-              <Outlet />
+              {children}
             </motion.div>
           </Suspense>
         </main>

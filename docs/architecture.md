@@ -9,7 +9,8 @@ commun est partagé, et les **contrats de données** sont isolés pour être ré
 │   └── contracts/            @acculturator/contracts — types du domaine & DTO (aucune dépendance)
 ├── frontend/
 │   ├── shell/                @acculturator/shell — application hôte (Vite) : providers, routeur, registre des portails
-│   ├── shared/               @acculturator/shared — socle commun à tous les portails
+│   ├── design-system/        @acculturator/design-system — identité visuelle commune (purement visuel)
+│   ├── core/                 @acculturator/core — socle applicatif : API, authentification, catalogue, portails
 │   ├── collaborateur/        @acculturator/portal-collaborateur
 │   ├── referent/             @acculturator/portal-referent
 │   └── admin/                @acculturator/portal-admin
@@ -21,7 +22,7 @@ commun est partagé, et les **contrats de données** sont isolés pour être ré
 ## Graphe de dépendances
 
 ```
-Frontend :   contracts  ←  shared  ←  portails (collaborateur, referent, admin)  ←  shell
+Frontend :   contracts  ←  design-system  ←  core  ←  portails (collaborateur, referent, admin)  ←  shell
 Backends :   contracts  ←  mock-server (démo)
              contracts  ←  backend (futur)
 
@@ -34,43 +35,62 @@ Le frontend et les backends (faux ou vrai) ne partagent **que les contrats** et 
 
 Ces frontières sont **vérifiées par ESLint** (`eslint.config.js`, règle `no-restricted-imports`) :
 
-| Module               | Peut importer                                    | Ne peut pas importer                                                |
-| -------------------- | ------------------------------------------------ | ------------------------------------------------------------------- |
-| `packages/contracts` | rien (imports relatifs uniquement)               | toute bibliothèque, tout autre paquet                               |
-| `frontend/shared`    | `contracts`, bibliothèques                       | un portail, le shell, lui-même par nom de paquet                    |
-| `frontend/<portail>` | `contracts`, points d'entrée publics de `shared` | un autre portail, le shell, des chemins internes (`shared/src/...`) |
-| `frontend/shell`     | tout                                             | —                                                                   |
-| `mock-server`        | `contracts`, `node:*`                            | toute bibliothèque, tout paquet frontend                            |
+| Module                   | Peut importer                                                     | Ne peut pas importer                                                            |
+| ------------------------ | ----------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `packages/contracts`     | rien (imports relatifs uniquement)                                | toute bibliothèque, tout autre paquet                                           |
+| `frontend/design-system` | `contracts` (types), bibliothèques d'interface                    | `core`, tout autre paquet maison, toute bibliothèque de données (`@tanstack/*`) |
+| `frontend/core`          | `contracts`, `design-system`, bibliothèques                       | un portail, le shell, `mock-server`                                             |
+| `frontend/<portail>`     | `contracts`, points d'entrée publics de `design-system` et `core` | un autre portail, le shell, `mock-server`, des chemins internes (`…/src/…`)     |
+| `frontend/shell`         | tout                                                              | —                                                                               |
+| `mock-server`            | `contracts`, `node:*`                                             | toute bibliothèque, tout paquet frontend                                        |
 
 Seul le shell connaît `mock-server`, et uniquement pour l'installer en démo/développement :
-`shared` et les portails ne peuvent pas l'importer.
+`design-system`, `core` et les portails ne peuvent pas l'importer.
 
 Conséquence : un portail peut être confié à une équipe, refondu ou retiré sans toucher aux autres.
-Ce qui doit être partagé passe par `@acculturator/shared` (ou `contracts` pour les types).
+Ce qui doit être partagé passe par `design-system` (ce qui se voit), `core` (ce qui se charge,
+se calcule ou se vérifie) ou `contracts` (les types échangés avec le backend).
 
-## Le socle partagé (`@acculturator/shared`)
+## Le design system (`@acculturator/design-system`)
 
-Chaque dossier est un **point d'entrée public** déclaré dans `exports` de `frontend/shared/package.json` :
+Garantit une **identité visuelle unique** entre portails. Il est **purement visuel** : il n'appelle
+jamais l'API, ne connaît ni l'utilisateur ni les portails, et reçoit en props ce qu'il affiche
+(vérifié par ESLint). Il est donc réutilisable tel quel pour une autre thématique d'Acculturator.
 
-| Point d'entrée   | Rôle                                                                                                                        |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `/ui`            | Design system shadcn/ui (Button, Card, Dialog, Tabs…)                                                                       |
-| `/components`    | Composants transverses : PageHeader, Mascot, ProgressRing, Confetti, Toaster, NotificationsMenu, états de chargement/erreur |
-| `/layout`        | `PortalLayout` : en-tête, navigation latérale et mobile, menu utilisateur                                                   |
-| `/motion`        | Réglages d'animation communs (ressorts, apparitions, `Stagger`, `Reveal`, `AnimatedNumber`)                                 |
-| `/auth`          | `AuthProvider`, `useAuth()`, libellés des rôles                                                                             |
-| `/theme`         | Thème clair / sombre / système                                                                                              |
-| `/portal`        | Contrat `PortalDefinition` et registre des portails (`usePortalRegistry`)                                                   |
-| `/api`           | **Couche d'accès aux données** (voir ci-dessous)                                                                            |
-| `/catalog`       | Chargement unique du catalogue pédagogique (`CatalogProvider`, `useCatalog`, `getCatalog`)                                  |
-| `/content`       | Référentiels d'affichage : thématiques (icônes, couleurs), barème de gamification, libellés                                 |
-| `/lib`, `/hooks` | Utilitaires (`cn`, dates…) et hooks génériques                                                                              |
-| `/styles.css`    | Design tokens (couleurs, rayons, animations) et Tailwind                                                                    |
+Points d'entrée publics (`exports` de `frontend/design-system/package.json`) :
+
+| Point d'entrée   | Rôle                                                                                                               |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `/ui`            | Composants shadcn/ui (Button, Card, Dialog, Tabs…)                                                                 |
+| `/components`    | Composants transverses : PageHeader, Mascot, ProgressRing, Confetti, Toaster, NotificationsMenu, chargement/erreur |
+| `/layout`        | `AppShell` (barre latérale, en-tête, navigation mobile, transitions) et `UserMenu`                                 |
+| `/motion`        | Réglages d'animation communs (ressorts, apparitions, `Stagger`, `Reveal`, `AnimatedNumber`)                        |
+| `/theme`         | Thème clair / sombre / système                                                                                     |
+| `/themes`        | Icône et couleur de repère de chaque thématique SST (`THEMES`, `getTheme`)                                         |
+| `/lib`, `/hooks` | Utilitaires (`cn`, dates…) et hooks d'interface                                                                    |
+| `/styles.css`    | Design tokens (couleurs, rayons, animations) et Tailwind                                                           |
+
+## Le socle applicatif (`@acculturator/core`)
+
+Tout ce que les portails partagent **sans être de l'interface** :
+
+| Point d'entrée   | Rôle                                                                                       |
+| ---------------- | ------------------------------------------------------------------------------------------ |
+| `/api`           | **Couche d'accès aux données** (voir ci-dessous)                                           |
+| `/auth`          | `AuthProvider`, `useAuth()`, libellés des rôles                                            |
+| `/catalog`       | Chargement unique du catalogue pédagogique (`CatalogProvider`, `useCatalog`, `getCatalog`) |
+| `/notifications` | `useNotifications()` : chargement, rafraîchissement et lecture des notifications           |
+| `/portal`        | Contrat `PortalDefinition` et registre des portails (`usePortalRegistry`)                  |
+| `/content`       | Référentiels fonctionnels : barème de gamification (XP, niveaux), libellés                 |
+
+Le lien entre les deux se fait dans le shell : `frontend/shell/src/PortalLayout.tsx` charge
+l'utilisateur, les portails accessibles et les notifications (`core`), puis les passe à `AppShell`,
+`UserMenu` et `NotificationsMenu` (`design-system`).
 
 ## Couche d'accès aux données
 
 Les pages ne font **jamais** d'appel réseau direct ni d'import de données en dur : elles passent par
-l'objet `api` (`@acculturator/shared/api`), qui implémente l'interface `Api` :
+l'objet `api` (`@acculturator/core/api`), qui implémente l'interface `Api` :
 
 ```ts
 api.auth.getCurrentUser()        api.content.getCatalog()
@@ -79,7 +99,7 @@ api.notifications.list()         api.notifications.markRead(ids)
 api.progress.track(event)
 ```
 
-Une seule implémentation : **HTTP** (`frontend/shared/src/api/http/`), sur `VITE_API_URL`
+Une seule implémentation : **HTTP** (`frontend/core/src/api/http/`), sur `VITE_API_URL`
 (défaut `/api`). Endpoints : [`api-contract.md`](./api-contract.md). Qui répond à ces appels ne
 concerne pas le frontend :
 
@@ -147,8 +167,8 @@ Variables d'environnement (`frontend/shell/.env.*`) :
 ### Ajouter un appel au backend
 
 1. Déclarer les types échangés dans `packages/contracts/src/`.
-2. Ajouter la méthode à l'interface concernée dans `frontend/shared/src/api/types.ts`.
-3. L'implémenter dans `frontend/shared/src/api/http/index.ts`.
+2. Ajouter la méthode à l'interface concernée dans `frontend/core/src/api/types.ts`.
+3. L'implémenter dans `frontend/core/src/api/http/index.ts`.
 4. Documenter l'endpoint dans [`api-contract.md`](./api-contract.md) et ajouter sa route de
    démonstration dans `mock-server/src/routes.ts`.
 5. Consommer depuis un composant avec `useQuery` / `useMutation`.
@@ -156,8 +176,8 @@ Variables d'environnement (`frontend/shell/.env.*`) :
 ### Ajouter un composant shadcn/ui
 
 ```bash
-cd frontend/shared && npx shadcn@latest add <composant>
+cd frontend/design-system && npx shadcn@latest add <composant>
 ```
 
-Le composant est généré dans `frontend/shared/src/ui/`. Remplacer l'import `@/lib/utils` généré par
-`../lib`, puis l'exporter depuis `frontend/shared/src/ui/index.ts`.
+Le composant est généré dans `frontend/design-system/src/ui/`. Remplacer l'import `@/lib/utils`
+généré par `../lib`, puis l'exporter depuis `frontend/design-system/src/ui/index.ts`.

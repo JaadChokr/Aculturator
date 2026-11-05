@@ -9,7 +9,8 @@
   },
   "dependencies": {
     "@acculturator/contracts": "*",
-    "@acculturator/shared": "*",
+    "@acculturator/core": "*",
+    "@acculturator/design-system": "*",
     "@tanstack/react-query": "5.104.4",
     "lucide-react": "^1.67.0",
     "motion": "~12.43.0",

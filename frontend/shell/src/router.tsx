@@ -6,11 +6,11 @@ import {
   Navigate,
   type RouteObject,
 } from 'react-router'
-import { PortalLayout } from '@acculturator/shared/layout'
-import { Button } from '@acculturator/shared/ui'
-import { Mascot } from '@acculturator/shared/components'
-import { useAuth } from '@acculturator/shared/auth'
-import { homePortalFor } from '@acculturator/shared/portal'
+import { Button } from '@acculturator/design-system/ui'
+import { Mascot } from '@acculturator/design-system/components'
+import { useAuth } from '@acculturator/core/auth'
+import { homePortalFor } from '@acculturator/core/portal'
+import { PortalLayout } from './PortalLayout'
 import { RequireRole } from './RequireRole'
 import { PORTALS } from './portals'
 

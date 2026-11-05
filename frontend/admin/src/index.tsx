@@ -7,7 +7,7 @@ import {
   ShieldCheck,
   UserCog,
 } from 'lucide-react'
-import type { PortalDefinition } from '@acculturator/shared/portal'
+import type { PortalDefinition } from '@acculturator/core/portal'
 
 const Page = lazy(() => import('./pages/AdminPlaceholder'))
 const base = '/admin'

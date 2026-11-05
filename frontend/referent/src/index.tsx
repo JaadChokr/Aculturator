@@ -6,7 +6,7 @@ import {
   MessageCircleWarning,
   Users,
 } from 'lucide-react'
-import type { PortalDefinition } from '@acculturator/shared/portal'
+import type { PortalDefinition } from '@acculturator/core/portal'
 
 const Page = lazy(() => import('./pages/ReferentPlaceholder'))
 const base = '/referent'

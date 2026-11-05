@@ -12,14 +12,10 @@ import {
   Users,
   type LucideIcon,
 } from 'lucide-react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { AppNotification, NotificationKind } from '@acculturator/contracts'
-import { api } from '../../api'
 import { useDismiss } from '../../hooks'
 import { cn } from '../../lib'
 import { spring } from '../../motion'
-
-export const NOTIFICATIONS_QUERY_KEY = ['notifications'] as const
 
 const KIND_ICON: Record<NotificationKind, LucideIcon> = {
   content: FileText,
@@ -43,28 +39,24 @@ function timeAgo(iso: string) {
 export const headerIconButton =
   'relative inline-grid size-9 place-items-center rounded-md border bg-card text-foreground transition-colors hover:bg-muted focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none [&_svg]:size-[18px]'
 
-export function NotificationsMenu() {
+/**
+ * Menu de notifications de l'en-tête (présentation uniquement).
+ * Les données sont fournies par l'application hôte, qui les charge depuis l'API.
+ */
+export function NotificationsMenu({
+  items,
+  onMarkRead,
+}: {
+  items: AppNotification[]
+  onMarkRead: (ids: string[]) => void
+}) {
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const close = useCallback(() => setOpen(false), [])
   useDismiss(ref, open, close)
 
-  const queryClient = useQueryClient()
-  const { data: items = [] } = useQuery({
-    queryKey: NOTIFICATIONS_QUERY_KEY,
-    queryFn: api.notifications.list,
-    refetchInterval: 60_000,
-  })
-  const { mutate: markRead } = useMutation({
-    mutationFn: (ids: string[]) => api.notifications.markRead(ids),
-    // Mise à jour optimiste : l'interface réagit immédiatement
-    onMutate: (ids) =>
-      queryClient.setQueryData<AppNotification[]>(NOTIFICATIONS_QUERY_KEY, (prev) =>
-        prev?.map((n) => (ids.includes(n.id) ? { ...n, read: true } : n)),
-      ),
-    onSettled: () => queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_QUERY_KEY }),
-  })
+  const markRead = onMarkRead
   const isRead = (id: string) => items.find((n) => n.id === id)?.read ?? false
   const unread = items.filter((n) => !n.read).length
 

@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { Link } from 'react-router'
 import { ArrowLeft, Clock, Crosshair, Lightbulb, RotateCcw, Target } from 'lucide-react'
-import { useCatalog } from '@acculturator/shared/catalog'
-import { XP } from '@acculturator/shared/content'
-import { Confetti, Mascot } from '@acculturator/shared/components'
+import { useCatalog } from '@acculturator/core/catalog'
+import { XP } from '@acculturator/core/content'
+import { Confetti, Mascot } from '@acculturator/design-system/components'
 import {
   Badge,
   Button,
@@ -14,9 +14,9 @@ import {
   CardHeader,
   CardTitle,
   Progress,
-} from '@acculturator/shared/ui'
-import { cn } from '@acculturator/shared/lib'
-import { spring, springBouncy } from '@acculturator/shared/motion'
+} from '@acculturator/design-system/ui'
+import { cn } from '@acculturator/design-system/lib'
+import { spring, springBouncy } from '@acculturator/design-system/motion'
 import { collabPath } from '../paths'
 import { OfficeScene } from '../components/OfficeScene'
 import { ThemeBadge } from '../components/ThemeBadge'

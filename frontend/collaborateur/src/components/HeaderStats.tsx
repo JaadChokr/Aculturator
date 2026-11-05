@@ -1,10 +1,10 @@
 import { motion } from 'motion/react'
 import { Link } from 'react-router'
 import { Flame, Zap } from 'lucide-react'
-import { levelFromXp } from '@acculturator/shared/content'
-import { ProgressRing } from '@acculturator/shared/components'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@acculturator/shared/ui'
-import { AnimatedNumber, springBouncy } from '@acculturator/shared/motion'
+import { levelFromXp } from '@acculturator/core/content'
+import { ProgressRing } from '@acculturator/design-system/components'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@acculturator/design-system/ui'
+import { AnimatedNumber, springBouncy } from '@acculturator/design-system/motion'
 import { useProgress } from '../store/progress'
 
 export function HeaderStats() {

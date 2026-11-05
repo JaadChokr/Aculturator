@@ -10,7 +10,7 @@ import {
   Timer,
   type LucideIcon,
 } from 'lucide-react'
-import { getCatalog } from '@acculturator/shared/catalog'
+import { getCatalog } from '@acculturator/core/catalog'
 import type { ProgressState } from './progress'
 
 export type BadgeId =

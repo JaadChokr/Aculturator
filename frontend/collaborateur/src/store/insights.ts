@@ -1,6 +1,6 @@
 import type { ThemeId } from '@acculturator/contracts'
-import { getCatalog } from '@acculturator/shared/catalog'
-import { THEMES } from '@acculturator/shared/content'
+import { getCatalog } from '@acculturator/core/catalog'
+import { THEMES } from '@acculturator/design-system/themes'
 import type { ProgressState } from './progress'
 
 /*

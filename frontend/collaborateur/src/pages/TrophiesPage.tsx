@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Flame, Layers, Lock, RotateCcw, Trophy, Zap } from 'lucide-react'
-import { LEVELS, levelFromXp } from '@acculturator/shared/content'
-import { PageHeader, ProgressRing } from '@acculturator/shared/components'
+import { LEVELS, levelFromXp } from '@acculturator/core/content'
+import { PageHeader, ProgressRing } from '@acculturator/design-system/components'
 import {
   Button,
   Card,
@@ -9,9 +9,9 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@acculturator/shared/ui'
-import { cn, formatNumber } from '@acculturator/shared/lib'
-import { AnimatedNumber, Reveal, Stagger } from '@acculturator/shared/motion'
+} from '@acculturator/design-system/ui'
+import { cn, formatNumber } from '@acculturator/design-system/lib'
+import { AnimatedNumber, Reveal, Stagger } from '@acculturator/design-system/motion'
 import { BADGES } from '../store/badges'
 import { useProgress } from '../store/progress'
 

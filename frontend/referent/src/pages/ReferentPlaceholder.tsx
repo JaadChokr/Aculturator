@@ -1,4 +1,4 @@
-import { ComingSoon } from '@acculturator/shared/components'
+import { ComingSoon } from '@acculturator/design-system/components'
 
 const SECTIONS = {
   overview: {

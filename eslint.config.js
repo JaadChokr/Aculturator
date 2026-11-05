@@ -6,10 +6,11 @@ import tseslint from 'typescript-eslint'
 
 /**
  * Règles d'architecture (frontières entre modules) :
- *   contracts  ←  shared  ←  portails  ←  shell
+ *   contracts  ←  design-system  ←  core  ←  portails  ←  shell
  *   contracts  ←  mock-server (faux backend, installé par le shell en démo uniquement)
+ * - le design system est purement visuel : aucun accès aux données, aucun autre paquet maison ;
+ * - core (données, auth, portails) ne connaît aucun portail ;
  * - un portail n'importe jamais un autre portail ni l'application hôte ;
- * - le socle partagé n'importe aucun portail ;
  * - le frontend (hors shell) ne dépend jamais du serveur de démo : il ne parle qu'HTTP ;
  * - les contrats ne dépendent de rien (types purs, réutilisables par le backend).
  */
@@ -18,6 +19,17 @@ const PORTALS = ['collaborateur', 'referent', 'admin']
 const restrict = (patterns) => ({
   'no-restricted-imports': ['error', { patterns }],
 })
+
+const PUBLIC_ENTRY_POINTS = {
+  group: ['@acculturator/*/src/*', '@acculturator/*/*/*'],
+  message:
+    'Utiliser uniquement les points d’entrée publics des paquets (ex. @acculturator/design-system/ui, @acculturator/core/api).',
+}
+const NO_RELATIVE_ESCAPE = {
+  group: ['../../*/src/*', '**/frontend/**'],
+  message:
+    'Importer les autres modules par leur nom de paquet (@acculturator/…), pas par chemin relatif.',
+}
 
 export default tseslint.config(
   { ignores: ['**/dist', '**/dist-demo', '**/node_modules'] },
@@ -31,6 +43,41 @@ export default tseslint.config(
       'react-refresh/only-export-components': 'off',
     },
   },
+  // Design system : identité visuelle uniquement
+  {
+    files: ['frontend/design-system/src/**/*.{ts,tsx}'],
+    rules: restrict([
+      {
+        regex: '^@acculturator/(?!contracts$)',
+        message:
+          'Le design system est autonome et purement visuel : il ne dépend que de @acculturator/contracts (types) et s’importe lui-même en relatif.',
+      },
+      {
+        group: ['@tanstack/*'],
+        message:
+          'Le design system n’accède pas aux données : il reçoit ce qu’il affiche en props (le chargement se fait dans core).',
+      },
+      NO_RELATIVE_ESCAPE,
+    ]),
+  },
+  // Core : données, authentification, contrat des portails
+  {
+    files: ['frontend/core/src/**/*.{ts,tsx}'],
+    rules: restrict([
+      {
+        group: [
+          '@acculturator/portal-*',
+          '@acculturator/shell',
+          '@acculturator/mock-server*',
+          '@acculturator/core/*',
+        ],
+        message:
+          'Core ne dépend d’aucun portail, ni du shell, ni du serveur de démo (et s’importe lui-même en relatif).',
+      },
+      PUBLIC_ENTRY_POINTS,
+      NO_RELATIVE_ESCAPE,
+    ]),
+  },
   // Portails : autonomes les uns des autres
   ...PORTALS.map((portal) => ({
     files: [`frontend/${portal}/src/**/*.{ts,tsx}`],
@@ -38,36 +85,12 @@ export default tseslint.config(
       {
         group: ['@acculturator/portal-*', '@acculturator/shell', '@acculturator/mock-server*'],
         message:
-          'Un portail ne dépend ni des autres portails, ni de l’application hôte, ni du serveur de démo : passer par @acculturator/shared.',
+          'Un portail ne dépend ni des autres portails, ni de l’application hôte, ni du serveur de démo : passer par @acculturator/design-system ou @acculturator/core.',
       },
-      {
-        group: ['../../*/src/*', '**/frontend/**'],
-        message:
-          'Importer les autres modules par leur nom de paquet (@acculturator/…), pas par chemin relatif.',
-      },
-      {
-        group: ['@acculturator/shared/src/*', '@acculturator/shared/*/*'],
-        message:
-          'Utiliser uniquement les points d’entrée publics de @acculturator/shared (ui, api, catalog…).',
-      },
+      PUBLIC_ENTRY_POINTS,
+      NO_RELATIVE_ESCAPE,
     ]),
   })),
-  // Socle partagé : ne connaît aucun portail
-  {
-    files: ['frontend/shared/src/**/*.{ts,tsx}'],
-    rules: restrict([
-      {
-        group: [
-          '@acculturator/portal-*',
-          '@acculturator/shell',
-          '@acculturator/shared/*',
-          '@acculturator/mock-server*',
-        ],
-        message:
-          'Le socle partagé ne dépend d’aucun portail ni du serveur de démo (et s’importe lui-même en relatif).',
-      },
-    ]),
-  },
   // Serveur de démo : un « backend » qui ne connaît que les contrats
   {
     files: ['mock-server/src/**/*.ts'],

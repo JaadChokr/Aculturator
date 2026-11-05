@@ -1,7 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { API_URL } from '@acculturator/shared/api'
-import '@acculturator/shared/styles.css'
+import { API_URL } from '@acculturator/core/api'
+import '@acculturator/design-system/styles.css'
 import { App } from './App'
 
 async function boot() {

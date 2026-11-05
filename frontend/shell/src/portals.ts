@@ -1,4 +1,4 @@
-import type { PortalDefinition } from '@acculturator/shared/portal'
+import type { PortalDefinition } from '@acculturator/core/portal'
 import { collaborateurPortal } from '@acculturator/portal-collaborateur'
 import { referentPortal } from '@acculturator/portal-referent'
 import { adminPortal } from '@acculturator/portal-admin'

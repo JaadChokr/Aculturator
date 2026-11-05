@@ -2,8 +2,8 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import { ShieldAlert } from 'lucide-react'
 import type { Role } from '@acculturator/contracts'
-import { Button } from '@acculturator/shared/ui'
-import { useAuth } from '@acculturator/shared/auth'
+import { Button } from '@acculturator/design-system/ui'
+import { useAuth } from '@acculturator/core/auth'
 
 export function RequireRole({ roles, children }: { roles: Role[]; children: ReactNode }) {
   const { user } = useAuth()

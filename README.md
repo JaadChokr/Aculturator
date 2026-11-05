@@ -47,7 +47,8 @@ packages/
 └── contracts/        @acculturator/contracts   Types du domaine & DTO, partagés avec le backend
 frontend/
 ├── shell/            @acculturator/shell       Application hôte : providers, routeur, registre des portails, build
-├── shared/           @acculturator/shared      Socle commun : design system, layout, auth, accès aux données (api), catalogue
+├── design-system/    @acculturator/design-system  Identité visuelle commune : composants, mise en page, animations, thème
+├── core/             @acculturator/core        Socle applicatif sans interface : API, authentification, catalogue, portails
 ├── collaborateur/    @acculturator/portal-collaborateur
 │   └── src/          index.tsx (PortalDefinition) · pages/ · components/ · store/
 ├── referent/         @acculturator/portal-referent   (squelette)
@@ -58,11 +59,13 @@ docs/                 architecture.md · api-contract.md
 ```
 
 Règles de dépendance, **vérifiées par ESLint** :
-`contracts ← shared ← portails ← shell`. Un portail n'importe jamais un autre portail ni le shell,
-et n'utilise que les points d'entrée publics de `@acculturator/shared` (`/ui`, `/api`, `/catalog`…).
+`contracts ← design-system ← core ← portails ← shell`. Le design system est **purement visuel**
+(aucun accès aux données) : c'est lui qui garantit une identité visuelle unique entre portails.
+Un portail n'importe jamais un autre portail ni le shell, et n'utilise que les points d'entrée publics
+de `design-system` (`/ui`, `/layout`…) et de `core` (`/api`, `/catalog`…).
 
 Le frontend ne contient **aucune donnée ni logique serveur** : les pages passent par `api`
-(`@acculturator/shared/api`), qui appelle toujours `/api` en HTTP. En démo et en développement,
+(`@acculturator/core/api`), qui appelle toujours `/api` en HTTP. En démo et en développement,
 c'est `mock-server` qui répond (directement dans le navigateur) ; en production, le vrai backend.
 Le passage au vrai backend ne modifie aucune ligne du frontend.
 
@@ -78,23 +81,23 @@ Chaque thématique SST a une icône et un repère couleur discret (`THEMES[x].ic
 `<ThemeBadge>` et `<ThemeIcon>`.
 
 - Utiliser **uniquement les tokens** (`bg-primary`, `text-muted-foreground`, `bg-accent`, `text-xp`, `bg-success`…),
-  jamais de couleur codée en dur dans une page. Les tokens clair/sombre sont définis dans `frontend/shared/src/styles/index.css`.
-- Réutiliser `@acculturator/shared/ui` ; pour un nouveau composant shadcn : `cd frontend/shared && npx shadcn@latest add <composant>`
+  jamais de couleur codée en dur dans une page. Les tokens clair/sombre sont définis dans `frontend/design-system/src/styles/index.css`.
+- Réutiliser `@acculturator/design-system/ui` ; pour un nouveau composant shadcn : `cd frontend/design-system && npx shadcn@latest add <composant>`
   (le fichier `components.json` du socle pointe vers `src/ui`).
 - Chaque page commence par un `<PageHeader eyebrow title description />`.
-- Icône et repère couleur des thématiques : `THEMES[x].icon` / `.dot` (`frontend/shared/src/content/themes.ts`).
+- Icône et repère couleur des thématiques : `THEMES[x].icon` / `.dot` (`frontend/design-system/src/themes/index.ts`).
 - Sur mobile : barre de navigation basse (5 premières entrées de la `nav`), libellés courts via `short`.
 
 ### En-tête commun
 
-Compteurs propres au portail (`HeaderSlot`), **notifications** (`frontend/shared/src/components/notifications/`,
-chargées via `api.notifications`, données de démo par rôle dans `mock-server/src/data/notifications.ts`),
+Compteurs propres au portail (`HeaderSlot`), **notifications** (affichage : `frontend/design-system/src/components/notifications/`,
+chargement : `useNotifications()` de `@acculturator/core/notifications`, données de démo par rôle dans `mock-server/src/data/notifications.ts`),
 bouton de thème, puis menu utilisateur (identité, apparence clair/sombre/système, portails, profil de démo).
 Sur mobile, l’en-tête est allégé : libellé court de la page, thème réglable depuis le menu utilisateur.
 
 ### Animations (Motion)
 
-Les réglages d'animation communs sont dans `frontend/shared/src/motion/` : ressorts (`spring`, `springBouncy`),
+Les réglages d'animation communs sont dans `frontend/design-system/src/motion/` : ressorts (`spring`, `springBouncy`),
 apparitions (`fadeUp`, `popIn`), `hoverLift`, et les composants `<Stagger>` / `<Reveal>` (apparition en cascade)
 et `<AnimatedNumber>` (compteurs). Règles d'équipe :
 
@@ -136,13 +139,13 @@ collaborateur ; exprimer le principe par la fonctionnalité elle-même.
 
 ### Gamification (paramétrable)
 
-Barème d’XP : `XP` dans `frontend/shared/src/content/gamification.ts` · Niveaux : `LEVELS` ·
+Barème d’XP : `XP` dans `frontend/core/src/content/gamification.ts` · Niveaux : `LEVELS` ·
 Badges : `frontend/collaborateur/src/store/badges.ts` · Missions quotidiennes : `store/missions.ts`.
 
 ## Brancher le back-end
 
 Le frontend est prêt : contrats de données (`packages/contracts`), client HTTP et endpoints
-(`frontend/shared/src/api/http/`), événements d'apprentissage déjà émis par le portail collaborateur.
+(`frontend/core/src/api/http/`), événements d'apprentissage déjà émis par le portail collaborateur.
 
 - **Authentification** : SSO de l'entreprise derrière `GET /api/me` ; le rôle pilote l'accès aux portails.
 - **Contenus** : `GET /api/catalog` remplace les données de démo (`mock-server/src/data/`).

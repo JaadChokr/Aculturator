@@ -3,12 +3,18 @@ import { AnimatePresence, motion, useMotionValue, useTransform, type PanInfo } f
 import { Link, useSearchParams } from 'react-router'
 import { ArrowLeft, Check, CircleHelp, Lightbulb, type LucideIcon, RotateCcw } from 'lucide-react'
 import type { Flashcard, ThemeId } from '@acculturator/contracts'
-import { getCatalog } from '@acculturator/shared/catalog'
-import { getTheme } from '@acculturator/shared/content'
-import { Confetti, Mascot } from '@acculturator/shared/components'
-import { Button, Card, CardContent, Progress } from '@acculturator/shared/ui'
-import { cn, shuffle } from '@acculturator/shared/lib'
-import { AnimatedNumber, Reveal, Stagger, spring, springBouncy } from '@acculturator/shared/motion'
+import { getCatalog } from '@acculturator/core/catalog'
+import { getTheme } from '@acculturator/design-system/themes'
+import { Confetti, Mascot } from '@acculturator/design-system/components'
+import { Button, Card, CardContent, Progress } from '@acculturator/design-system/ui'
+import { cn, shuffle } from '@acculturator/design-system/lib'
+import {
+  AnimatedNumber,
+  Reveal,
+  Stagger,
+  spring,
+  springBouncy,
+} from '@acculturator/design-system/motion'
 import { collabPath } from '../paths'
 import { ThemeBadge } from '../components/ThemeBadge'
 import { TutorialDialog, useTutorial, type TutorialStep } from '../components/TutorialDialog'

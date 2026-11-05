@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 import { Bot, GraduationCap, Layers, LayoutDashboard, PlayCircle, Trophy } from 'lucide-react'
-import type { PortalDefinition } from '@acculturator/shared/portal'
+import type { PortalDefinition } from '@acculturator/core/portal'
 import { HeaderStats } from './components/HeaderStats'
 import { countDue, useProgress } from './store/progress'
 import { COLLAB_BASE, collabPath } from './paths'

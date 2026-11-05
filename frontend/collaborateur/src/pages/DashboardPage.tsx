@@ -15,9 +15,9 @@ import {
   Target,
   type LucideIcon,
 } from 'lucide-react'
-import { useAuth } from '@acculturator/shared/auth'
-import { levelFromXp } from '@acculturator/shared/content'
-import { ProgressRing } from '@acculturator/shared/components'
+import { useAuth } from '@acculturator/core/auth'
+import { levelFromXp } from '@acculturator/core/content'
+import { ProgressRing } from '@acculturator/design-system/components'
 import {
   Badge,
   Button,
@@ -27,10 +27,16 @@ import {
   CardHeader,
   CardTitle,
   Progress,
-} from '@acculturator/shared/ui'
-import { addDays, cn, formatNumber, todayISO } from '@acculturator/shared/lib'
-import { AnimatedNumber, Reveal, Stagger, hoverLift, spring } from '@acculturator/shared/motion'
-import { useDismiss } from '@acculturator/shared/hooks'
+} from '@acculturator/design-system/ui'
+import { addDays, cn, formatNumber, todayISO } from '@acculturator/design-system/lib'
+import {
+  AnimatedNumber,
+  Reveal,
+  Stagger,
+  hoverLift,
+  spring,
+} from '@acculturator/design-system/motion'
+import { useDismiss } from '@acculturator/design-system/hooks'
 import { collabPath } from '../paths'
 import { BADGES } from '../store/badges'
 import { allThemeMastery, nextSteps } from '../store/insights'

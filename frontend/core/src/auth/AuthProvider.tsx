@@ -2,7 +2,7 @@ import { createContext, useContext, useMemo, type ReactNode } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import type { Role, User } from '@acculturator/contracts'
 import { api } from '../api'
-import { LoadError } from '../components/LoadState'
+import { LoadError } from '@acculturator/design-system/components'
 
 interface AuthContextValue {
   user: User

@@ -18,9 +18,10 @@ import {
   Video,
 } from 'lucide-react'
 import type { Resource, ResourceType, ThemeId } from '@acculturator/contracts'
-import { useCatalog } from '@acculturator/shared/catalog'
-import { RESOURCE_TYPE_LABEL, THEMES, getTheme } from '@acculturator/shared/content'
-import { PageHeader } from '@acculturator/shared/components'
+import { useCatalog } from '@acculturator/core/catalog'
+import { THEMES, getTheme } from '@acculturator/design-system/themes'
+import { RESOURCE_TYPE_LABEL } from '@acculturator/core/content'
+import { PageHeader } from '@acculturator/design-system/components'
 import {
   Badge,
   Button,
@@ -35,9 +36,9 @@ import {
   Tabs,
   TabsList,
   TabsTrigger,
-} from '@acculturator/shared/ui'
-import { cn } from '@acculturator/shared/lib'
-import { spring } from '@acculturator/shared/motion'
+} from '@acculturator/design-system/ui'
+import { cn } from '@acculturator/design-system/lib'
+import { spring } from '@acculturator/design-system/motion'
 import { CheckQuestionBlock } from '../components/CheckQuestionBlock'
 import { ThemeBadge } from '../components/ThemeBadge'
 import { useProgress } from '../store/progress'

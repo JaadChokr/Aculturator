@@ -14,11 +14,12 @@ import {
   XCircle,
 } from 'lucide-react'
 import type { QuizQuestion, ThemeId } from '@acculturator/contracts'
-import { getCatalog, useCatalog } from '@acculturator/shared/catalog'
-import { THEMES, XP, getTheme } from '@acculturator/shared/content'
-import { Confetti, Mascot, ProgressRing } from '@acculturator/shared/components'
-import { Button, Card, CardContent, Progress } from '@acculturator/shared/ui'
-import { cn, shuffle } from '@acculturator/shared/lib'
+import { getCatalog, useCatalog } from '@acculturator/core/catalog'
+import { THEMES, getTheme } from '@acculturator/design-system/themes'
+import { XP } from '@acculturator/core/content'
+import { Confetti, Mascot, ProgressRing } from '@acculturator/design-system/components'
+import { Button, Card, CardContent, Progress } from '@acculturator/design-system/ui'
+import { cn, shuffle } from '@acculturator/design-system/lib'
 import {
   AnimatedNumber,
   EASE_OUT,
@@ -26,7 +27,7 @@ import {
   Stagger,
   spring,
   springBouncy,
-} from '@acculturator/shared/motion'
+} from '@acculturator/design-system/motion'
 import { collabPath } from '../paths'
 import { ThemeBadge } from '../components/ThemeBadge'
 import { TutorialDialog, useTutorial, type TutorialStep } from '../components/TutorialDialog'

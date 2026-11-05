@@ -9,7 +9,8 @@
   },
   "dependencies": {
     "@acculturator/contracts": "*",
-    "@acculturator/shared": "*",
+    "@acculturator/core": "*",
+    "@acculturator/design-system": "*",
     "lucide-react": "^1.67.0"
   },
   "peerDependencies": {

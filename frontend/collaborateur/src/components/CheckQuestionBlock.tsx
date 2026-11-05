@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { CheckCircle2, XCircle } from 'lucide-react'
 import type { CheckQuestion } from '@acculturator/contracts'
-import { cn } from '@acculturator/shared/lib'
+import { cn } from '@acculturator/design-system/lib'
 
 /** Question de vérification avec retour immédiat et expliqué (pilier « retour d'information »). */
 export function CheckQuestionBlock({

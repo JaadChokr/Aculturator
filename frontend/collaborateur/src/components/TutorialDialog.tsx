@@ -7,7 +7,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@acculturator/shared/ui'
+} from '@acculturator/design-system/ui'
 import { useProgress } from '../store/progress'
 
 export interface TutorialStep {

@@ -1,6 +1,6 @@
 import type { ThemeId } from '@acculturator/contracts'
-import { getTheme } from '@acculturator/shared/content'
-import { cn } from '@acculturator/shared/lib'
+import { getTheme } from '@acculturator/design-system/themes'
+import { cn } from '@acculturator/design-system/lib'
 
 /** Étiquette de thématique : repère couleur discret + libellé, sur fond neutre. */
 export function ThemeBadge({ themeId, className }: { themeId: ThemeId; className?: string }) {

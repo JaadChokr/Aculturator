@@ -9,9 +9,9 @@ import {
   Timer,
   Zap,
 } from 'lucide-react'
-import { useCatalog } from '@acculturator/shared/catalog'
-import { THEMES } from '@acculturator/shared/content'
-import { PageHeader } from '@acculturator/shared/components'
+import { useCatalog } from '@acculturator/core/catalog'
+import { THEMES } from '@acculturator/design-system/themes'
+import { PageHeader } from '@acculturator/design-system/components'
 import {
   Badge,
   Button,
@@ -20,9 +20,9 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@acculturator/shared/ui'
-import { cn, todayISO } from '@acculturator/shared/lib'
-import { Reveal, Stagger, spring } from '@acculturator/shared/motion'
+} from '@acculturator/design-system/ui'
+import { cn, todayISO } from '@acculturator/design-system/lib'
+import { Reveal, Stagger, spring } from '@acculturator/design-system/motion'
 import { collabPath } from '../paths'
 import { ThemeIcon } from '../components/ThemeBadge'
 import { themeMastery } from '../store/insights'

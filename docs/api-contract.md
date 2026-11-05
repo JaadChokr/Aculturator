@@ -1,7 +1,7 @@
 # Contrat d'API (frontend ↔ backend)
 
 Ce document décrit les endpoints appelés par le frontend
-(`frontend/shared/src/api/http/index.ts`). `mock-server/src/routes.ts` en est une implémentation de
+(`frontend/core/src/api/http/index.ts`). `mock-server/src/routes.ts` en est une implémentation de
 référence avec des données d'exemple. Les types cités sont définis dans
 **`packages/contracts`** (`@acculturator/contracts`), source de vérité partagée : le backend
 devrait les importer (s'il est en TypeScript) ou les reproduire à l'identique.
@@ -60,7 +60,7 @@ interface Catalog {
 
 Détail des champs : `packages/contracts/src/content.ts`. `ThemeId` est une liste fermée de
 thématiques SST ; ajouter une thématique demande aussi d'ajouter son icône et sa couleur dans
-`frontend/shared/src/content/themes.ts`.
+`frontend/design-system/src/themes/index.ts`.
 
 ### `ChatReply`
 

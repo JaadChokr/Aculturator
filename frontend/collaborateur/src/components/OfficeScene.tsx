@@ -2,7 +2,7 @@ import { forwardRef, type ReactNode } from 'react'
 
 /**
  * Illustration vectorielle de l'open space (viewBox 0 0 1000 600).
- * Les coordonnées des dangers sont définies dans `shared/content/hazards.ts`.
+ * Les coordonnées des dangers sont définies dans le catalogue (`HazardScene`, données de démo : `mock-server/src/data/hazards.ts`).
  */
 export const OfficeScene = forwardRef<
   SVGSVGElement,
