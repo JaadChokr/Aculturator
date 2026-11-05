@@ -6,11 +6,10 @@ import {
   Crosshair,
   Dumbbell,
   Heart,
-  History,
   Timer,
   Zap,
 } from 'lucide-react'
-import { HAZARD_SCENES, THEMES, getTheme } from '@/shared/content'
+import { HAZARD_SCENES, THEMES } from '@/shared/content'
 import { PageHeader } from '@/shared/components/PageHeader'
 import {
   Badge,
@@ -26,14 +25,7 @@ import { Reveal, Stagger, spring } from '@/shared/motion'
 import { collabPath } from '../paths'
 import { ThemeIcon } from '../components/ThemeBadge'
 import { themeMastery } from '../store/insights'
-import { useProgress, type QuizMode } from '../store/progress'
-
-const MODE_LABEL: Record<QuizMode, string> = {
-  entrainement: 'Entraînement',
-  chrono: 'Défi chrono',
-  'defi-du-jour': 'Défi du jour',
-  chasse: 'Chasse aux risques',
-}
+import { useProgress } from '../store/progress'
 
 function ModeCard({
   title,
@@ -166,86 +158,41 @@ export default function QuizHubPage() {
         />
       </Stagger>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Dumbbell className="size-5 text-primary" /> S’entraîner par thématique
-            </CardTitle>
-            <CardDescription>Le pourcentage indique votre maîtrise actuelle.</CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-2 sm:grid-cols-2">
-            {THEMES.map((t) => {
-              const m = themeMastery(s, t.id)
-              return (
-                <Link
-                  key={t.id}
-                  to={collabPath(`quiz/jouer?mode=entrainement&theme=${t.id}`)}
-                  className="group flex items-center gap-3 rounded-md border p-3 transition-colors hover:border-primary/40 hover:bg-muted/40"
-                >
-                  <ThemeIcon themeId={t.id} />
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-semibold">{t.title}</span>
-                    <span className="mt-1 flex items-center gap-2">
-                      <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
-                        <span
-                          className="block h-full rounded-full bg-primary"
-                          style={{ width: `${m}%` }}
-                        />
-                      </span>
-                      <span className="text-xs font-bold tabular-nums">{m}%</span>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Dumbbell className="size-5 text-primary" /> S’entraîner par thématique
+          </CardTitle>
+          <CardDescription>Le pourcentage indique votre maîtrise actuelle.</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+          {THEMES.map((t) => {
+            const m = themeMastery(s, t.id)
+            return (
+              <Link
+                key={t.id}
+                to={collabPath(`quiz/jouer?mode=entrainement&theme=${t.id}`)}
+                className="group flex items-center gap-3 rounded-md border p-3 transition-colors hover:border-primary/40 hover:bg-muted/40"
+              >
+                <ThemeIcon themeId={t.id} />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-semibold">{t.title}</span>
+                  <span className="mt-1 flex items-center gap-2">
+                    <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
+                      <span
+                        className="block h-full rounded-full bg-primary"
+                        style={{ width: `${m}%` }}
+                      />
                     </span>
+                    <span className="text-xs font-bold tabular-nums">{m}%</span>
                   </span>
-                  <ArrowRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
-                </Link>
-              )
-            })}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <History className="size-5 text-primary" /> Mes dernières parties
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-2">
-            {s.quizHistory.length === 0 && (
-              <p className="text-sm text-muted-foreground">Aucune partie pour l’instant.</p>
-            )}
-            {s.quizHistory.slice(0, 6).map((q) => {
-              const pct = Math.round((q.score / q.total) * 100)
-              return (
-                <div key={q.id} className="flex items-center gap-3 rounded-lg border p-2.5">
-                  <span
-                    className={cn(
-                      'grid size-10 shrink-0 place-items-center rounded-md text-xs font-semibold tabular-nums',
-                      pct >= 70
-                        ? 'bg-success/12 text-success'
-                        : 'bg-warning/15 text-warning-foreground dark:text-warning',
-                    )}
-                  >
-                    {q.score}/{q.total}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-semibold">
-                      {MODE_LABEL[q.mode]}
-                      {q.themeId && ` · ${getTheme(q.themeId).short}`}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {new Date(q.date).toLocaleDateString('fr-FR', {
-                        day: 'numeric',
-                        month: 'short',
-                      })}
-                    </span>
-                  </span>
-                  <span className="text-xs font-bold text-xp">+{q.xp} XP</span>
-                </div>
-              )
-            })}
-          </CardContent>
-        </Card>
-      </div>
+                </span>
+                <ArrowRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+              </Link>
+            )
+          })}
+        </CardContent>
+      </Card>
     </div>
   )
 }
