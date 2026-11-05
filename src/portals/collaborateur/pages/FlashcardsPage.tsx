@@ -1,19 +1,10 @@
 import { motion } from 'motion/react'
 import { Link } from 'react-router'
-import { Brain, Layers, Play, Repeat, Sparkles } from 'lucide-react'
+import { Layers, Play, Repeat, Sparkles } from 'lucide-react'
 import { FLASHCARDS, THEMES } from '@/shared/content'
 import { PageHeader } from '@/shared/components/PageHeader'
-import {
-  Badge,
-  Button,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  Progress,
-} from '@/shared/ui'
-import { cn, todayISO } from '@/shared/lib/utils'
+import { Badge, Button, Card, CardContent, Progress } from '@/shared/ui'
+import { todayISO } from '@/shared/lib/utils'
 import { Reveal, Stagger } from '@/shared/motion'
 import { collabPath } from '../paths'
 import { ThemeIcon } from '../components/ThemeBadge'
@@ -24,32 +15,8 @@ export default function FlashcardsPage() {
   const { review, fresh } = dueCards(cards)
   const sessionSize = Math.min(12, review.length + fresh.length)
   const today = todayISO()
-  // Mémorisation exprimée sans jargon : la mécanique de répétition reste interne.
-  // « Ancrée » = même seuil que la barre « Ancrage » des paquets et le tableau de bord.
-  const boxOf = (id: string): number => cards[id]?.box ?? 0
-  const memory = [
-    {
-      id: 'new',
-      label: 'À découvrir',
-      hint: 'Pas encore vues',
-      count: FLASHCARDS.filter((c) => boxOf(c.id) === 0).length,
-      bar: 'bg-muted-foreground/35',
-    },
-    {
-      id: 'learning',
-      label: 'En cours d’apprentissage',
-      hint: 'Elles reviendront bientôt pour se consolider',
-      count: FLASHCARDS.filter((c) => boxOf(c.id) >= 1 && boxOf(c.id) <= 2).length,
-      bar: 'bg-primary/40 dark:bg-primary/60',
-    },
-    {
-      id: 'anchored',
-      label: 'Ancrées',
-      hint: 'Réussies plusieurs fois, à quelques jours d’intervalle',
-      count: FLASHCARDS.filter((c) => boxOf(c.id) >= 3).length,
-      bar: 'bg-primary',
-    },
-  ]
+  // Cartes ancrées : même seuil que la barre « Ancrage » des paquets et le tableau de bord
+  const anchored = FLASHCARDS.filter((c) => (cards[c.id]?.box ?? 0) >= 3).length
 
   return (
     <div>
@@ -59,8 +26,8 @@ export default function FlashcardsPage() {
         description="La répétition espacée fait revenir chaque carte juste avant que vous ne l’oubliiez. Quelques minutes par jour suffisent."
       />
 
-      <div className="mb-6 grid gap-6 lg:grid-cols-3">
-        <Card className="relative overflow-hidden border-0 border-l-4 border-l-primary bg-inverse text-inverse-foreground lg:col-span-2">
+      <div className="mb-6">
+        <Card className="relative overflow-hidden border-0 border-l-4 border-l-primary bg-inverse text-inverse-foreground">
           <CardContent className="relative flex flex-col gap-5 p-6 sm:flex-row sm:items-center">
             <div className="flex-1">
               <div className="mb-1 text-xs font-semibold tracking-[0.12em] text-inverse-foreground/70 uppercase">
@@ -94,6 +61,12 @@ export default function FlashcardsPage() {
                   </Link>
                 </Button>
               </div>
+              <p className="mt-4 text-sm text-inverse-foreground/70">
+                <span className="font-semibold text-inverse-foreground tabular-nums">
+                  {anchored} / {FLASHCARDS.length}
+                </span>{' '}
+                cartes ancrées au total
+              </p>
             </div>
             <motion.div
               aria-hidden
@@ -104,58 +77,6 @@ export default function FlashcardsPage() {
             >
               <Layers className="size-28 text-inverse-foreground/15" strokeWidth={1} />
             </motion.div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Brain className="size-5 text-primary" /> Ma mémorisation
-            </CardTitle>
-            <CardDescription>
-              <span className="font-semibold text-foreground tabular-nums">
-                {memory[2].count} / {FLASHCARDS.length}
-              </span>{' '}
-              cartes ancrées
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div
-              className="flex h-3 gap-0.5 overflow-hidden rounded-full bg-muted"
-              role="img"
-              aria-label={memory.map((m) => `${m.label} : ${m.count}`).join(', ')}
-            >
-              {[...memory]
-                .reverse()
-                .map((m, i) =>
-                  m.count > 0 ? (
-                    <motion.div
-                      key={m.id}
-                      className={m.bar}
-                      initial={{ width: 0 }}
-                      animate={{ width: `${(m.count / FLASHCARDS.length) * 100}%` }}
-                      transition={{
-                        type: 'spring',
-                        stiffness: 120,
-                        damping: 20,
-                        delay: 0.2 + i * 0.08,
-                      }}
-                    />
-                  ) : null,
-                )}
-            </div>
-            <ul className="mt-4 flex flex-col gap-2.5">
-              {[...memory].reverse().map((m) => (
-                <li key={m.id} className="flex items-center gap-3 text-sm">
-                  <span aria-hidden className={cn('size-2.5 shrink-0 rounded-full', m.bar)} />
-                  <span className="flex-1">
-                    <span className="font-medium">{m.label}</span>
-                    <span className="block text-xs text-muted-foreground">{m.hint}</span>
-                  </span>
-                  <span className="font-semibold tabular-nums">{m.count}</span>
-                </li>
-              ))}
-            </ul>
           </CardContent>
         </Card>
       </div>
