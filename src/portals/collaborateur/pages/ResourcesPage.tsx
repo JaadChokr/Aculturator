@@ -410,16 +410,16 @@ export default function ResourcesPage() {
         title="Apprendre en quelques minutes"
         description="Des formats courts pour capter l’essentiel, suivis d’un check express pour vérifier que c’est acquis."
         actions={
-          <div className="flex items-center gap-3 rounded-md border bg-card px-4 py-2">
-            <div className="text-right">
-              <div className="text-xs font-semibold text-muted-foreground">
+          <div className="w-full rounded-md border bg-card px-4 py-3 sm:w-64">
+            <div className="mb-2 flex items-baseline justify-between gap-4">
+              <span className="text-xs font-medium text-muted-foreground">
                 Ressources consultées
-              </div>
-              <div className="font-bold tabular-nums">
-                {viewed.length}/{RESOURCES.length}
-              </div>
+              </span>
+              <span className="text-sm font-bold tabular-nums">
+                {viewed.length} / {RESOURCES.length}
+              </span>
             </div>
-            <Progress value={pct} className="w-24" />
+            <Progress value={pct} className="h-1.5" />
           </div>
         }
       />
