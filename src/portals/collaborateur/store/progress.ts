@@ -45,6 +45,8 @@ interface ProgressData {
   chatQuestions: number
   badges: Partial<Record<BadgeId, string>>
   missions: { day: string; progress: Partial<Record<MissionId, number>>; claimed: MissionId[] }
+  /** Didacticiels déjà affichés (ex : 'flashcards') */
+  seenTips: string[]
 }
 
 interface ProgressActions {
@@ -57,6 +59,7 @@ interface ProgressActions {
   recordQuiz: (r: Omit<QuizRecord, 'id' | 'date'>) => void
   recordHazard: (sceneId: string, hazardId: string) => void
   recordChat: () => void
+  markTipSeen: (id: string) => void
   resetDemo: () => void
 }
 
@@ -125,6 +128,7 @@ function seed(): ProgressData {
       cinephile: addDays(today, -2),
     },
     missions: { day: today, progress: {}, claimed: [] },
+    seenTips: [],
   }
 }
 
@@ -293,6 +297,9 @@ export const useProgress = create<ProgressState>()(
           get().addXp(XP.chatQuestion, undefined, true)
           checkBadges()
         },
+
+        markTipSeen: (id) =>
+          set((s) => (s.seenTips.includes(id) ? s : { seenTips: [...s.seenTips, id] })),
 
         resetDemo: () => set(seed()),
       }

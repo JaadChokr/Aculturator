@@ -11,6 +11,7 @@ import {
 import { CHAT_SUGGESTIONS } from '@/shared/content'
 import { chatService, type ChatReply } from '@/shared/api/chat'
 import { Mascot } from '@/shared/components/Mascot'
+import { PageHeader } from '@/shared/components/PageHeader'
 import { Avatar, Button, Card } from '@/shared/ui'
 import { spring } from '@/shared/motion'
 import { useAuth } from '@/app/auth/AuthProvider'
@@ -106,17 +107,21 @@ export default function ChatbotPage() {
 
   return (
     <div>
+      <PageHeader
+        eyebrow="Assistant"
+        title="Une question ? Demandez à Prévi"
+        description="Réponses courtes et sourcées sur la santé et la sécurité au travail, disponibles à tout moment."
+        className="mb-5"
+      />
       <div>
-        <Card className="flex h-[calc(100dvh-10.5rem)] min-h-[460px] flex-col overflow-hidden lg:h-[calc(100dvh-8rem)]">
+        <Card className="flex h-[calc(100dvh-17rem)] min-h-[460px] flex-col overflow-hidden lg:h-[calc(100dvh-15rem)]">
           <div className="flex items-center gap-3 border-b bg-card px-5 py-3">
             <Mascot className="size-11" />
             <div>
               <div className="font-bold">Prévi</div>
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <span className="size-2 shrink-0 rounded-full bg-success" /> En ligne
-                <span className="hidden sm:inline">
-                  · réponses courtes et sourcées sur la santé et la sécurité au travail
-                </span>
+                <span className="size-2 shrink-0 rounded-full bg-success" /> En ligne · assistant
+                SST
               </div>
             </div>
           </div>

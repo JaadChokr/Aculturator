@@ -5,7 +5,17 @@ import { ArrowLeft, Check, CircleHelp, Lightbulb, type LucideIcon, RotateCcw } f
 import { FLASHCARDS, THEME_BY_ID, type Flashcard, type ThemeId } from '@/shared/content'
 import { Confetti } from '@/shared/components/Confetti'
 import { Mascot } from '@/shared/components/Mascot'
-import { Button, Card, CardContent, Progress } from '@/shared/ui'
+import {
+  Button,
+  Card,
+  CardContent,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  Progress,
+} from '@/shared/ui'
 import { cn, shuffle } from '@/shared/lib/utils'
 import { AnimatedNumber, Reveal, Stagger, spring, springBouncy } from '@/shared/motion'
 import { collabPath } from '../paths'
@@ -178,6 +188,73 @@ function SwipeCard({
   )
 }
 
+/** Didacticiel des flashcards : gestes et raccourcis, affiché une seule fois. */
+function FlashcardTutorial({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const steps = [
+    {
+      icon: Lightbulb,
+      title: 'Lisez la question',
+      text: 'Formulez la réponse dans votre tête avant de retourner la carte : c’est cet effort qui fait mémoriser.',
+    },
+    {
+      icon: RotateCcw,
+      title: 'Retournez la carte',
+      text: 'Touchez ou cliquez sur la carte.',
+      keys: ['Espace'],
+    },
+    {
+      icon: Check,
+      title: 'Évaluez-vous',
+      text: 'À revoir, Hésitant ou Je sais. Vous pouvez aussi glisser la carte : à gauche pour « À revoir », à droite pour « Je sais ».',
+      keys: ['1', '2', '3'],
+    },
+  ]
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Réviser avec les flashcards</DialogTitle>
+          <DialogDescription>
+            Les cartes reviennent au bon moment pour s’ancrer durablement. Une carte « À revoir »
+            repasse dans la même session.
+          </DialogDescription>
+        </DialogHeader>
+        <ol className="flex flex-col gap-3">
+          {steps.map((step, i) => (
+            <li key={step.title} className="flex gap-3 rounded-md border p-3">
+              <span className="grid size-9 shrink-0 place-items-center rounded-md bg-primary/10 text-primary">
+                <step.icon className="size-4" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-semibold">
+                  {i + 1}. {step.title}
+                </div>
+                <p className="text-sm text-muted-foreground">{step.text}</p>
+                {step.keys && (
+                  <p className="mt-1.5 hidden items-center gap-1.5 text-xs text-muted-foreground sm:flex">
+                    Au clavier :
+                    {step.keys.map((k) => (
+                      <kbd
+                        key={k}
+                        className="rounded border bg-muted px-1.5 py-0.5 font-mono text-[11px] text-foreground"
+                      >
+                        {k}
+                      </kbd>
+                    ))}
+                  </p>
+                )}
+              </div>
+            </li>
+          ))}
+        </ol>
+        <div className="flex justify-end">
+          <Button onClick={onClose}>C’est parti</Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 export default function FlashcardSessionPage() {
   const [params] = useSearchParams()
   return <Session key={params.toString()} />
@@ -220,8 +297,18 @@ function Session() {
     [card, flipped, reviewCard],
   )
 
+  // Didacticiel : affiché automatiquement à la première visite, puis à la demande
+  const seenTutorial = useProgress((s) => s.seenTips.includes('flashcards'))
+  const markTipSeen = useProgress((s) => s.markTipSeen)
+  const [tutorialOpen, setTutorialOpen] = useState(!seenTutorial)
+  const closeTutorial = () => {
+    setTutorialOpen(false)
+    markTipSeen('flashcards')
+  }
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (tutorialOpen) return
       if (e.code === 'Space' || e.key === 'Enter') {
         e.preventDefault()
         setFlipped((f) => !f)
@@ -231,7 +318,7 @@ function Session() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [grade])
+  }, [grade, tutorialOpen])
 
   const backLink = (
     <Button asChild variant="ghost" size="sm">
@@ -307,8 +394,9 @@ function Session() {
   const remaining = queue.length
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px] 2xl:grid-cols-[minmax(0,1fr)_340px]">
-      <div className="min-w-0">
+    <div className="mx-auto max-w-4xl">
+      <FlashcardTutorial open={tutorialOpen} onClose={closeTutorial} />
+      <div>
         <div className="mb-4 flex items-center gap-3">
           {backLink}
           <Progress
@@ -319,6 +407,15 @@ function Session() {
           <span className="text-sm font-bold tabular-nums">
             {doneCount}/{initialSize}
           </span>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => setTutorialOpen(true)}
+            aria-label="Comment ça marche ?"
+            title="Comment ça marche ?"
+          >
+            <CircleHelp />
+          </Button>
         </div>
 
         <div className="mb-3 flex h-7 items-center justify-between">
@@ -399,64 +496,11 @@ function Session() {
             )}
           </AnimatePresence>
         </div>
-        <p className="mt-2 text-center text-xs text-muted-foreground lg:hidden">
+        <p className="mt-2 text-center text-xs text-muted-foreground">
           Essayez de formuler la réponse dans votre tête avant de retourner : c’est l’effort de
           rappel qui fait mémoriser.
         </p>
       </div>
-
-      {/* Panneau latéral (grand écran) */}
-      <aside className="hidden flex-col gap-4 lg:flex">
-        <Card>
-          <CardContent className="p-5">
-            <div className="mb-3 text-sm font-semibold">Cette session</div>
-            <ul className="flex flex-col gap-2">
-              {GRADES.map((g) => (
-                <li key={g.grade} className="flex items-center gap-3 text-sm">
-                  <span className="grid size-8 place-items-center rounded-md bg-muted">
-                    <g.icon className="size-4" />
-                  </span>
-                  <span className="flex-1 text-muted-foreground">{g.label}</span>
-                  <span className="font-semibold tabular-nums">{stats[g.grade]}</span>
-                </li>
-              ))}
-            </ul>
-            <div className="mt-4 flex items-baseline justify-between border-t pt-3 text-sm">
-              <span className="text-muted-foreground">Cartes restantes</span>
-              <span className="font-semibold tabular-nums">{remaining}</span>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-5 text-sm">
-            <div className="mb-3 font-semibold">Raccourcis</div>
-            <dl className="grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-2 text-muted-foreground">
-              <dt>
-                <kbd className="rounded border bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">
-                  Espace
-                </kbd>
-              </dt>
-              <dd>Retourner la carte</dd>
-              <dt>
-                <kbd className="rounded border bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">
-                  1 2 3
-                </kbd>
-              </dt>
-              <dd>À revoir · Hésitant · Je sais</dd>
-              <dt>
-                <kbd className="rounded border bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">
-                  ← →
-                </kbd>
-              </dt>
-              <dd>Glisser la carte (souris ou doigt)</dd>
-            </dl>
-          </CardContent>
-        </Card>
-        <p className="px-1 text-xs text-muted-foreground">
-          Essayez de formuler la réponse dans votre tête avant de retourner la carte : c’est
-          l’effort de rappel qui fait mémoriser.
-        </p>
-      </aside>
     </div>
   )
 }
