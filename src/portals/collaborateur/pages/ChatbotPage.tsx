@@ -3,6 +3,8 @@ import { motion } from 'motion/react'
 import { Link } from 'react-router'
 import {
   ArrowRight,
+  ChevronLeft,
+  ChevronRight,
   MessageCircleQuestion,
   SendHorizontal,
   ThumbsDown,
@@ -54,6 +56,106 @@ const WELCOME: Message = {
   text: 'Bonjour, je suis **Prévi**, votre assistant santé & sécurité.\nPosez-moi vos questions sur les bons gestes, les démarches ou les risques au travail. Je vous oriente aussi vers les bonnes ressources.',
 }
 
+/** Carrousel d'idées de questions, au-dessus du champ de saisie. */
+function PromptCarousel({
+  ideas,
+  disabled,
+  onPick,
+}: {
+  ideas: string[]
+  disabled: boolean
+  onPick: (q: string) => void
+}) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [edges, setEdges] = useState({ start: true, end: true })
+
+  const update = () => {
+    const el = ref.current
+    if (!el) return
+    setEdges({
+      start: el.scrollLeft <= 4,
+      end: el.scrollLeft + el.clientWidth >= el.scrollWidth - 4,
+    })
+  }
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const ro = new ResizeObserver(update)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [ideas.length])
+
+  const scroll = (dir: 1 | -1) =>
+    ref.current?.scrollBy({ left: dir * ref.current.clientWidth * 0.8, behavior: 'smooth' })
+
+  return (
+    <div className="mx-auto flex w-full max-w-5xl items-center gap-1.5">
+      <MessageCircleQuestion
+        aria-hidden
+        className="hidden size-4 shrink-0 text-muted-foreground sm:block"
+      />
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon-sm"
+        className="hidden shrink-0 sm:inline-flex"
+        onClick={() => scroll(-1)}
+        disabled={edges.start}
+        aria-label="Idées précédentes"
+      >
+        <ChevronLeft />
+      </Button>
+      <div className="relative min-w-0 flex-1">
+        <div
+          ref={ref}
+          onScroll={update}
+          role="list"
+          aria-label="Idées de questions"
+          className="flex snap-x gap-2 overflow-x-auto scroll-smooth py-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
+          {ideas.map((q) => (
+            <div role="listitem" key={q} className="shrink-0 snap-start">
+              <button
+                type="button"
+                disabled={disabled}
+                onClick={() => onPick(q)}
+                className="rounded-full border border-primary/25 bg-card px-3.5 py-1.5 text-sm whitespace-nowrap text-foreground transition-colors hover:border-primary hover:bg-primary/5 hover:text-primary disabled:opacity-50"
+              >
+                {q}
+              </button>
+            </div>
+          ))}
+        </div>
+        {/* Fondus indiquant qu'il reste des idées à faire défiler */}
+        {!edges.start && (
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-card to-transparent"
+          />
+        )}
+        {!edges.end && (
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-card to-transparent"
+          />
+        )}
+      </div>
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon-sm"
+        className="hidden shrink-0 sm:inline-flex"
+        onClick={() => scroll(1)}
+        disabled={edges.end}
+        aria-label="Idées suivantes"
+      >
+        <ChevronRight />
+      </Button>
+    </div>
+  )
+}
+
 export default function ChatbotPage() {
   const { user } = useAuth()
   const recordChat = useProgress((s) => s.recordChat)
@@ -98,9 +200,6 @@ export default function ChatbotPage() {
   // Idées de questions proposées dans le fil : on retire celles déjà posées
   const asked = new Set(messages.filter((m) => m.role === 'user').map((m) => m.text))
   const remaining = CHAT_SUGGESTIONS.filter((q) => !asked.has(q))
-  const isStart = messages.length <= 1
-  const ideas = isStart ? remaining : remaining.slice(0, 3)
-  const showIdeas = !typing && ideas.length > 0 && messages[messages.length - 1]?.role === 'bot'
 
   const rate = (id: number, feedback: 'up' | 'down') =>
     setMessages((m) => m.map((msg) => (msg.id === id ? { ...msg, feedback } : msg)))
@@ -114,7 +213,7 @@ export default function ChatbotPage() {
         className="mb-5"
       />
       <div>
-        <Card className="flex h-[calc(100dvh-17rem)] min-h-[460px] flex-col overflow-hidden lg:h-[calc(100dvh-15rem)]">
+        <Card className="flex h-[calc(100dvh-22rem)] min-h-[420px] flex-col overflow-hidden lg:h-[calc(100dvh-15rem)]">
           <div className="flex items-center gap-3 border-b bg-card px-5 py-3">
             <Mascot className="size-11" />
             <div>
@@ -217,35 +316,6 @@ export default function ChatbotPage() {
                   </div>
                 </div>
               )}
-              {showIdeas && (
-                <motion.div
-                  key={`ideas-${messages.length}`}
-                  className="pl-11"
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ ...spring, delay: 0.15 }}
-                >
-                  <div className="mb-2 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                    <MessageCircleQuestion className="size-3.5" />
-                    {isStart ? 'Quelques idées pour commencer' : 'Vous pourriez aussi demander'}
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {ideas.map((q, i) => (
-                      <motion.button
-                        key={q}
-                        onClick={() => send(q)}
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ ...spring, delay: 0.2 + i * 0.04 }}
-                        whileTap={{ scale: 0.97 }}
-                        className="rounded-full border border-primary/25 bg-card px-3.5 py-1.5 text-left text-sm text-foreground shadow-xs transition-colors hover:border-primary hover:bg-primary/5 hover:text-primary"
-                      >
-                        {q}
-                      </motion.button>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
               <div ref={endRef} />
             </div>
           </div>
@@ -257,6 +327,9 @@ export default function ChatbotPage() {
             }}
             className="flex flex-col gap-2 border-t bg-card px-4 py-3 sm:px-6"
           >
+            {remaining.length > 0 && (
+              <PromptCarousel ideas={remaining} disabled={typing} onPick={send} />
+            )}
             <div className="mx-auto flex w-full max-w-5xl items-end gap-2">
               <textarea
                 ref={inputRef}

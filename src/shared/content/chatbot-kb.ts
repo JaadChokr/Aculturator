@@ -242,4 +242,10 @@ export const CHAT_SUGGESTIONS = [
   'Je me sens stressé·e en ce moment',
   'Comment régler mon écran ?',
   'Que faire si l’alarme incendie sonne ?',
+  'Que faire après un accident du travail ?',
+  'Qu’est-ce que le DUERP ?',
+  'Comment réagir face à du harcèlement ?',
+  'Puis-je téléphoner en conduisant ?',
+  'Quels équipements de protection porter ?',
+  'Qui contacter pour la santé au travail ?',
 ]
