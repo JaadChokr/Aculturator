@@ -109,7 +109,7 @@ marqueurs de la chasse aux risques à ressort, notifications empilées.
 | **Vidéos & ressources** | Vidéos, fiches, infographies, podcasts ; filtres (type, thématique, non consultées, favoris), recherche ; lecteur (média réel via `mediaUrl`, sinon aperçu simulé) ; résumé « À retenir » débloqué après lecture ; **check express** corrigé | attention, engagement, retour d’information |
 | **Flashcards** | Répétition espacée (**système de Leitner**, 5 boîtes : 1-3-7-14-30 j), session du jour, paquets par thématique, carte 3D **glissable** (geste « swipe »), indice, auto-évaluation (À revoir / Hésitant / Je sais), combos, raccourcis clavier | consolidation, engagement |
 | **Quiz & défis** | **Défi du jour** adaptatif (thématiques les plus faibles, XP ×2), **Défi chrono** (15 s, 3 vies, combos), **Entraînement** par thématique sans pression, **Chasse aux risques** (scène illustrée, 6 dangers à repérer + leurres) ; correction expliquée + lien vers la ressource ; écran « revoir mes erreurs » | engagement, retour d’information, attention |
-| **Prévi (chatbot)** | Assistant SST avec suggestions, réponses sourcées renvoyant vers les ressources, retour utile / pas utile, encart urgences (15/18/112/114) | engagement, retour d’information |
+| **Prévi (chatbot)** | Assistant SST, idées de questions proposées directement dans le fil (renouvelées après chaque réponse), réponses sourcées renvoyant vers les ressources, retour utile / pas utile | engagement, retour d’information |
 | **Trophées & niveaux** | 6 niveaux (Éveil → Ambassadeur·rice SST), 9 badges, statistiques personnelles | motivation |
 
 ### Les 4 piliers de l’apprentissage (S. Dehaene) — principes implicites
