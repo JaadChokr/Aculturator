@@ -1,6 +1,6 @@
 import { motion } from 'motion/react'
 import { Link } from 'react-router'
-import { Layers, Play, Repeat, Sparkles } from 'lucide-react'
+import { Brain, Layers, Play, Repeat, Sparkles } from 'lucide-react'
 import { FLASHCARDS, THEMES } from '@/shared/content'
 import { PageHeader } from '@/shared/components/PageHeader'
 import {
@@ -17,19 +17,39 @@ import { cn, todayISO } from '@/shared/lib/utils'
 import { Reveal, Stagger } from '@/shared/motion'
 import { collabPath } from '../paths'
 import { ThemeIcon } from '../components/ThemeBadge'
-import { LEITNER_INTERVALS, dueCards, useProgress } from '../store/progress'
-
-const BOX_LABELS = ['Nouvelles', 'Boîte 1', 'Boîte 2', 'Boîte 3', 'Boîte 4', 'Boîte 5']
+import { dueCards, useProgress } from '../store/progress'
 
 export default function FlashcardsPage() {
   const cards = useProgress((s) => s.cards)
   const { review, fresh } = dueCards(cards)
   const sessionSize = Math.min(12, review.length + fresh.length)
   const today = todayISO()
-  const boxes = [0, 1, 2, 3, 4, 5].map(
-    (b) => FLASHCARDS.filter((c) => (cards[c.id]?.box ?? 0) === b).length,
-  )
-  const mastered = boxes[4] + boxes[5]
+  // Mémorisation exprimée sans jargon : la mécanique de répétition reste interne.
+  // « Ancrée » = même seuil que la barre « Ancrage » des paquets et le tableau de bord.
+  const boxOf = (id: string): number => cards[id]?.box ?? 0
+  const memory = [
+    {
+      id: 'new',
+      label: 'À découvrir',
+      hint: 'Pas encore vues',
+      count: FLASHCARDS.filter((c) => boxOf(c.id) === 0).length,
+      bar: 'bg-muted-foreground/35',
+    },
+    {
+      id: 'learning',
+      label: 'En cours d’apprentissage',
+      hint: 'Elles reviendront bientôt pour se consolider',
+      count: FLASHCARDS.filter((c) => boxOf(c.id) >= 1 && boxOf(c.id) <= 2).length,
+      bar: 'bg-primary/40 dark:bg-primary/60',
+    },
+    {
+      id: 'anchored',
+      label: 'Ancrées',
+      hint: 'Réussies plusieurs fois, à quelques jours d’intervalle',
+      count: FLASHCARDS.filter((c) => boxOf(c.id) >= 3).length,
+      bar: 'bg-primary',
+    },
+  ]
 
   return (
     <div>
@@ -90,49 +110,52 @@ export default function FlashcardsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Layers className="size-5 text-primary" /> Mes boîtes de Leitner
+              <Brain className="size-5 text-primary" /> Ma mémorisation
             </CardTitle>
             <CardDescription>
-              {mastered} carte{mastered > 1 ? 's' : ''} ancrée{mastered > 1 ? 's' : ''} sur{' '}
-              {FLASHCARDS.length}
+              <span className="font-semibold text-foreground tabular-nums">
+                {memory[2].count} / {FLASHCARDS.length}
+              </span>{' '}
+              cartes ancrées
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex h-28 items-end gap-2">
-              {boxes.map((n, b) => (
-                <div
-                  key={b}
-                  className="flex h-full flex-1 flex-col items-center justify-end gap-1"
-                  title={`${BOX_LABELS[b]} : ${n} carte(s)`}
-                >
-                  <span className="text-xs font-bold tabular-nums">{n}</span>
-                  <motion.div
-                    className={cn(
-                      'w-full rounded-t-[4px]',
-                      b === 0 ? 'bg-muted-foreground/30' : 'bg-xp',
-                    )}
-                    style={{ opacity: b === 0 ? 1 : 0.35 + b * 0.13 }}
-                    initial={{ height: '0%' }}
-                    animate={{
-                      height: `${Math.min(100, Math.max(4, (n / FLASHCARDS.length) * 220))}%`,
-                    }}
-                    transition={{
-                      type: 'spring',
-                      stiffness: 140,
-                      damping: 16,
-                      delay: 0.2 + b * 0.06,
-                    }}
-                  />
-                  <span className="text-[10px] font-semibold text-muted-foreground">
-                    {b === 0 ? 'New' : `B${b}`}
-                  </span>
-                </div>
-              ))}
+            <div
+              className="flex h-3 gap-0.5 overflow-hidden rounded-full bg-muted"
+              role="img"
+              aria-label={memory.map((m) => `${m.label} : ${m.count}`).join(', ')}
+            >
+              {[...memory]
+                .reverse()
+                .map((m, i) =>
+                  m.count > 0 ? (
+                    <motion.div
+                      key={m.id}
+                      className={m.bar}
+                      initial={{ width: 0 }}
+                      animate={{ width: `${(m.count / FLASHCARDS.length) * 100}%` }}
+                      transition={{
+                        type: 'spring',
+                        stiffness: 120,
+                        damping: 20,
+                        delay: 0.2 + i * 0.08,
+                      }}
+                    />
+                  ) : null,
+                )}
             </div>
-            <p className="mt-3 text-xs text-muted-foreground">
-              Une carte réussie monte d’une boîte et revient plus tard (
-              {LEITNER_INTERVALS.slice(1).join(', ')} jours). Une carte ratée revient en boîte 1.
-            </p>
+            <ul className="mt-4 flex flex-col gap-2.5">
+              {[...memory].reverse().map((m) => (
+                <li key={m.id} className="flex items-center gap-3 text-sm">
+                  <span aria-hidden className={cn('size-2.5 shrink-0 rounded-full', m.bar)} />
+                  <span className="flex-1">
+                    <span className="font-medium">{m.label}</span>
+                    <span className="block text-xs text-muted-foreground">{m.hint}</span>
+                  </span>
+                  <span className="font-semibold tabular-nums">{m.count}</span>
+                </li>
+              ))}
+            </ul>
           </CardContent>
         </Card>
       </div>
