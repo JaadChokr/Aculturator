@@ -9,6 +9,8 @@ import {
   FileText,
   Headphones,
   Image as ImageIcon,
+  Maximize,
+  Minimize,
   Pause,
   Play,
   Search,
@@ -126,10 +128,19 @@ function ResourceCard({ r, onOpen }: { r: Resource; onOpen: () => void }) {
 }
 
 /** Lecteur : utilise le média réel si `mediaUrl` est fourni, sinon une lecture simulée (démo). */
+type FullscreenMode = 'none' | 'native' | 'fallback'
+
+/**
+ * Lecteur : utilise le média réel si `mediaUrl` est fourni, sinon une lecture simulée (démo).
+ * Plein écran : API native du navigateur, avec repli sur une vue plein écran
+ * (fenêtre modale pleine page) si le navigateur ou le cadre d'intégration le refuse.
+ */
 function MediaPlayer({ r, onComplete }: { r: Resource; onComplete: () => void }) {
   const [playing, setPlaying] = useState(false)
   const [pct, setPct] = useState(0)
+  const [fs, setFs] = useState<FullscreenMode>('none')
   const done = useRef(false)
+  const containerRef = useRef<HTMLDivElement>(null)
   const theme = getTheme(r.themeId)
 
   useEffect(() => {
@@ -150,7 +161,31 @@ function MediaPlayer({ r, onComplete }: { r: Resource; onComplete: () => void })
     return () => clearInterval(id)
   }, [playing, onComplete])
 
+  // Sortie du plein écran natif (touche Échap, geste système…)
+  useEffect(() => {
+    const onChange = () => {
+      if (!document.fullscreenElement) setFs((m) => (m === 'native' ? 'none' : m))
+    }
+    document.addEventListener('fullscreenchange', onChange)
+    return () => document.removeEventListener('fullscreenchange', onChange)
+  }, [])
+
+  const toggleFullscreen = () => {
+    if (fs === 'native') {
+      document.exitFullscreen?.().catch(() => setFs('none'))
+      return
+    }
+    if (fs === 'fallback') return setFs('none')
+    const el = containerRef.current
+    if (el?.requestFullscreen) {
+      el.requestFullscreen()
+        .then(() => setFs('native'))
+        .catch(() => setFs('fallback'))
+    } else setFs('fallback')
+  }
+
   if (r.mediaUrl && r.type === 'video') {
+    // Le lecteur natif propose déjà son propre bouton plein écran
     return (
       <video
         src={r.mediaUrl}
@@ -162,21 +197,42 @@ function MediaPlayer({ r, onComplete }: { r: Resource; onComplete: () => void })
   }
 
   const step = Math.min(r.keyPoints.length - 1, Math.floor((pct / 100) * r.keyPoints.length))
-  return (
-    <div className="relative overflow-hidden rounded-md bg-inverse text-inverse-foreground">
+  const isFull = fs !== 'none'
+
+  const screen = (big: boolean) => (
+    <div
+      className={cn(
+        'relative overflow-hidden bg-inverse text-inverse-foreground',
+        big ? 'flex h-full w-full items-center justify-center' : 'rounded-md',
+      )}
+      onDoubleClick={toggleFullscreen}
+    >
       <theme.icon
         aria-hidden
         strokeWidth={1}
-        className="absolute -right-6 -bottom-8 size-56 text-inverse-foreground/[0.06]"
+        className={cn(
+          'absolute text-inverse-foreground/[0.06]',
+          big ? '-right-10 -bottom-16 size-[28rem]' : '-right-6 -bottom-8 size-56',
+        )}
       />
-      <div className="relative flex aspect-video flex-col justify-between p-5">
+      <div
+        className={cn(
+          'relative flex flex-col justify-between',
+          big
+            ? 'aspect-video max-h-full w-full max-w-[min(100%,calc(100dvh*16/9))] p-8 sm:p-12'
+            : 'aspect-video p-5',
+        )}
+      >
         <div className="flex items-center gap-2 text-xs font-semibold tracking-wider uppercase opacity-80">
           <span className="h-3 w-1 bg-primary" />
           {r.type === 'podcast' ? 'Podcast' : 'Vidéo'} · aperçu de démonstration
         </div>
         <p
           key={step}
-          className="max-w-lg animate-in fade-in text-lg leading-snug font-semibold sm:text-xl"
+          className={cn(
+            'animate-in leading-snug font-semibold fade-in',
+            big ? 'max-w-4xl text-2xl sm:text-4xl' : 'max-w-lg text-lg sm:text-xl',
+          )}
         >
           {pct === 0 ? r.summary : r.keyPoints[step]}
         </p>
@@ -199,9 +255,37 @@ function MediaPlayer({ r, onComplete }: { r: Resource; onComplete: () => void })
             indicatorClassName="bg-primary"
           />
           <span className="text-xs font-semibold tabular-nums">{r.durationMin}:00</span>
+          <Button
+            size="icon-sm"
+            variant="ghost"
+            onClick={toggleFullscreen}
+            className="text-inverse-foreground hover:bg-white/10 hover:text-inverse-foreground"
+            aria-label={isFull ? 'Quitter le plein écran' : 'Plein écran'}
+            title={isFull ? 'Quitter le plein écran' : 'Plein écran'}
+          >
+            {isFull ? <Minimize /> : <Maximize />}
+          </Button>
         </div>
       </div>
     </div>
+  )
+
+  return (
+    <>
+      <div ref={containerRef} className={cn(fs === 'native' && 'bg-inverse')}>
+        {screen(fs === 'native')}
+      </div>
+      {/* Repli : vue plein écran dans une fenêtre pleine page */}
+      <Dialog open={fs === 'fallback'} onOpenChange={(o) => !o && setFs('none')}>
+        <DialogContent className="top-0 left-0 h-dvh max-h-none w-screen max-w-none translate-x-0 translate-y-0 rounded-none border-0 bg-inverse p-0 text-inverse-foreground">
+          <DialogTitle className="sr-only">{r.title} — plein écran</DialogTitle>
+          <DialogDescription className="sr-only">
+            Appuyez sur Échap pour quitter le plein écran.
+          </DialogDescription>
+          {screen(true)}
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }
 
