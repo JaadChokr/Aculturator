@@ -322,7 +322,7 @@ function NextSteps() {
   const s = useProgress()
   const steps = nextSteps(s, countDue(s.cards))
   return (
-    <Card>
+    <Card className="h-full">
       <CardHeader>
         <CardTitle>Recommandé pour vous</CardTitle>
         <CardDescription>Vos prochaines étapes, selon votre progression.</CardDescription>
@@ -377,29 +377,30 @@ function ThemesProgress() {
           <CardDescription>Quiz, flashcards et ressources consultées.</CardDescription>
         </div>
       </CardHeader>
-      <CardContent className="grid gap-3 sm:grid-cols-2 2xl:grid-cols-3">
+      <CardContent className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-7">
         {rows.map(({ theme, mastery }) => (
           <Link
             key={theme.id}
             to={collabPath(`quiz/jouer?mode=entrainement&theme=${theme.id}`)}
-            className="group flex items-center gap-3 rounded-md border p-3 transition-colors hover:border-primary/40 hover:bg-muted/40"
+            className="group flex flex-col items-center gap-2 rounded-md border p-4 text-center transition-colors hover:border-primary/40 hover:bg-muted/40"
           >
             <ProgressRing
               value={mastery}
-              size={52}
+              size={60}
               stroke={5}
               indicatorClassName="stroke-primary"
               label={`Maîtrise ${theme.title}`}
             >
               <theme.icon className="size-5 text-foreground" strokeWidth={1.75} aria-hidden />
             </ProgressRing>
-            <span className="min-w-0 flex-1">
-              <span className="block text-sm leading-tight font-semibold">{theme.title}</span>
+            <span className="flex min-w-0 flex-1 flex-col justify-between gap-1">
+              <span className="block text-sm leading-tight font-semibold text-balance">
+                {theme.title}
+              </span>
               <span className="text-xs text-muted-foreground">
                 <span className="font-bold text-foreground tabular-nums">{mastery}%</span> maîtrisé
               </span>
             </span>
-            <ArrowRight className="size-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
           </Link>
         ))}
       </CardContent>
@@ -487,7 +488,7 @@ function Leaderboard() {
     (a, b) => b.xp - a.xp,
   )
   return (
-    <Card>
+    <Card className="h-full">
       <CardHeader>
         <CardTitle>Défi d’équipe · {user.team}</CardTitle>
         <CardDescription>Classement de la semaine (participation volontaire).</CardDescription>
@@ -531,24 +532,22 @@ export default function DashboardPage() {
       <Reveal>
         <StatTiles />
       </Reveal>
-      <div className="grid gap-6 lg:grid-cols-3">
-        <Stagger className="flex flex-col gap-6 lg:col-span-2" stagger={0.08} delay={0.15}>
-          <Reveal>
-            <NextSteps />
-          </Reveal>
-          <Reveal>
-            <ThemesProgress />
-          </Reveal>
-          <Reveal>
-            <Activity />
-          </Reveal>
-        </Stagger>
-        <Stagger className="flex flex-col gap-6" stagger={0.08} delay={0.25}>
-          <Reveal>
-            <Leaderboard />
-          </Reveal>
-        </Stagger>
+      {/* Rangée 1 : actions + défi d'équipe, à la même hauteur */}
+      <div className="grid gap-6 xl:grid-cols-3">
+        <Reveal className="xl:col-span-2">
+          <NextSteps />
+        </Reveal>
+        <Reveal>
+          <Leaderboard />
+        </Reveal>
       </div>
+      {/* Rangées 2 et 3 : pleine largeur */}
+      <Reveal>
+        <ThemesProgress />
+      </Reveal>
+      <Reveal>
+        <Activity />
+      </Reveal>
     </Stagger>
   )
 }
