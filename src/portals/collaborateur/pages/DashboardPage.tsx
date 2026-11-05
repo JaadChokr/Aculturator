@@ -1,4 +1,5 @@
-import { motion } from 'motion/react'
+import { useCallback, useRef, useState } from 'react'
+import { AnimatePresence, motion } from 'motion/react'
 import { Link } from 'react-router'
 import {
   ArrowRight,
@@ -6,11 +7,13 @@ import {
   Check,
   Crosshair,
   Flame,
+  Info,
   Layers,
   Medal,
   PlayCircle,
   Sparkles,
   Target,
+  type LucideIcon,
 } from 'lucide-react'
 import { useAuth } from '@/app/auth/AuthProvider'
 import { levelFromXp } from '@/shared/content'
@@ -26,7 +29,8 @@ import {
   Progress,
 } from '@/shared/ui'
 import { addDays, cn, formatNumber, todayISO } from '@/shared/lib/utils'
-import { AnimatedNumber, Reveal, Stagger, hoverLift } from '@/shared/motion'
+import { AnimatedNumber, Reveal, Stagger, hoverLift, spring } from '@/shared/motion'
+import { useDismiss } from '@/shared/hooks/useDismiss'
 import { collabPath } from '../paths'
 import { BADGES } from '../store/badges'
 import { allThemeMastery, nextSteps } from '../store/insights'
@@ -122,6 +126,138 @@ function Hero() {
   )
 }
 
+type Tile = {
+  key: string
+  label: string
+  value: number
+  suffix: string
+  icon: LucideIcon
+  to: string
+}
+
+function TileBody({ t, info }: { t: Tile; info?: boolean }) {
+  return (
+    <Card className="relative h-full transition-shadow group-hover:shadow-md">
+      <CardContent className="flex items-center gap-3 p-4">
+        <span className="grid size-10 shrink-0 place-items-center rounded-md bg-primary/8 text-primary">
+          <t.icon className="size-5" />
+        </span>
+        <span className="min-w-0">
+          <span className="block text-2xl leading-none font-bold tabular-nums">
+            <AnimatedNumber value={t.value} from={0} />
+            {t.suffix}
+          </span>
+          <span className="mt-1 block text-xs leading-tight font-medium text-muted-foreground">
+            {t.label}
+          </span>
+        </span>
+      </CardContent>
+      {info && (
+        <Info
+          aria-hidden
+          className="absolute top-2.5 right-2.5 size-4 text-muted-foreground transition-colors group-hover:text-primary"
+        />
+      )}
+    </Card>
+  )
+}
+
+/** Liste des missions du jour (affichée dans la bulle d'info de la tuile). */
+function MissionsList({ onNavigate }: { onNavigate?: () => void }) {
+  const missions = useProgress((s) => s.missions)
+  const progress = missions.day === todayISO() ? missions.progress : {}
+  return (
+    <div className="flex flex-col gap-2">
+      {MISSIONS.map((m) => {
+        const v = progress[m.id] ?? 0
+        const done = v >= m.target
+        return (
+          <Link
+            key={m.id}
+            to={collabPath(m.to)}
+            onClick={onNavigate}
+            className={cn(
+              'flex items-center gap-3 rounded-md border p-3 transition-colors hover:bg-muted/60',
+              done && 'border-success/40 bg-success/5',
+            )}
+          >
+            <span
+              aria-hidden
+              className={cn(
+                'grid size-9 shrink-0 place-items-center rounded-md',
+                done ? 'bg-success text-success-foreground' : 'bg-muted text-foreground',
+              )}
+            >
+              {done ? <Check className="size-4" /> : <m.icon className="size-4" />}
+            </span>
+            <span className="min-w-0 flex-1">
+              <span
+                className={cn(
+                  'block text-sm font-semibold',
+                  done && 'text-muted-foreground line-through',
+                )}
+              >
+                {m.label}
+              </span>
+              <Progress
+                value={(v / m.target) * 100}
+                className="mt-1.5 h-1.5"
+                indicatorClassName={done ? 'bg-success' : undefined}
+              />
+            </span>
+            <span className="text-xs font-bold text-muted-foreground tabular-nums">
+              {v}/{m.target}
+            </span>
+          </Link>
+        )
+      })}
+    </div>
+  )
+}
+
+/** Tuile « Missions du jour » : le détail s'ouvre dans une bulle d'info au clic. */
+function MissionsTile({ t }: { t: Tile }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  const close = useCallback(() => setOpen(false), [])
+  useDismiss(ref, open, close)
+  return (
+    <div ref={ref} className="relative h-full">
+      <motion.button
+        {...hoverLift}
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        aria-haspopup="dialog"
+        aria-label={`Missions du jour : ${t.value} sur ${MISSIONS.length} accomplies. Voir le détail`}
+        className="group block h-full w-full text-left"
+      >
+        <TileBody t={t} info />
+      </motion.button>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            role="dialog"
+            aria-label="Missions du jour"
+            initial={{ opacity: 0, y: -6, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -6, transition: { duration: 0.12 } }}
+            transition={spring}
+            className="absolute top-full right-0 z-30 mt-2 w-[min(24rem,calc(100vw-2rem))] origin-top rounded-md border bg-popover p-4 text-popover-foreground shadow-xl lg:right-auto lg:left-0"
+          >
+            <div className="mb-1 flex items-center gap-2 font-semibold">
+              <CalendarCheck className="size-4 text-success" /> Missions du jour
+            </div>
+            <p className="mb-3 text-xs text-muted-foreground">
+              +25 XP par mission accomplie. Renouvelées chaque jour.
+            </p>
+            <MissionsList onNavigate={close} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
 function StatTiles() {
   const s = useProgress()
   const due = countDue(s.cards)
@@ -129,124 +265,54 @@ function StatTiles() {
   const badges = Object.keys(s.badges).length
   const mastery = Math.round(allThemeMastery(s).reduce((a, b) => a + b.mastery, 0) / 7)
 
-  const tiles = [
+  const tiles: Tile[] = [
     {
+      key: 'cards',
       label: 'Cartes à réviser',
       value: due,
       suffix: '',
       icon: Layers,
       to: 'flashcards',
-      tone: 'text-primary bg-primary/8',
     },
     {
+      key: 'missions',
       label: 'Missions du jour',
       value: missionsDone,
       suffix: `/${MISSIONS.length}`,
       icon: Target,
       to: '',
-      tone: 'text-primary bg-primary/8',
     },
     {
+      key: 'badges',
       label: 'Badges obtenus',
       value: badges,
       suffix: `/${BADGES.length}`,
       icon: Medal,
       to: 'trophees',
-      tone: 'text-primary bg-primary/8',
     },
     {
+      key: 'mastery',
       label: 'Maîtrise globale',
       value: mastery,
       suffix: ' %',
       icon: Sparkles,
       to: 'quiz',
-      tone: 'text-primary bg-primary/8',
     },
   ]
   return (
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-      {tiles.map((t) => (
-        <motion.div key={t.label} {...hoverLift}>
-          <Link to={collabPath(t.to)} className="group block h-full">
-            <Card className="h-full transition-shadow group-hover:shadow-md">
-              <CardContent className="flex items-center gap-3 p-4">
-                <span className={cn('grid size-10 shrink-0 place-items-center rounded-md', t.tone)}>
-                  <t.icon className="size-5" />
-                </span>
-                <span className="min-w-0">
-                  <span className="block text-2xl leading-none font-bold tabular-nums">
-                    <AnimatedNumber value={t.value} from={0} />
-                    {t.suffix}
-                  </span>
-                  <span className="mt-1 block text-xs leading-tight font-medium text-muted-foreground">
-                    {t.label}
-                  </span>
-                </span>
-              </CardContent>
-            </Card>
-          </Link>
-        </motion.div>
-      ))}
-    </div>
-  )
-}
-
-function DailyMissions() {
-  const missions = useProgress((s) => s.missions)
-  const progress = missions.day === todayISO() ? missions.progress : {}
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <CalendarCheck className="size-5 text-success" /> Missions du jour
-        </CardTitle>
-        <CardDescription>+25 XP par mission accomplie. Renouvelées chaque jour.</CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-3">
-        {MISSIONS.map((m) => {
-          const v = progress[m.id] ?? 0
-          const done = v >= m.target
-          return (
-            <Link
-              key={m.id}
-              to={collabPath(m.to)}
-              className={cn(
-                'flex items-center gap-3 rounded-md border p-3 transition-colors hover:bg-muted/60',
-                done && 'border-success/40 bg-success/5',
-              )}
-            >
-              <span
-                aria-hidden
-                className={cn(
-                  'grid size-9 shrink-0 place-items-center rounded-md',
-                  done ? 'bg-success text-success-foreground' : 'bg-muted text-foreground',
-                )}
-              >
-                {done ? <Check className="size-4" /> : <m.icon className="size-4" />}
-              </span>
-              <span className="min-w-0 flex-1">
-                <span
-                  className={cn(
-                    'block text-sm font-semibold',
-                    done && 'text-muted-foreground line-through',
-                  )}
-                >
-                  {m.label}
-                </span>
-                <Progress
-                  value={(v / m.target) * 100}
-                  className="mt-1.5 h-1.5"
-                  indicatorClassName={done ? 'bg-success' : undefined}
-                />
-              </span>
-              <span className="text-xs font-bold text-muted-foreground tabular-nums">
-                {v}/{m.target}
-              </span>
+      {tiles.map((t) =>
+        t.key === 'missions' ? (
+          <MissionsTile key={t.key} t={t} />
+        ) : (
+          <motion.div key={t.key} {...hoverLift}>
+            <Link to={collabPath(t.to)} className="group block h-full">
+              <TileBody t={t} />
             </Link>
-          )
-        })}
-      </CardContent>
-    </Card>
+          </motion.div>
+        ),
+      )}
+    </div>
   )
 }
 
@@ -478,9 +544,6 @@ export default function DashboardPage() {
           </Reveal>
         </Stagger>
         <Stagger className="flex flex-col gap-6" stagger={0.08} delay={0.25}>
-          <Reveal>
-            <DailyMissions />
-          </Reveal>
           <Reveal>
             <Leaderboard />
           </Reveal>
