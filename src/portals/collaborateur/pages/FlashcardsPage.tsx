@@ -138,7 +138,11 @@ export default function FlashcardsPage() {
       </div>
 
       <h2 className="mb-3 text-lg font-bold">Paquets par thématique</h2>
-      <Stagger className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3" stagger={0.05} delay={0.15}>
+      <Stagger
+        className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
+        stagger={0.05}
+        delay={0.15}
+      >
         {THEMES.map((t) => {
           const deck = FLASHCARDS.filter((c) => c.themeId === t.id)
           const deckDue = deck.filter((c) => !cards[c.id] || cards[c.id].due <= today).length

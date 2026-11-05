@@ -137,7 +137,7 @@ export default function HazardHuntPage() {
         </Badge>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1fr_340px]">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px] 2xl:grid-cols-[minmax(0,1fr)_400px]">
         <div>
           <Card className="overflow-hidden p-0">
             <div className="relative">

@@ -319,7 +319,7 @@ function ThemesProgress() {
           <CardDescription>Quiz, flashcards et ressources consultées.</CardDescription>
         </div>
       </CardHeader>
-      <CardContent className="grid gap-3 sm:grid-cols-2">
+      <CardContent className="grid gap-3 sm:grid-cols-2 2xl:grid-cols-3">
         {rows.map(({ theme, mastery }) => (
           <Link
             key={theme.id}

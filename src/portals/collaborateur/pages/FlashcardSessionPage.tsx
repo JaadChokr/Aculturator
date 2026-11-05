@@ -128,7 +128,7 @@ function SwipeCard({
             >
               <t.icon className="size-6" strokeWidth={1.75} />
             </span>
-            <p className="text-xl leading-snug font-semibold text-balance sm:text-2xl">
+            <p className="text-xl leading-snug font-semibold text-balance sm:text-2xl lg:text-3xl">
               {card.front}
             </p>
             <AnimatePresence>
@@ -151,7 +151,7 @@ function SwipeCard({
           <div className="h-1 bg-primary" />
           <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center">
             <span className="text-xs font-bold tracking-wider text-primary uppercase">Réponse</span>
-            <p className="text-lg leading-relaxed font-semibold whitespace-pre-line sm:text-xl">
+            <p className="text-lg leading-relaxed font-semibold whitespace-pre-line sm:text-xl lg:text-2xl">
               {card.back}
             </p>
           </div>
@@ -243,7 +243,7 @@ function Session() {
 
   if (!initialSize) {
     return (
-      <div className="mx-auto max-w-xl text-center">
+      <div className="mx-auto max-w-3xl text-center">
         {backLink}
         <Mascot mood="cheer" className="mx-auto my-6 size-28" />
         <h1 className="mb-2 text-2xl font-bold">Aucune révision en attente</h1>
@@ -262,7 +262,7 @@ function Session() {
   if (!card) {
     const total = stats.again + stats.hard + stats.good
     return (
-      <div className="mx-auto max-w-xl text-center">
+      <div className="mx-auto max-w-3xl text-center">
         <Confetti />
         <motion.div
           initial={{ scale: 0, rotate: -20 }}
@@ -307,101 +307,156 @@ function Session() {
   const remaining = queue.length
 
   return (
-    <div className="mx-auto max-w-2xl">
-      <div className="mb-4 flex items-center gap-3">
-        {backLink}
-        <Progress
-          value={(doneCount / initialSize) * 100}
-          className="h-2.5 flex-1"
-          indicatorClassName="bg-xp"
-        />
-        <span className="text-sm font-bold tabular-nums">
-          {doneCount}/{initialSize}
-        </span>
-      </div>
-
-      <div className="mb-3 flex h-7 items-center justify-between">
-        <ThemeBadge themeId={card.themeId} />
-        <AnimatePresence mode="popLayout">
-          {combo >= 2 && (
-            <motion.span
-              key={combo}
-              initial={{ scale: 0.4, opacity: 0, rotate: -12 }}
-              animate={{ scale: 1, opacity: 1, rotate: 0 }}
-              exit={{ scale: 0.6, opacity: 0 }}
-              transition={springBouncy}
-              className="text-sm font-bold text-streak"
-            >
-              Série de {combo} bonnes réponses
-            </motion.span>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* Paquet : les cartes suivantes sont visibles derrière la carte active */}
-      <div className="relative h-80 sm:h-96">
-        {remaining > 2 && (
-          <div className="absolute inset-x-6 top-5 bottom-0 translate-y-3 rounded-lg border bg-card/60 shadow-sm" />
-        )}
-        {remaining > 1 && (
-          <div className="absolute inset-x-3 top-2.5 bottom-0 translate-y-1.5 rounded-lg border bg-card/80 shadow-md" />
-        )}
-        <AnimatePresence custom={exitDir} initial={false}>
-          <SwipeCard
-            key={`${card.id}-${turn}`}
-            card={card}
-            flipped={flipped}
-            hint={hint}
-            onFlip={() => setFlipped((f) => !f)}
-            onSwipe={grade}
+    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px] 2xl:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="min-w-0">
+        <div className="mb-4 flex items-center gap-3">
+          {backLink}
+          <Progress
+            value={(doneCount / initialSize) * 100}
+            className="h-2.5 flex-1"
+            indicatorClassName="bg-xp"
           />
-        </AnimatePresence>
+          <span className="text-sm font-bold tabular-nums">
+            {doneCount}/{initialSize}
+          </span>
+        </div>
+
+        <div className="mb-3 flex h-7 items-center justify-between">
+          <ThemeBadge themeId={card.themeId} />
+          <AnimatePresence mode="popLayout">
+            {combo >= 2 && (
+              <motion.span
+                key={combo}
+                initial={{ scale: 0.4, opacity: 0, rotate: -12 }}
+                animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                exit={{ scale: 0.6, opacity: 0 }}
+                transition={springBouncy}
+                className="text-sm font-bold text-streak"
+              >
+                Série de {combo} bonnes réponses
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Paquet : les cartes suivantes sont visibles derrière la carte active */}
+        <div className="relative h-80 sm:h-96 lg:h-[28rem]">
+          {remaining > 2 && (
+            <div className="absolute inset-x-6 top-5 bottom-0 translate-y-3 rounded-lg border bg-card/60 shadow-sm" />
+          )}
+          {remaining > 1 && (
+            <div className="absolute inset-x-3 top-2.5 bottom-0 translate-y-1.5 rounded-lg border bg-card/80 shadow-md" />
+          )}
+          <AnimatePresence custom={exitDir} initial={false}>
+            <SwipeCard
+              key={`${card.id}-${turn}`}
+              card={card}
+              flipped={flipped}
+              hint={hint}
+              onFlip={() => setFlipped((f) => !f)}
+              onSwipe={grade}
+            />
+          </AnimatePresence>
+        </div>
+
+        <div className="mt-6 min-h-24">
+          <AnimatePresence mode="wait" initial={false}>
+            {flipped ? (
+              <Stagger key="grades" className="grid grid-cols-3 gap-2 sm:gap-3" stagger={0.05}>
+                {GRADES.map((g) => (
+                  <Reveal key={g.grade} variant="pop">
+                    <Button
+                      variant="outline"
+                      onClick={() => grade(g.grade)}
+                      className={cn('h-auto w-full flex-col gap-0.5 border-2 py-3', g.className)}
+                    >
+                      <g.icon className="size-5" />
+                      <span>{g.label}</span>
+                      <span className="hidden text-[10px] font-medium opacity-60 sm:block">
+                        touche {g.key}
+                      </span>
+                    </Button>
+                  </Reveal>
+                ))}
+              </Stagger>
+            ) : (
+              <motion.div
+                key="actions"
+                className="flex justify-center gap-2"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8, transition: { duration: 0.12 } }}
+              >
+                {card.hint && !hint && (
+                  <Button variant="ghost" onClick={() => setHint(true)}>
+                    <Lightbulb /> Un indice ?
+                  </Button>
+                )}
+                <Button size="lg" onClick={() => setFlipped(true)}>
+                  <RotateCcw /> Retourner la carte
+                </Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+        <p className="mt-2 text-center text-xs text-muted-foreground lg:hidden">
+          Essayez de formuler la réponse dans votre tête avant de retourner : c’est l’effort de
+          rappel qui fait mémoriser.
+        </p>
       </div>
 
-      <div className="mt-6 min-h-24">
-        <AnimatePresence mode="wait" initial={false}>
-          {flipped ? (
-            <Stagger key="grades" className="grid grid-cols-3 gap-2 sm:gap-3" stagger={0.05}>
+      {/* Panneau latéral (grand écran) */}
+      <aside className="hidden flex-col gap-4 lg:flex">
+        <Card>
+          <CardContent className="p-5">
+            <div className="mb-3 text-sm font-semibold">Cette session</div>
+            <ul className="flex flex-col gap-2">
               {GRADES.map((g) => (
-                <Reveal key={g.grade} variant="pop">
-                  <Button
-                    variant="outline"
-                    onClick={() => grade(g.grade)}
-                    className={cn('h-auto w-full flex-col gap-0.5 border-2 py-3', g.className)}
-                  >
-                    <g.icon className="size-5" />
-                    <span>{g.label}</span>
-                    <span className="hidden text-[10px] font-medium opacity-60 sm:block">
-                      touche {g.key}
-                    </span>
-                  </Button>
-                </Reveal>
+                <li key={g.grade} className="flex items-center gap-3 text-sm">
+                  <span className="grid size-8 place-items-center rounded-md bg-muted">
+                    <g.icon className="size-4" />
+                  </span>
+                  <span className="flex-1 text-muted-foreground">{g.label}</span>
+                  <span className="font-semibold tabular-nums">{stats[g.grade]}</span>
+                </li>
               ))}
-            </Stagger>
-          ) : (
-            <motion.div
-              key="actions"
-              className="flex justify-center gap-2"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8, transition: { duration: 0.12 } }}
-            >
-              {card.hint && !hint && (
-                <Button variant="ghost" onClick={() => setHint(true)}>
-                  <Lightbulb /> Un indice ?
-                </Button>
-              )}
-              <Button size="lg" onClick={() => setFlipped(true)}>
-                <RotateCcw /> Retourner la carte
-              </Button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-      <p className="mt-2 text-center text-xs text-muted-foreground">
-        Essayez de formuler la réponse dans votre tête avant de retourner : c’est l’effort de rappel
-        qui fait mémoriser.
-      </p>
+            </ul>
+            <div className="mt-4 flex items-baseline justify-between border-t pt-3 text-sm">
+              <span className="text-muted-foreground">Cartes restantes</span>
+              <span className="font-semibold tabular-nums">{remaining}</span>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-5 text-sm">
+            <div className="mb-3 font-semibold">Raccourcis</div>
+            <dl className="grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-2 text-muted-foreground">
+              <dt>
+                <kbd className="rounded border bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">
+                  Espace
+                </kbd>
+              </dt>
+              <dd>Retourner la carte</dd>
+              <dt>
+                <kbd className="rounded border bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">
+                  1 2 3
+                </kbd>
+              </dt>
+              <dd>À revoir · Hésitant · Je sais</dd>
+              <dt>
+                <kbd className="rounded border bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">
+                  ← →
+                </kbd>
+              </dt>
+              <dd>Glisser la carte (souris ou doigt)</dd>
+            </dl>
+          </CardContent>
+        </Card>
+        <p className="px-1 text-xs text-muted-foreground">
+          Essayez de formuler la réponse dans votre tête avant de retourner la carte : c’est
+          l’effort de rappel qui fait mémoriser.
+        </p>
+      </aside>
     </div>
   )
 }

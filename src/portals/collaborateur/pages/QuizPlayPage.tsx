@@ -61,6 +61,84 @@ interface AnswerLog {
   correct: boolean
 }
 
+/** Panneau latéral (grand écran) : suivi question par question et raccourcis. */
+function QuizAside({
+  questions,
+  index,
+  log,
+  revealed,
+}: {
+  questions: QuizQuestion[]
+  index: number
+  log: AnswerLog[]
+  revealed: boolean
+}) {
+  const correct = log.filter((l) => l.correct).length
+  return (
+    <aside className="hidden flex-col gap-4 lg:flex">
+      <Card>
+        <CardContent className="p-5">
+          <div className="mb-3 text-sm font-semibold">Suivi de la partie</div>
+          <ol className="grid grid-cols-5 gap-2">
+            {questions.map((qq, i) => {
+              const entry = log[i]
+              const current = i === index && !revealed
+              return (
+                <li
+                  key={qq.id}
+                  aria-label={`Question ${i + 1} : ${entry ? (entry.correct ? 'réussie' : 'manquée') : current ? 'en cours' : 'à venir'}`}
+                  className={cn(
+                    'grid aspect-square place-items-center rounded-md border text-xs font-semibold tabular-nums transition-colors',
+                    entry?.correct && 'border-success bg-success text-success-foreground',
+                    entry && !entry.correct && 'border-destructive bg-destructive text-white',
+                    !entry && current && 'border-primary text-primary ring-2 ring-primary/20',
+                    !entry && !current && 'bg-muted text-muted-foreground',
+                  )}
+                >
+                  {entry ? (
+                    entry.correct ? (
+                      <CheckCircle2 className="size-4" />
+                    ) : (
+                      <XCircle className="size-4" />
+                    )
+                  ) : (
+                    i + 1
+                  )}
+                </li>
+              )
+            })}
+          </ol>
+          <div className="mt-4 flex items-baseline justify-between border-t pt-3 text-sm">
+            <span className="text-muted-foreground">Bonnes réponses</span>
+            <span className="font-semibold tabular-nums">
+              {correct} / {log.length}
+            </span>
+          </div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardContent className="p-5 text-sm">
+          <div className="mb-3 font-semibold">Raccourcis clavier</div>
+          <dl className="grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-2 text-muted-foreground">
+            <dt>
+              <kbd className="rounded border bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">
+                1–4
+              </kbd>
+            </dt>
+            <dd>Choisir une réponse (ou A–D)</dd>
+            <dt>
+              <kbd className="rounded border bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">
+                Entrée
+              </kbd>
+            </dt>
+            <dd>Question suivante</dd>
+          </dl>
+        </CardContent>
+      </Card>
+    </aside>
+  )
+}
+
 /** Remonte le jeu à chaque changement de paramètres (mode / thématique). */
 export default function QuizPlayPage() {
   const [params] = useSearchParams()
@@ -202,7 +280,7 @@ function QuizGame() {
             ? 'Bien joué, vous progressez.'
             : 'Chaque erreur est une occasion d’apprendre.'
     return (
-      <div className="mx-auto max-w-3xl">
+      <div className="mx-auto max-w-6xl">
         {pct >= 70 && <Confetti />}
         <motion.div
           initial={{ opacity: 0, scale: 0.96 }}
@@ -268,7 +346,7 @@ function QuizGame() {
               <p className="mb-4 text-sm text-muted-foreground">
                 Relire la correction maintenant renforce la mémorisation.
               </p>
-              <Stagger className="flex flex-col gap-3" delay={0.6} stagger={0.08}>
+              <Stagger className="grid gap-3 lg:grid-cols-2" delay={0.6} stagger={0.08}>
                 {mistakes.map(({ q: mq, picked: p }) => (
                   <Reveal key={mq.id} className="rounded-xl border p-4">
                     <div className="mb-2 flex items-center gap-2">
@@ -322,215 +400,220 @@ function QuizGame() {
   const resource = q.resourceId ? RESOURCE_BY_ID[q.resourceId] : null
 
   return (
-    <div className="mx-auto max-w-3xl">
-      <div className="mb-4 flex items-center gap-3">
-        <Button asChild variant="ghost" size="sm">
-          <Link to={collabPath('quiz')}>
-            <ArrowLeft /> Quitter
-          </Link>
-        </Button>
-        <Progress value={(index / questions.length) * 100} className="h-2.5 flex-1" />
-        <span className="text-sm font-bold tabular-nums">
-          {index + 1}/{questions.length}
-        </span>
-      </div>
-
-      <div className="mb-4 flex min-h-9 flex-wrap items-center gap-3">
-        <span className="text-sm font-bold text-primary">{title}</span>
-        <ThemeBadge themeId={q.themeId} />
-        <span className="ml-auto flex items-center gap-3">
-          <AnimatePresence mode="popLayout">
-            {combo >= 2 && (
-              <motion.span
-                key={combo}
-                initial={{ scale: 0.3, opacity: 0, rotate: -15 }}
-                animate={{ scale: 1, opacity: 1, rotate: 0 }}
-                exit={{ scale: 0.5, opacity: 0 }}
-                transition={springBouncy}
-                className="text-sm font-bold text-streak"
-              >
-                Série ×{combo}
-              </motion.span>
-            )}
-          </AnimatePresence>
-          {isChrono && (
-            <span className="flex gap-0.5" aria-label={`${lives} vies restantes`}>
-              {Array.from({ length: LIVES }, (_, i) => (
-                <motion.span
-                  key={i}
-                  animate={
-                    i < lives
-                      ? { scale: 1, opacity: 1, y: 0 }
-                      : { scale: [1.5, 0.8], opacity: 0.5, y: [0, -6, 0] }
-                  }
-                  transition={springBouncy}
-                >
-                  <Heart
-                    className={cn(
-                      'size-5',
-                      i < lives ? 'fill-red-500 text-red-500' : 'text-muted-foreground/40',
-                    )}
-                  />
-                </motion.span>
-              ))}
-            </span>
-          )}
-        </span>
-      </div>
-
-      {isChrono && (
-        <div className="mb-4 flex items-center gap-2">
-          <Timer
-            className={cn('size-4', timeLeft <= 5 ? 'text-destructive' : 'text-muted-foreground')}
-          />
-          <Progress
-            value={(timeLeft / CHRONO_SECONDS) * 100}
-            className="h-2 flex-1"
-            indicatorClassName={cn(
-              'transition-transform duration-1000 ease-linear',
-              timeLeft <= 5 ? 'bg-destructive' : 'bg-warning',
-            )}
-          />
-          <span
-            className={cn(
-              'w-8 text-right text-sm font-bold tabular-nums',
-              timeLeft <= 5 && 'text-destructive',
-            )}
-          >
-            {timeLeft}s
+    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px] 2xl:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="min-w-0">
+        <div className="mb-4 flex items-center gap-3">
+          <Button asChild variant="ghost" size="sm">
+            <Link to={collabPath('quiz')}>
+              <ArrowLeft /> Quitter
+            </Link>
+          </Button>
+          <Progress value={(index / questions.length) * 100} className="h-2.5 flex-1" />
+          <span className="text-sm font-bold tabular-nums">
+            {index + 1}/{questions.length}
           </span>
         </div>
-      )}
 
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={q.id}
-          initial={{ opacity: 0, x: 48 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -48 }}
-          transition={{ duration: 0.3, ease: EASE_OUT }}
-        >
-          <Card className="mb-4">
-            <CardContent className="p-6 sm:p-8">
-              <div className="mb-1 text-xs font-bold text-muted-foreground">
-                Difficulté {'●'.repeat(q.difficulty)}
-                {'○'.repeat(3 - q.difficulty)}
-              </div>
-              <h2 className="mb-6 text-xl leading-snug font-bold sm:text-2xl">{q.question}</h2>
-              <div className="grid gap-3 sm:grid-cols-2">
-                {q.options.map((opt, i) => {
-                  const isAnswer = i === q.answer
-                  const isPicked = i === picked
-                  return (
-                    <motion.button
-                      key={opt}
-                      disabled={revealed}
-                      onClick={() => answer(i)}
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={
-                        revealed && isAnswer
-                          ? { opacity: 1, y: 0, scale: [1, 1.05, 1] }
-                          : { opacity: 1, y: 0, scale: 1 }
-                      }
-                      transition={{ delay: revealed ? 0 : 0.12 + i * 0.06, ...spring }}
-                      whileHover={revealed ? undefined : { y: -2 }}
-                      whileTap={revealed ? undefined : { scale: 0.97 }}
+        <div className="mb-4 flex min-h-9 flex-wrap items-center gap-3">
+          <span className="text-sm font-bold text-primary">{title}</span>
+          <ThemeBadge themeId={q.themeId} />
+          <span className="ml-auto flex items-center gap-3">
+            <AnimatePresence mode="popLayout">
+              {combo >= 2 && (
+                <motion.span
+                  key={combo}
+                  initial={{ scale: 0.3, opacity: 0, rotate: -15 }}
+                  animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                  exit={{ scale: 0.5, opacity: 0 }}
+                  transition={springBouncy}
+                  className="text-sm font-bold text-streak"
+                >
+                  Série ×{combo}
+                </motion.span>
+              )}
+            </AnimatePresence>
+            {isChrono && (
+              <span className="flex gap-0.5" aria-label={`${lives} vies restantes`}>
+                {Array.from({ length: LIVES }, (_, i) => (
+                  <motion.span
+                    key={i}
+                    animate={
+                      i < lives
+                        ? { scale: 1, opacity: 1, y: 0 }
+                        : { scale: [1.5, 0.8], opacity: 0.5, y: [0, -6, 0] }
+                    }
+                    transition={springBouncy}
+                  >
+                    <Heart
                       className={cn(
-                        'flex items-center gap-3 rounded-xl border-2 bg-card p-4 text-left font-semibold transition-colors hover:border-primary/60 hover:shadow-md disabled:cursor-default disabled:shadow-none',
-                        revealed && isAnswer && 'border-success bg-success/10',
-                        revealed &&
-                          isPicked &&
-                          !isAnswer &&
-                          'animate-shake border-destructive bg-destructive/10',
-                        revealed && !isAnswer && !isPicked && 'opacity-50',
+                        'size-5',
+                        i < lives ? 'fill-red-500 text-red-500' : 'text-muted-foreground/40',
                       )}
-                    >
-                      <span
-                        className={cn(
-                          'grid size-8 shrink-0 place-items-center rounded-lg bg-muted text-sm font-bold',
-                          revealed && isAnswer && 'bg-success text-success-foreground',
-                          revealed && isPicked && !isAnswer && 'bg-destructive text-white',
-                        )}
-                      >
-                        {revealed && isAnswer ? '✓' : revealed && isPicked ? '✗' : LETTERS[i]}
-                      </span>
-                      {opt}
-                    </motion.button>
-                  )
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </AnimatePresence>
+                    />
+                  </motion.span>
+                ))}
+              </span>
+            )}
+          </span>
+        </div>
 
-      <AnimatePresence>
-        {revealed && (
-          <motion.div
-            key={`fb-${q.id}`}
-            initial={{ opacity: 0, y: 24, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, transition: { duration: 0.1 } }}
-            transition={spring}
-          >
-            <Card
+        {isChrono && (
+          <div className="mb-4 flex items-center gap-2">
+            <Timer
+              className={cn('size-4', timeLeft <= 5 ? 'text-destructive' : 'text-muted-foreground')}
+            />
+            <Progress
+              value={(timeLeft / CHRONO_SECONDS) * 100}
+              className="h-2 flex-1"
+              indicatorClassName={cn(
+                'transition-transform duration-1000 ease-linear',
+                timeLeft <= 5 ? 'bg-destructive' : 'bg-warning',
+              )}
+            />
+            <span
               className={cn(
-                'border-2',
-                correctNow
-                  ? 'border-success/50 bg-success/5'
-                  : 'border-destructive/40 bg-destructive/5',
+                'w-8 text-right text-sm font-bold tabular-nums',
+                timeLeft <= 5 && 'text-destructive',
               )}
             >
-              <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center">
-                <motion.div
-                  className="shrink-0"
-                  initial={{ scale: 0.4, rotate: correctNow ? -20 : 0 }}
-                  animate={
-                    correctNow ? { scale: 1, rotate: 0 } : { scale: 1, x: [0, -6, 6, -4, 0] }
-                  }
-                  transition={correctNow ? springBouncy : { duration: 0.45 }}
-                >
-                  <Mascot mood={correctNow ? 'cheer' : 'oops'} className="size-16" />
-                </motion.div>
-                <div className="flex-1">
-                  <p className="mb-1 font-bold">
-                    {correctNow
-                      ? 'Bonne réponse !'
-                      : picked === null
-                        ? 'Temps écoulé…'
-                        : 'Pas tout à fait…'}
-                    {correctNow && (
-                      <motion.span
-                        className="ml-2 inline-block text-sm text-xp"
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ ...springBouncy, delay: 0.15 }}
-                      >
-                        +{XP.quizCorrect} XP
-                      </motion.span>
-                    )}
-                  </p>
-                  <p className="text-sm text-muted-foreground">{q.explanation}</p>
-                  {resource && !correctNow && (
-                    <Link
-                      to={collabPath(`ressources?r=${resource.id}`)}
-                      className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline"
-                    >
-                      <BookOpen className="size-4" /> Revoir : {resource.title}
-                    </Link>
-                  )}
+              {timeLeft}s
+            </span>
+          </div>
+        )}
+
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={q.id}
+            initial={{ opacity: 0, x: 48 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -48 }}
+            transition={{ duration: 0.3, ease: EASE_OUT }}
+          >
+            <Card className="mb-4">
+              <CardContent className="p-6 sm:p-8">
+                <div className="mb-1 text-xs font-bold text-muted-foreground">
+                  Difficulté {'●'.repeat(q.difficulty)}
+                  {'○'.repeat(3 - q.difficulty)}
                 </div>
-                <Button onClick={next} size="lg" className="shrink-0">
-                  {index + 1 >= questions.length || (isChrono && lives <= 0)
-                    ? 'Voir mon score'
-                    : 'Suivante'}{' '}
-                  <ArrowRight />
-                </Button>
+                <h2 className="mb-6 text-xl leading-snug font-bold sm:text-2xl lg:text-[1.75rem]">
+                  {q.question}
+                </h2>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {q.options.map((opt, i) => {
+                    const isAnswer = i === q.answer
+                    const isPicked = i === picked
+                    return (
+                      <motion.button
+                        key={opt}
+                        disabled={revealed}
+                        onClick={() => answer(i)}
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={
+                          revealed && isAnswer
+                            ? { opacity: 1, y: 0, scale: [1, 1.05, 1] }
+                            : { opacity: 1, y: 0, scale: 1 }
+                        }
+                        transition={{ delay: revealed ? 0 : 0.12 + i * 0.06, ...spring }}
+                        whileHover={revealed ? undefined : { y: -2 }}
+                        whileTap={revealed ? undefined : { scale: 0.97 }}
+                        className={cn(
+                          'flex items-center gap-3 rounded-xl border-2 bg-card p-4 text-left font-semibold transition-colors lg:p-5 lg:text-[15px] hover:border-primary/60 hover:shadow-md disabled:cursor-default disabled:shadow-none',
+                          revealed && isAnswer && 'border-success bg-success/10',
+                          revealed &&
+                            isPicked &&
+                            !isAnswer &&
+                            'animate-shake border-destructive bg-destructive/10',
+                          revealed && !isAnswer && !isPicked && 'opacity-50',
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            'grid size-8 shrink-0 place-items-center rounded-lg bg-muted text-sm font-bold',
+                            revealed && isAnswer && 'bg-success text-success-foreground',
+                            revealed && isPicked && !isAnswer && 'bg-destructive text-white',
+                          )}
+                        >
+                          {revealed && isAnswer ? '✓' : revealed && isPicked ? '✗' : LETTERS[i]}
+                        </span>
+                        {opt}
+                      </motion.button>
+                    )
+                  })}
+                </div>
               </CardContent>
             </Card>
           </motion.div>
-        )}
-      </AnimatePresence>
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {revealed && (
+            <motion.div
+              key={`fb-${q.id}`}
+              initial={{ opacity: 0, y: 24, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, transition: { duration: 0.1 } }}
+              transition={spring}
+            >
+              <Card
+                className={cn(
+                  'border-2',
+                  correctNow
+                    ? 'border-success/50 bg-success/5'
+                    : 'border-destructive/40 bg-destructive/5',
+                )}
+              >
+                <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center">
+                  <motion.div
+                    className="shrink-0"
+                    initial={{ scale: 0.4, rotate: correctNow ? -20 : 0 }}
+                    animate={
+                      correctNow ? { scale: 1, rotate: 0 } : { scale: 1, x: [0, -6, 6, -4, 0] }
+                    }
+                    transition={correctNow ? springBouncy : { duration: 0.45 }}
+                  >
+                    <Mascot mood={correctNow ? 'cheer' : 'oops'} className="size-16" />
+                  </motion.div>
+                  <div className="flex-1">
+                    <p className="mb-1 font-bold">
+                      {correctNow
+                        ? 'Bonne réponse !'
+                        : picked === null
+                          ? 'Temps écoulé…'
+                          : 'Pas tout à fait…'}
+                      {correctNow && (
+                        <motion.span
+                          className="ml-2 inline-block text-sm text-xp"
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ ...springBouncy, delay: 0.15 }}
+                        >
+                          +{XP.quizCorrect} XP
+                        </motion.span>
+                      )}
+                    </p>
+                    <p className="text-sm text-muted-foreground">{q.explanation}</p>
+                    {resource && !correctNow && (
+                      <Link
+                        to={collabPath(`ressources?r=${resource.id}`)}
+                        className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline"
+                      >
+                        <BookOpen className="size-4" /> Revoir : {resource.title}
+                      </Link>
+                    )}
+                  </div>
+                  <Button onClick={next} size="lg" className="shrink-0">
+                    {index + 1 >= questions.length || (isChrono && lives <= 0)
+                      ? 'Voir mon score'
+                      : 'Suivante'}{' '}
+                    <ArrowRight />
+                  </Button>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+      <QuizAside questions={questions} index={index} log={log} revealed={revealed} />
     </div>
   )
 }

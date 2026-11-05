@@ -426,7 +426,7 @@ export default function ResourcesPage() {
       </div>
 
       {list.length ? (
-        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           <AnimatePresence mode="popLayout" initial={false}>
             {list.map((r, i) => (
               <motion.div

@@ -330,7 +330,7 @@ export function PortalLayout({ portal }: { portal: PortalDefinition }) {
           </div>
         </header>
 
-        <main className="mx-auto w-full max-w-7xl px-4 py-6 pb-28 sm:px-6 lg:px-8 lg:pb-10">
+        <main className="mx-auto w-full max-w-[1760px] px-4 py-6 pb-28 sm:px-6 lg:px-8 lg:pb-10">
           <Suspense fallback={<PageLoader />}>
             <motion.div
               key={location.pathname}

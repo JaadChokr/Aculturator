@@ -165,7 +165,7 @@ export default function QuizHubPage() {
           </CardTitle>
           <CardDescription>Le pourcentage indique votre maîtrise actuelle.</CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+        <CardContent className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {THEMES.map((t) => {
             const m = themeMastery(s, t.id)
             return (
