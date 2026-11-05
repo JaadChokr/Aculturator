@@ -6,7 +6,9 @@ import {
   ArrowRight,
   BookOpen,
   CheckCircle2,
+  CircleHelp,
   Heart,
+  MousePointerClick,
   RotateCcw,
   Timer,
   XCircle,
@@ -28,6 +30,7 @@ import { cn, shuffle } from '@/shared/lib/utils'
 import { AnimatedNumber, EASE_OUT, Reveal, Stagger, spring, springBouncy } from '@/shared/motion'
 import { collabPath } from '../paths'
 import { ThemeBadge } from '../components/ThemeBadge'
+import { TutorialDialog, useTutorial, type TutorialStep } from '../components/TutorialDialog'
 import { themeMastery } from '../store/insights'
 import { useProgress, type QuizMode } from '../store/progress'
 
@@ -61,83 +64,25 @@ interface AnswerLog {
   correct: boolean
 }
 
-/** Panneau latéral (grand écran) : suivi question par question et raccourcis. */
-function QuizAside({
-  questions,
-  index,
-  log,
-  revealed,
-}: {
-  questions: QuizQuestion[]
-  index: number
-  log: AnswerLog[]
-  revealed: boolean
-}) {
-  const correct = log.filter((l) => l.correct).length
-  return (
-    <aside className="hidden flex-col gap-4 lg:flex">
-      <Card>
-        <CardContent className="p-5">
-          <div className="mb-3 text-sm font-semibold">Suivi de la partie</div>
-          <ol className="grid grid-cols-5 gap-2">
-            {questions.map((qq, i) => {
-              const entry = log[i]
-              const current = i === index && !revealed
-              return (
-                <li
-                  key={qq.id}
-                  aria-label={`Question ${i + 1} : ${entry ? (entry.correct ? 'réussie' : 'manquée') : current ? 'en cours' : 'à venir'}`}
-                  className={cn(
-                    'grid aspect-square place-items-center rounded-md border text-xs font-semibold tabular-nums transition-colors',
-                    entry?.correct && 'border-success bg-success text-success-foreground',
-                    entry && !entry.correct && 'border-destructive bg-destructive text-white',
-                    !entry && current && 'border-primary text-primary ring-2 ring-primary/20',
-                    !entry && !current && 'bg-muted text-muted-foreground',
-                  )}
-                >
-                  {entry ? (
-                    entry.correct ? (
-                      <CheckCircle2 className="size-4" />
-                    ) : (
-                      <XCircle className="size-4" />
-                    )
-                  ) : (
-                    i + 1
-                  )}
-                </li>
-              )
-            })}
-          </ol>
-          <div className="mt-4 flex items-baseline justify-between border-t pt-3 text-sm">
-            <span className="text-muted-foreground">Bonnes réponses</span>
-            <span className="font-semibold tabular-nums">
-              {correct} / {log.length}
-            </span>
-          </div>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardContent className="p-5 text-sm">
-          <div className="mb-3 font-semibold">Raccourcis clavier</div>
-          <dl className="grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-2 text-muted-foreground">
-            <dt>
-              <kbd className="rounded border bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">
-                1–4
-              </kbd>
-            </dt>
-            <dd>Choisir une réponse (ou A–D)</dd>
-            <dt>
-              <kbd className="rounded border bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">
-                Entrée
-              </kbd>
-            </dt>
-            <dd>Question suivante</dd>
-          </dl>
-        </CardContent>
-      </Card>
-    </aside>
-  )
-}
+const QUIZ_TUTORIAL: TutorialStep[] = [
+  {
+    icon: CircleHelp,
+    title: 'Lisez la question',
+    text: 'Une seule bonne réponse par question. Prenez le temps de lire toutes les propositions.',
+  },
+  {
+    icon: MousePointerClick,
+    title: 'Choisissez votre réponse',
+    text: 'Cliquez ou touchez une proposition. En défi chrono, vous avez 15 secondes et 3 vies.',
+    keys: ['1–4', 'A–D'],
+  },
+  {
+    icon: BookOpen,
+    title: 'Lisez la correction',
+    text: 'Chaque réponse est expliquée, avec un lien vers la ressource si besoin. Puis passez à la question suivante.',
+    keys: ['Entrée'],
+  },
+]
 
 /** Remonte le jeu à chaque changement de paramètres (mode / thématique). */
 export default function QuizPlayPage() {
@@ -154,6 +99,7 @@ function QuizGame() {
 
   const recordAnswer = useProgress((s) => s.recordAnswer)
   const recordQuiz = useProgress((s) => s.recordQuiz)
+  const tutorial = useTutorial('quiz')
 
   const [index, setIndex] = useState(0)
   const [picked, setPicked] = useState<number | null>(null)
@@ -200,9 +146,9 @@ function QuizGame() {
     setTimeLeft(CHRONO_SECONDS)
   }, [index, questions.length, isChrono, lives])
 
-  // Minuteur du défi chrono
+  // Minuteur du défi chrono (en pause pendant le didacticiel)
   useEffect(() => {
-    if (!isChrono || revealed || finished) return
+    if (!isChrono || revealed || finished || tutorial.open) return
     const id = setTimeout(() => {
       if (timeLeft <= 1) {
         setTimeLeft(0)
@@ -210,12 +156,12 @@ function QuizGame() {
       } else setTimeLeft((t) => t - 1)
     }, 1000)
     return () => clearTimeout(id)
-  }, [isChrono, revealed, finished, timeLeft, answer])
+  }, [isChrono, revealed, finished, timeLeft, answer, tutorial.open])
 
   // Raccourcis clavier : 1-4 / A-D pour répondre, Entrée pour continuer
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (finished || !q) return
+      if (finished || !q || tutorial.open) return
       if (!revealed) {
         const i =
           ['1', '2', '3', '4'].indexOf(e.key) >= 0
@@ -226,7 +172,7 @@ function QuizGame() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [finished, revealed, q, answer, next])
+  }, [finished, revealed, q, answer, next, tutorial.open])
 
   // Calcul de l'XP gagnée (valeur dérivée) puis enregistrement unique du résultat
   const score = log.filter((l) => l.correct).length
@@ -400,8 +346,15 @@ function QuizGame() {
   const resource = q.resourceId ? RESOURCE_BY_ID[q.resourceId] : null
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px] 2xl:grid-cols-[minmax(0,1fr)_340px]">
-      <div className="min-w-0">
+    <div className="mx-auto max-w-5xl">
+      <TutorialDialog
+        open={tutorial.open}
+        onClose={tutorial.close}
+        title="Comment fonctionnent les quiz"
+        description="Ici, se tromper fait partie de l’apprentissage : chaque réponse est corrigée et expliquée immédiatement."
+        steps={QUIZ_TUTORIAL}
+      />
+      <div>
         <div className="mb-4 flex items-center gap-3">
           <Button asChild variant="ghost" size="sm">
             <Link to={collabPath('quiz')}>
@@ -412,6 +365,15 @@ function QuizGame() {
           <span className="text-sm font-bold tabular-nums">
             {index + 1}/{questions.length}
           </span>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={tutorial.show}
+            aria-label="Comment ça marche ?"
+            title="Comment ça marche ?"
+          >
+            <CircleHelp />
+          </Button>
         </div>
 
         <div className="mb-4 flex min-h-9 flex-wrap items-center gap-3">
@@ -613,7 +575,6 @@ function QuizGame() {
           )}
         </AnimatePresence>
       </div>
-      <QuizAside questions={questions} index={index} log={log} revealed={revealed} />
     </div>
   )
 }
