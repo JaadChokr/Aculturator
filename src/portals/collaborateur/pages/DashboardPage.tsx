@@ -14,7 +14,7 @@ import {
   Target,
 } from 'lucide-react'
 import { useAuth } from '@/app/auth/AuthProvider'
-import { RESOURCES, levelFromXp } from '@/shared/content'
+import { levelFromXp } from '@/shared/content'
 import { ProgressRing } from '@/shared/components/ProgressRing'
 import {
   Badge,
@@ -29,7 +29,6 @@ import {
 import { addDays, cn, formatNumber, todayISO } from '@/shared/lib/utils'
 import { AnimatedNumber, Reveal, Stagger, hoverLift } from '@/shared/motion'
 import { collabPath } from '../paths'
-import { ThemeBadge } from '../components/ThemeBadge'
 import { BADGES } from '../store/badges'
 import { allThemeMastery, nextSteps } from '../store/insights'
 import { MISSIONS } from '../store/missions'
@@ -293,7 +292,10 @@ function NextSteps() {
                 <Icon className="size-5" />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block font-semibold">{step.title}</span>
+                <span className="flex flex-wrap items-center gap-2">
+                  {step.mandatory && <Badge>Obligatoire</Badge>}
+                  <span className="font-semibold">{step.title}</span>
+                </span>
                 <span className="block text-sm text-muted-foreground">{step.detail}</span>
               </span>
               <span className="hidden items-center gap-1 text-sm font-semibold text-primary sm:inline-flex">
@@ -422,43 +424,6 @@ function Activity() {
   )
 }
 
-function ToWatch() {
-  const viewed = useProgress((s) => s.viewedResources)
-  const list = RESOURCES.filter((r) => !viewed.includes(r.id) && (r.mandatory || r.isNew)).slice(
-    0,
-    3,
-  )
-  if (!list.length) return null
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>À ne pas manquer</CardTitle>
-        <CardDescription>Contenus obligatoires et nouveautés.</CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-2">
-        {list.map((r) => (
-          <Link
-            key={r.id}
-            to={collabPath(`ressources?r=${r.id}`)}
-            className="flex flex-col gap-1.5 rounded-md border p-3 transition-colors hover:bg-muted"
-          >
-            <span className="flex items-center gap-2">
-              <ThemeBadge themeId={r.themeId} />
-              {r.mandatory ? (
-                <Badge variant="destructive">Obligatoire</Badge>
-              ) : (
-                <Badge variant="accent">Nouveau</Badge>
-              )}
-              <span className="ml-auto text-xs text-muted-foreground">{r.durationMin} min</span>
-            </span>
-            <span className="text-sm font-semibold">{r.title}</span>
-          </Link>
-        ))}
-      </CardContent>
-    </Card>
-  )
-}
-
 function Leaderboard() {
   const { user } = useAuth()
   const xp = useProgress((s) => s.xp)
@@ -542,9 +507,6 @@ export default function DashboardPage() {
         <Stagger className="flex flex-col gap-6" stagger={0.08} delay={0.25}>
           <Reveal>
             <DailyMissions />
-          </Reveal>
-          <Reveal>
-            <ToWatch />
           </Reveal>
           <Reveal>
             <Leaderboard />

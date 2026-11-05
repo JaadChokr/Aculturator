@@ -40,6 +40,8 @@ export interface NextStep {
   detail: string
   to: string
   cta: string
+  /** Contenu imposé par l'entreprise : toujours affiché en premier */
+  mandatory?: boolean
 }
 
 /**
@@ -49,6 +51,27 @@ export interface NextStep {
 export function nextSteps(s: ProgressState, dueCount: number, limit = 3): NextStep[] {
   const scores = pillarScores(s)
   const candidates: { pillar: PillarId; step: NextStep }[] = []
+  const unseenRes = RESOURCES.filter((r) => !s.viewedResources.includes(r.id))
+
+  // 1) Contenu obligatoire non consulté : épinglé en tête, quel que soit le reste
+  const mandatory = unseenRes
+    .filter((r) => r.mandatory)
+    .sort((a, b) => a.durationMin - b.durationMin)
+  const pinned: NextStep | null = mandatory[0]
+    ? {
+        id: `mandatory-${mandatory[0].id}`,
+        kind: 'watch',
+        title: mandatory[0].title,
+        detail:
+          `${mandatory[0].durationMin} min` +
+          (mandatory.length > 1
+            ? ` · ${mandatory.length - 1} autre${mandatory.length > 2 ? 's' : ''} contenu${mandatory.length > 2 ? 's' : ''} obligatoire${mandatory.length > 2 ? 's' : ''} à consulter`
+            : ''),
+        to: `ressources?r=${mandatory[0].id}`,
+        cta: 'Consulter',
+        mandatory: true,
+      }
+    : null
 
   if (dueCount > 0) {
     candidates.push({
@@ -64,9 +87,10 @@ export function nextSteps(s: ProgressState, dueCount: number, limit = 3): NextSt
     })
   }
 
-  const unseen = RESOURCES.filter((r) => !s.viewedResources.includes(r.id)).sort(
-    (a, b) => Number(!!b.mandatory) - Number(!!a.mandatory) || a.durationMin - b.durationMin,
-  )[0]
+  // 2) Sinon, une ressource facultative courte (les obligatoires sont déjà épinglées)
+  const unseen = pinned
+    ? undefined
+    : unseenRes.filter((r) => !r.mandatory).sort((a, b) => a.durationMin - b.durationMin)[0]
   if (unseen) {
     candidates.push({
       pillar: 'attention',
@@ -74,7 +98,7 @@ export function nextSteps(s: ProgressState, dueCount: number, limit = 3): NextSt
         id: 'watch',
         kind: 'watch',
         title: unseen.title,
-        detail: `${unseen.mandatory ? 'Contenu obligatoire · ' : ''}${unseen.durationMin} min`,
+        detail: `${unseen.durationMin} min`,
         to: `ressources?r=${unseen.id}`,
         cta: 'Consulter',
       },
@@ -110,10 +134,8 @@ export function nextSteps(s: ProgressState, dueCount: number, limit = 3): NextSt
     })
   }
 
-  return candidates
-    .sort((a, b) => scores[a.pillar] - scores[b.pillar])
-    .slice(0, limit)
-    .map((c) => c.step)
+  const ordered = candidates.sort((a, b) => scores[a.pillar] - scores[b.pillar]).map((c) => c.step)
+  return (pinned ? [pinned, ...ordered] : ordered).slice(0, limit)
 }
 
 export function themeMastery(s: ProgressState, themeId: ThemeId) {
