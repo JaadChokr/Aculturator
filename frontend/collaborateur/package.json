@@ -1,0 +1,22 @@
+{
+  "name": "@acculturator/portal-collaborateur",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Portail collaborateur : se former à la SST (ressources, flashcards, quiz, assistant).",
+  "exports": {
+    ".": "./src/index.tsx"
+  },
+  "dependencies": {
+    "@acculturator/contracts": "*",
+    "@acculturator/shared": "*",
+    "@tanstack/react-query": "5.104.4",
+    "lucide-react": "^1.67.0",
+    "motion": "~12.43.0",
+    "zustand": "^5.0.16"
+  },
+  "peerDependencies": {
+    "react": "^19.2.0",
+    "react-router": "^7.9.0"
+  }
+}

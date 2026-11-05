@@ -1,0 +1,10 @@
+{
+  "name": "@acculturator/contracts",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Contrats de données partagés entre le frontend et le futur backend (types du domaine, DTO, événements).",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

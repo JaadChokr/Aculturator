@@ -1,0 +1,10 @@
+// Utilisé par la CLI shadcn pour résoudre les alias de components.json.
+// La vérification de types du projet se fait depuis la racine (npm run typecheck).
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": { "@/*": ["./src/*"] }
+  },
+  "include": ["src"]
+}
