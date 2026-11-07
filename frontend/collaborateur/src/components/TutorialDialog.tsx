@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@acculturator/design-system/ui'
-import { useProgress } from '../store/progress'
+import { useTips } from '../store/tips'
 
 export interface TutorialStep {
   icon: LucideIcon
@@ -23,8 +23,8 @@ export interface TutorialStep {
  * une rubrique, puis à la demande (bouton « ? »). L'état « vu » est mémorisé.
  */
 export function useTutorial(id: string) {
-  const seen = useProgress((s) => s.seenTips.includes(id))
-  const markTipSeen = useProgress((s) => s.markTipSeen)
+  const seen = useTips((s) => s.seen.includes(id))
+  const markTipSeen = useTips((s) => s.markSeen)
   const [open, setOpen] = useState(!seen)
   return {
     open,

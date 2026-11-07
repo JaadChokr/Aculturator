@@ -4,7 +4,7 @@ import type { Parcours } from '@acculturator/contracts'
 import { api } from '../api'
 import { useParcoursStore } from './store'
 
-export { currentParcoursId } from './store'
+export { currentParcoursId, getSelectedParcoursId, onParcoursChange } from './store'
 
 export const PARCOURS_QUERY_KEY = ['parcours'] as const
 

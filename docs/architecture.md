@@ -158,9 +158,16 @@ choisi est mémorisé dans le navigateur (`@acculturator/core/parcours`) et :
 
 Ajouter un parcours : le backend le renvoie dans `GET /parcours` et sert ses endpoints
 `/parcours/:id/…` ; côté frontend, seule une icône est à déclarer (`PARCOURS_ICON` dans
-`frontend/shell/src/ParcoursPage.tsx`, icône par défaut sinon). À prévoir quand un deuxième parcours
-arrivera : rattacher au parcours la progression locale du portail collaborateur (aujourd'hui
-unique).
+`frontend/shell/src/ParcoursPage.tsx`, icône par défaut sinon).
+
+**Progression par parcours.** La progression du collaborateur (XP, niveau, série, cartes, réponses,
+badges, missions) est propre à chaque parcours : une sauvegarde par parcours
+(`acculturator.collaborateur.progress.<id>`), chargée par le store
+(`frontend/collaborateur/src/store/progress.ts`) à chaque changement de parcours, grâce à
+`onParcoursChange` de `@acculturator/core/parcours`. Un nouveau parcours part de zéro (le parcours
+SST de la démo part d'un profil déjà engagé). Les didacticiels déjà vus sont communs à tous les
+parcours (`store/tips.ts`). L'ancienne sauvegarde unique est reprise automatiquement dans le parcours
+SST. Côté backend, les événements arrivent déjà par parcours (`/parcours/:id/progress/events`).
 
 Variables d'environnement (`frontend/shell/.env.*`) :
 

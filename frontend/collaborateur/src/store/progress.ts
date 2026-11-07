@@ -3,12 +3,14 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { LearningEvent, ThemeId } from '@acculturator/contracts'
 import { api } from '@acculturator/core/api'
+import { getSelectedParcoursId, onParcoursChange } from '@acculturator/core/parcours'
 import { getCatalog } from '@acculturator/core/catalog'
 import { XP, levelFromXp } from '@acculturator/core/content'
 import { toast } from '@acculturator/design-system/components'
 import { addDays, todayISO } from '@acculturator/design-system/lib'
 import { BADGES, type BadgeId } from './badges'
 import { MISSIONS, type MissionId } from './missions'
+import { useTips } from './tips'
 
 /* ───────────── Répétition espacée (système de Leitner) ───────────── */
 /** Intervalle (en jours) avant la prochaine révision, selon la boîte. */
@@ -48,8 +50,6 @@ interface ProgressData {
   chatQuestions: number
   badges: Partial<Record<BadgeId, string>>
   missions: { day: string; progress: Partial<Record<MissionId, number>>; claimed: MissionId[] }
-  /** Didacticiels déjà affichés (ex : 'flashcards') */
-  seenTips: string[]
 }
 
 interface ProgressActions {
@@ -62,7 +62,6 @@ interface ProgressActions {
   recordQuiz: (r: Omit<QuizRecord, 'id' | 'date'>) => void
   recordHazard: (sceneId: string, hazardId: string) => void
   recordChat: () => void
-  markTipSeen: (id: string) => void
   resetDemo: () => void
 }
 
@@ -97,7 +96,33 @@ const DEMO_CARD_IDS = [
   'f-triangle',
 ]
 
-/* ───────────── Données de démonstration (profil déjà engagé) ───────────── */
+/* ───────────── Données de départ ───────────── */
+/** Progression vierge : premier accès à un parcours. */
+function empty(): ProgressData {
+  return {
+    xp: 0,
+    streak: { count: 0, best: 0, lastDay: '' },
+    activity: {},
+    viewedResources: [],
+    bookmarks: [],
+    cards: {},
+    answers: {},
+    quizHistory: [],
+    bestChrono: 0,
+    hazardsFound: {},
+    chatQuestions: 0,
+    badges: {},
+    missions: { day: todayISO(), progress: {}, claimed: [] },
+  }
+}
+
+/** Parcours dont la démo montre un profil déjà engagé (les autres partent de zéro). */
+const DEMO_PARCOURS = 'sst'
+
+const initialData = (parcoursId: string | null): ProgressData =>
+  parcoursId === DEMO_PARCOURS ? seed() : empty()
+
+/** Profil de démonstration déjà engagé dans le parcours SST. */
 function seed(): ProgressData {
   const today = todayISO()
   const activity: Record<string, number> = {}
@@ -160,13 +185,17 @@ function seed(): ProgressData {
       cinephile: addDays(today, -2),
     },
     missions: { day: today, progress: {}, claimed: [] },
-    seenTips: [],
   }
 }
 
-const DATA_KEYS = Object.keys(seed()) as (keyof ProgressData)[]
+const DATA_KEYS = Object.keys(empty()) as (keyof ProgressData)[]
 
 /* ───────────── Store ───────────── */
+const STORAGE_KEY = 'acculturator.collaborateur.progress'
+const storageKeyFor = (parcoursId: string) => `${STORAGE_KEY}.${parcoursId}`
+/** Parcours dont la progression est actuellement chargée */
+let boundTo: string | null = null
+
 export const useProgress = create<ProgressState>()(
   persist(
     (set, get) => {
@@ -227,7 +256,7 @@ export const useProgress = create<ProgressState>()(
       }
 
       return {
-        ...seed(),
+        ...empty(),
 
         addXp: (amount, reason, silent) => {
           const before = levelFromXp(get().xp).current.level
@@ -342,14 +371,13 @@ export const useProgress = create<ProgressState>()(
           checkBadges()
         },
 
-        markTipSeen: (id) =>
-          set((s) => (s.seenTips.includes(id) ? s : { seenTips: [...s.seenTips, id] })),
-
-        resetDemo: () => set(seed()),
+        resetDemo: () => set(initialData(boundTo)),
       }
     },
     {
-      name: 'acculturator.collaborateur.progress',
+      // Une sauvegarde par parcours : le nom est fixé par bindToParcours(), ci-dessous
+      name: STORAGE_KEY,
+      skipHydration: true,
       version: 1,
       // On ne persiste que les données (jamais les actions)
       partialize: (s) =>
@@ -357,6 +385,57 @@ export const useProgress = create<ProgressState>()(
     },
   ),
 )
+
+/* ───────────── Une progression par parcours ───────────── */
+const storage = {
+  get: (key: string) => {
+    try {
+      return localStorage.getItem(key)
+    } catch {
+      return null
+    }
+  },
+  move: (from: string, to: string) => {
+    try {
+      const value = localStorage.getItem(from)
+      if (value !== null && localStorage.getItem(to) === null) localStorage.setItem(to, value)
+      localStorage.removeItem(from)
+    } catch {
+      /* stockage indisponible : rien à reprendre */
+    }
+  },
+}
+
+/**
+ * Reprise de l'ancienne sauvegarde unique (avant la séparation par parcours) :
+ * elle appartenait au seul parcours qui existait, SST. Les didacticiels vus passent
+ * dans leur propre sauvegarde, commune à tous les parcours.
+ */
+function migrateLegacySave() {
+  const legacy = storage.get(STORAGE_KEY)
+  if (legacy === null) return
+  try {
+    const seen = (JSON.parse(legacy) as { state?: { seenTips?: string[] } }).state?.seenTips ?? []
+    seen.forEach((id) => useTips.getState().markSeen(id))
+  } catch {
+    /* sauvegarde illisible : ignorée */
+  }
+  storage.move(STORAGE_KEY, storageKeyFor(DEMO_PARCOURS))
+}
+
+/** Charge la progression du parcours (ou ses données de départ s'il est nouveau). */
+function bindToParcours(parcoursId: string | null) {
+  if (!parcoursId || parcoursId === boundTo) return
+  boundTo = parcoursId
+  const key = storageKeyFor(parcoursId)
+  useProgress.persist.setOptions({ name: key })
+  if (storage.get(key) !== null) void useProgress.persist.rehydrate()
+  else useProgress.setState(initialData(parcoursId))
+}
+
+migrateLegacySave()
+bindToParcours(getSelectedParcoursId())
+onParcoursChange(bindToParcours)
 
 /* ───────────── Sélecteurs dérivés ───────────── */
 /** Cartes à travailler : d'abord les révisions échues, puis les nouvelles cartes. */

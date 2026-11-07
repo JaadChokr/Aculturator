@@ -12,3 +12,18 @@ export function currentParcoursId(): string {
   if (!id) throw new Error('Aucun parcours sélectionné')
   return id
 }
+
+/** Parcours en cours, ou null (accès hors composant, ex. depuis un store). */
+export function getSelectedParcoursId(): string | null {
+  return useParcoursStore.getState().selectedId
+}
+
+/**
+ * Être prévenu quand l'utilisateur change de parcours (ex. pour charger la progression
+ * propre au nouveau parcours). Renvoie la fonction de désabonnement.
+ */
+export function onParcoursChange(listener: (id: string | null) => void): () => void {
+  return useParcoursStore.subscribe((s, prev) => {
+    if (s.selectedId !== prev.selectedId) listener(s.selectedId)
+  })
+}
