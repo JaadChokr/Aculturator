@@ -88,6 +88,7 @@ interface Catalog {
   flashcards: Flashcard[]
   quizQuestions: QuizQuestion[]
   hazardScenes: HazardScene[] // chasse aux risques : dangers + leurres, coordonnées dans un viewBox 1000×600
+  modules?: ModulesPlan // parcours organisé en modules (voir ci-dessous)
 }
 ```
 
