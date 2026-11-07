@@ -160,6 +160,12 @@ Ajouter un parcours : le backend le renvoie dans `GET /parcours` et sert ses end
 `/parcours/:id/…` ; côté frontend, seule une icône est à déclarer (`PARCOURS_ICON` dans
 `frontend/shell/src/ParcoursPage.tsx`, icône par défaut sinon).
 
+**Page de choix du parcours.** Chaque carte affiche la maîtrise du parcours (barre de progression,
+ressources consultées, cartes ancrées, dernière activité) ; une recherche (insensible aux accents) et
+un filtre Tous / Commencés / À découvrir aident à s'y retrouver quand les parcours se multiplieront.
+L'avancement vient de `Parcours.progress` (backend) ou, à défaut, du portail qui sait le calculer
+(`PortalDefinition.parcoursProgress`, fourni par le portail collaborateur).
+
 **Progression par parcours.** La progression du collaborateur (XP, niveau, série, cartes, réponses,
 badges, missions) est propre à chaque parcours : une sauvegarde par parcours
 (`acculturator.collaborateur.progress.<id>`), chargée par le store

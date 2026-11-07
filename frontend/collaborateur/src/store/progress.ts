@@ -36,7 +36,7 @@ export interface QuizRecord {
   date: string
 }
 
-interface ProgressData {
+export interface ProgressData {
   xp: number
   streak: { count: number; best: number; lastDay: string }
   activity: Record<string, number> // xp gagnée par jour
@@ -431,6 +431,23 @@ function bindToParcours(parcoursId: string | null) {
   useProgress.persist.setOptions({ name: key })
   if (storage.get(key) !== null) void useProgress.persist.rehydrate()
   else useProgress.setState(initialData(parcoursId))
+}
+
+/**
+ * Progression enregistrée pour un parcours, sans le charger (page de choix du parcours) :
+ * null si l'utilisateur ne l'a jamais commencé.
+ */
+export function savedProgress(parcoursId: string): ProgressData | null {
+  if (parcoursId === boundTo) return useProgress.getState()
+  const saved = storage.get(storageKeyFor(parcoursId))
+  if (saved !== null) {
+    try {
+      return { ...empty(), ...(JSON.parse(saved) as { state: Partial<ProgressData> }).state }
+    } catch {
+      return null
+    }
+  }
+  return parcoursId === DEMO_PARCOURS ? seed() : null
 }
 
 migrateLegacySave()

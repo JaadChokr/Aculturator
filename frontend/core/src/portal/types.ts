@@ -1,7 +1,7 @@
 import type { LucideIcon } from 'lucide-react'
 import type { NavSection } from '@acculturator/design-system/layout'
 import type { RouteObject } from 'react-router'
-import type { Role } from '@acculturator/contracts'
+import type { Parcours, ParcoursProgress, Role } from '@acculturator/contracts'
 
 export type PortalId = 'collaborateur' | 'referent' | 'admin'
 
@@ -21,4 +21,9 @@ export interface PortalDefinition {
   routes: RouteObject[]
   /** Contenu optionnel en haut à droite du header (ex : compteur XP) */
   HeaderSlot?: React.ComponentType
+  /**
+   * Avancement de l'utilisateur dans un parcours, affiché sur la page de choix du parcours,
+   * quand le backend ne le fournit pas encore (`Parcours.progress`).
+   */
+  parcoursProgress?: (parcours: Parcours) => ParcoursProgress | null
 }

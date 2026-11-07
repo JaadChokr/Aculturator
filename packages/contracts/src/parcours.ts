@@ -5,6 +5,17 @@
  */
 export type ParcoursStatus = 'available' | 'coming_soon'
 
+/** Avancement de l'utilisateur connecté dans un parcours. */
+export interface ParcoursProgress {
+  /** Maîtrise globale (0-100), la même que sur le tableau de bord */
+  mastery: number
+  resourcesViewed: number
+  /** Flashcards bien ancrées (revues avec succès sur la durée) */
+  cardsAnchored: number
+  /** Date ISO (AAAA-MM-JJ) de la dernière activité */
+  lastActivity?: string
+}
+
 export interface Parcours {
   /** Identifiant stable, utilisé dans les URL de l'API (ex. « sst ») */
   id: string
@@ -20,4 +31,6 @@ export interface Parcours {
     flashcards: number
     quizQuestions: number
   }
+  /** Avancement de l'utilisateur connecté ; absent tant qu'il n'a pas commencé */
+  progress?: ParcoursProgress
 }

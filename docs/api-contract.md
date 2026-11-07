@@ -48,8 +48,21 @@ interface Parcours {
   description: string
   status: 'available' | 'coming_soon'
   stats: { themes: number; resources: number; flashcards: number; quizQuestions: number }
+  progress?: ParcoursProgress // avancement de l'utilisateur connecté, absent s'il n'a pas commencé
+}
+
+interface ParcoursProgress {
+  mastery: number // 0-100, même formule que la « Maîtrise globale » du tableau de bord
+  resourcesViewed: number
+  cardsAnchored: number // flashcards revues avec succès sur la durée
+  lastActivity?: string // AAAA-MM-JJ
 }
 ```
+
+Tant que le backend ne renvoie pas `progress`, le frontend le calcule à partir de la progression
+enregistrée dans le navigateur (portail collaborateur, `parcoursProgress`). Formule de la maîtrise :
+justesse des réponses par thématique × 55 % + part des flashcards ancrées × 25 % + part des
+ressources consultées × 20 % (`frontend/collaborateur/src/store/insights.ts`, `overallMastery`).
 
 ### `User`
 

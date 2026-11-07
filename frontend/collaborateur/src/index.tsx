@@ -2,6 +2,7 @@ import { lazy } from 'react'
 import { Bot, GraduationCap, Layers, LayoutDashboard, PlayCircle, Trophy } from 'lucide-react'
 import type { PortalDefinition } from '@acculturator/core/portal'
 import { HeaderStats } from './components/HeaderStats'
+import { parcoursProgress } from './store/parcoursProgress'
 import { countDue, useProgress } from './store/progress'
 import { COLLAB_BASE, collabPath } from './paths'
 
@@ -24,6 +25,7 @@ export const collaborateurPortal: PortalDefinition = {
   // Les référents et admins sont aussi des collaborateurs : ils accèdent à cet espace.
   allowedRoles: ['collaborateur', 'referent', 'admin'],
   HeaderSlot: HeaderStats,
+  parcoursProgress,
   nav: [
     {
       title: 'Apprendre',

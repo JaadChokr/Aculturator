@@ -1,7 +1,7 @@
 import type { ThemeId } from '@acculturator/contracts'
 import { getCatalog } from '@acculturator/core/catalog'
 import { THEMES } from '@acculturator/design-system/themes'
-import type { ProgressState } from './progress'
+import type { ProgressData, ProgressState } from './progress'
 
 /*
  * ─────────────────────────────────────────────────────────────
@@ -141,6 +141,39 @@ export function nextSteps(s: ProgressState, dueCount: number, limit = 3): NextSt
   const ordered = candidates.sort((a, b) => scores[a.pillar] - scores[b.pillar]).map((c) => c.step)
   return (pinned ? [pinned, ...ordered] : ordered).slice(0, limit)
 }
+
+/** Taille du contenu d'un parcours (catalogue chargé, ou chiffres de `Parcours.stats`). */
+export interface ContentCounts {
+  themes: number
+  resources: number
+  flashcards: number
+}
+
+/**
+ * Maîtrise globale d'un parcours (0-100) : justesse des réponses par thématique (55 %),
+ * flashcards bien ancrées (25 %), ressources consultées (20 %). Une seule formule pour le
+ * tableau de bord et la page de choix du parcours.
+ */
+export function overallMastery(
+  s: Pick<ProgressData, 'answers' | 'cards' | 'viewedResources'>,
+  counts: ContentCounts,
+) {
+  const ratio = (n: number, total: number) => (total ? Math.min(1, n / total) : 0)
+  const accuracy =
+    Object.values(s.answers).reduce(
+      (sum, a) => sum + (a && a.total ? (a.correct / a.total) * Math.min(1, a.total / 8) : 0),
+      0,
+    ) / Math.max(1, counts.themes)
+  return clamp(
+    Math.min(1, accuracy) * 55 +
+      ratio(anchoredCards(s), counts.flashcards) * 25 +
+      ratio(s.viewedResources.length, counts.resources) * 20,
+  )
+}
+
+/** Flashcards bien ancrées : arrivées en boîte 3 ou plus. */
+export const anchoredCards = (s: Pick<ProgressData, 'cards'>) =>
+  Object.values(s.cards).filter((c) => c.box >= 3).length
 
 export function themeMastery(s: ProgressState, themeId: ThemeId) {
   const a = s.answers[themeId]

@@ -16,6 +16,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { useAuth } from '@acculturator/core/auth'
+import { useCatalog } from '@acculturator/core/catalog'
 import { levelFromXp } from '@acculturator/core/content'
 import { ProgressRing } from '@acculturator/design-system/components'
 import {
@@ -37,9 +38,10 @@ import {
   spring,
 } from '@acculturator/design-system/motion'
 import { useDismiss } from '@acculturator/design-system/hooks'
+import { THEMES } from '@acculturator/design-system/themes'
 import { collabPath } from '../paths'
 import { BADGES } from '../store/badges'
-import { allThemeMastery, nextSteps } from '../store/insights'
+import { allThemeMastery, nextSteps, overallMastery } from '../store/insights'
 import { MISSIONS } from '../store/missions'
 import { countDue, useProgress } from '../store/progress'
 
@@ -269,7 +271,12 @@ function StatTiles() {
   const due = countDue(s.cards)
   const missionsDone = s.missions.day === todayISO() ? s.missions.claimed.length : 0
   const badges = Object.keys(s.badges).length
-  const mastery = Math.round(allThemeMastery(s).reduce((a, b) => a + b.mastery, 0) / 7)
+  const catalog = useCatalog()
+  const mastery = overallMastery(s, {
+    themes: THEMES.length,
+    resources: catalog.resources.length,
+    flashcards: catalog.flashcards.length,
+  })
 
   const tiles: Tile[] = [
     {
