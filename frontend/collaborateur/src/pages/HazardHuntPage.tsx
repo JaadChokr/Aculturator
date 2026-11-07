@@ -17,6 +17,7 @@ import {
 } from '@acculturator/design-system/ui'
 import { cn } from '@acculturator/design-system/lib'
 import { spring, springBouncy } from '@acculturator/design-system/motion'
+import { useReturnModule } from '../components/ModuleReturnLink'
 import { collabPath } from '../paths'
 import { OfficeScene } from '../components/OfficeScene'
 import { ThemeBadge } from '../components/ThemeBadge'
@@ -116,14 +117,15 @@ export default function HazardHuntPage() {
   const hint = scene.hazards.find((h) => h.id === hintId)
   const mm = String(Math.floor(seconds / 60)).padStart(2, '0')
   const ss = String(seconds % 60).padStart(2, '0')
+  const fromModule = useReturnModule()
 
   return (
     <div>
       {done && <Confetti count={80} />}
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <Button asChild variant="ghost" size="sm">
-          <Link to={collabPath('quiz')}>
-            <ArrowLeft /> Quiz & défis
+          <Link to={collabPath(fromModule ? `modules/${fromModule.id}` : 'quiz')}>
+            <ArrowLeft /> {fromModule ? 'Retour au module' : 'Quiz & défis'}
           </Link>
         </Button>
         <h1 className="flex items-center gap-2 text-xl font-bold sm:text-2xl">

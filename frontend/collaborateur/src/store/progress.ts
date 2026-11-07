@@ -1,4 +1,4 @@
-import { Flame, Target, Zap } from 'lucide-react'
+import { Flag, Flame, Target, Zap } from 'lucide-react'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { LearningEvent, ThemeId } from '@acculturator/contracts'
@@ -10,6 +10,7 @@ import { toast } from '@acculturator/design-system/components'
 import { addDays, todayISO } from '@acculturator/design-system/lib'
 import { BADGES, type BadgeId } from './badges'
 import { MISSIONS, type MissionId } from './missions'
+import { moduleStates } from './modules'
 import { useTips } from './tips'
 
 /* ───────────── Répétition espacée (système de Leitner) ───────────── */
@@ -24,12 +25,14 @@ export interface CardState {
   lapses: number
 }
 
-export type QuizMode = 'entrainement' | 'chrono' | 'defi-du-jour' | 'chasse'
+export type QuizMode = 'entrainement' | 'chrono' | 'defi-du-jour' | 'chasse' | 'module'
 
 export interface QuizRecord {
   id: string
   mode: QuizMode
   themeId?: ThemeId
+  /** Quiz de validation d'un module */
+  moduleId?: string
   score: number
   total: number
   xp: number
@@ -50,6 +53,8 @@ export interface ProgressData {
   chatQuestions: number
   badges: Partial<Record<BadgeId, string>>
   missions: { day: string; progress: Partial<Record<MissionId, number>>; claimed: MissionId[] }
+  /** Modules terminés (date de fin) */
+  completedModules: Record<string, string>
 }
 
 interface ProgressActions {
@@ -113,6 +118,7 @@ function empty(): ProgressData {
     chatQuestions: 0,
     badges: {},
     missions: { day: todayISO(), progress: {}, claimed: [] },
+    completedModules: {},
   }
 }
 
@@ -144,7 +150,15 @@ function seed(): ProgressData {
     xp: 640,
     streak: { count: 4, best: 9, lastDay: addDays(today, -1) },
     activity,
-    viewedResources: ['r-acteurs', 'r-charges', 'r-tms', 'r-poste', 'r-pas'],
+    viewedResources: [
+      'r-acteurs',
+      'r-droit-retrait',
+      'r-at',
+      'r-charges',
+      'r-tms',
+      'r-poste',
+      'r-pas',
+    ],
     bookmarks: ['r-numeros'],
     cards,
     answers: {
@@ -156,6 +170,15 @@ function seed(): ProgressData {
       secours: { correct: 6, total: 7 },
     },
     quizHistory: [
+      {
+        id: 'demo-module-1',
+        mode: 'module',
+        moduleId: 'm-fondamentaux',
+        score: 5,
+        total: 5,
+        xp: 80,
+        date: addDays(today, -3),
+      },
       {
         id: 'h1',
         mode: 'entrainement',
@@ -185,6 +208,8 @@ function seed(): ProgressData {
       cinephile: addDays(today, -2),
     },
     missions: { day: today, progress: {}, claimed: [] },
+    // Module 1 terminé, module 2 en cours, les suivants se débloqueront ensuite
+    completedModules: { 'm-fondamentaux': addDays(today, -3) },
   }
 }
 
@@ -239,7 +264,41 @@ export const useProgress = create<ProgressState>()(
         }
       }
 
+      /** Modules qui viennent d'être terminés : date, XP, événement, message. */
+      const checkModules = () => {
+        let catalog
+        try {
+          catalog = getCatalog()
+        } catch {
+          return // catalogue pas encore chargé
+        }
+        if (!catalog.modules) return
+        const s = get()
+        const finished = moduleStates(s, catalog.modules, catalog).filter(
+          (m) => m.status === 'done' && !s.completedModules[m.module.id],
+        )
+        if (!finished.length) return
+        const date = todayISO()
+        set({
+          completedModules: {
+            ...s.completedModules,
+            ...Object.fromEntries(finished.map((m) => [m.module.id, date])),
+          },
+        })
+        finished.forEach((m) => {
+          track({ type: 'module_completed', moduleId: m.module.id })
+          toast({
+            title: `Module terminé : ${m.module.title}`,
+            description: 'Bravo ! Le module suivant vous attend.',
+            icon: Flag,
+            tone: 'badge',
+          })
+          get().addXp(XP.moduleCompleted, undefined, true)
+        })
+      }
+
       const checkBadges = () => {
+        checkModules()
         const s = get()
         const unlocked = BADGES.filter((b) => !s.badges[b.id] && b.isUnlocked(s))
         if (!unlocked.length) return
@@ -338,6 +397,7 @@ export const useProgress = create<ProgressState>()(
             type: 'quiz_completed',
             mode: r.mode,
             themeId: r.themeId,
+            moduleId: r.moduleId,
             score: r.score,
             total: r.total,
           })
@@ -379,6 +439,12 @@ export const useProgress = create<ProgressState>()(
       name: STORAGE_KEY,
       skipHydration: true,
       version: 1,
+      // Données manquantes d'une ancienne sauvegarde : valeurs de départ (jamais celles d'un autre parcours)
+      merge: (persisted, current) => ({
+        ...current,
+        ...empty(),
+        ...(persisted as Partial<ProgressData>),
+      }),
       // On ne persiste que les données (jamais les actions)
       partialize: (s) =>
         Object.fromEntries(DATA_KEYS.map((k) => [k, s[k]])) as unknown as ProgressData,

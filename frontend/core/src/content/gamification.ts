@@ -36,4 +36,5 @@ export const XP = {
   hazardAllBonus: 40,
   chatQuestion: 3,
   dailyMission: 25,
+  moduleCompleted: 50,
 } as const

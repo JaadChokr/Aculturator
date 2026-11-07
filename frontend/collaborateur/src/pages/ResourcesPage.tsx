@@ -42,6 +42,7 @@ import { spring } from '@acculturator/design-system/motion'
 import { CheckQuestionBlock } from '../components/CheckQuestionBlock'
 import { ThemeBadge } from '../components/ThemeBadge'
 import { useProgress } from '../store/progress'
+import { ModuleReturnLink } from '../components/ModuleReturnLink'
 
 const TYPE_ICON: Record<ResourceType, typeof Video> = {
   video: Video,
@@ -400,6 +401,7 @@ export default function ResourcesPage() {
 
   return (
     <div>
+      <ModuleReturnLink />
       <PageHeader
         eyebrow="Vidéos & ressources"
         title="Apprendre en quelques minutes"

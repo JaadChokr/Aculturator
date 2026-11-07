@@ -59,55 +59,60 @@ function SidebarNav({
             </div>
           )}
           <ul className="flex flex-col gap-0.5">
-            {section.items.map((item) => {
-              const badge = item.badge?.()
-              return (
-                <li key={item.to}>
-                  <NavLink
-                    to={item.to}
-                    end={item.end}
-                    onClick={onNavigate}
-                    className={({ isActive }) =>
-                      cn(
-                        'group relative flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors',
-                        isActive
-                          ? 'font-semibold text-sidebar-primary'
-                          : 'text-sidebar-foreground hover:bg-muted',
-                      )
-                    }
-                  >
-                    {({ isActive }) => (
-                      <>
-                        {isActive && (
-                          <motion.span
-                            layoutId={`${idPrefix}-nav-active`}
-                            className="absolute inset-0 rounded-md bg-sidebar-accent"
-                            transition={spring}
-                          >
-                            <span className="absolute inset-y-1.5 left-0 w-[3px] rounded-r-sm bg-sidebar-primary" />
-                          </motion.span>
-                        )}
-                        <item.icon
-                          className={cn('relative size-[18px]', isActive && 'text-sidebar-primary')}
-                        />
-                        <span className="relative flex-1">{item.label}</span>
-                        {badge ? (
-                          <motion.span
-                            key={String(badge)}
-                            initial={{ scale: 0.5 }}
-                            animate={{ scale: 1 }}
-                            transition={{ type: 'spring', stiffness: 600, damping: 15 }}
-                            className="relative rounded-sm bg-primary px-1.5 py-0.5 text-[11px] font-semibold text-primary-foreground tabular-nums"
-                          >
-                            {badge}
-                          </motion.span>
-                        ) : null}
-                      </>
-                    )}
-                  </NavLink>
-                </li>
-              )
-            })}
+            {section.items
+              .filter((item) => !item.hidden?.())
+              .map((item) => {
+                const badge = item.badge?.()
+                return (
+                  <li key={item.to}>
+                    <NavLink
+                      to={item.to}
+                      end={item.end}
+                      onClick={onNavigate}
+                      className={({ isActive }) =>
+                        cn(
+                          'group relative flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors',
+                          isActive
+                            ? 'font-semibold text-sidebar-primary'
+                            : 'text-sidebar-foreground hover:bg-muted',
+                        )
+                      }
+                    >
+                      {({ isActive }) => (
+                        <>
+                          {isActive && (
+                            <motion.span
+                              layoutId={`${idPrefix}-nav-active`}
+                              className="absolute inset-0 rounded-md bg-sidebar-accent"
+                              transition={spring}
+                            >
+                              <span className="absolute inset-y-1.5 left-0 w-[3px] rounded-r-sm bg-sidebar-primary" />
+                            </motion.span>
+                          )}
+                          <item.icon
+                            className={cn(
+                              'relative size-[18px]',
+                              isActive && 'text-sidebar-primary',
+                            )}
+                          />
+                          <span className="relative flex-1">{item.label}</span>
+                          {badge ? (
+                            <motion.span
+                              key={String(badge)}
+                              initial={{ scale: 0.5 }}
+                              animate={{ scale: 1 }}
+                              transition={{ type: 'spring', stiffness: 600, damping: 15 }}
+                              className="relative rounded-sm bg-primary px-1.5 py-0.5 text-[11px] font-semibold text-primary-foreground tabular-nums"
+                            >
+                              {badge}
+                            </motion.span>
+                          ) : null}
+                        </>
+                      )}
+                    </NavLink>
+                  </li>
+                )
+              })}
           </ul>
         </div>
       ))}
@@ -336,7 +341,7 @@ export function AppShell({
 }: AppShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const location = useLocation()
-  const flatItems = nav.flatMap((s) => s.items)
+  const flatItems = nav.flatMap((s) => s.items).filter((i) => !i.hidden?.())
   const current =
     [...flatItems].reverse().find((i) => location.pathname.startsWith(i.to)) ?? flatItems[0]
 

@@ -79,10 +79,43 @@ export interface HazardScene {
   decoys: DecoySpot[]
 }
 
-/** Catalogue de contenus chargé au démarrage (endpoint GET /api/catalog). */
+/** Étape d'un module : renvoie vers un contenu existant du catalogue. */
+export type ModuleStep =
+  | { kind: 'resource'; resourceId: string }
+  /** Revoir au moins une fois toutes les flashcards d'une thématique */
+  | { kind: 'flashcards'; themeId: ThemeId }
+  /** Quiz de validation : réussi à partir de `passRatio` bonnes réponses (0-1) */
+  | { kind: 'quiz'; questionIds: string[]; passRatio: number }
+  /** Repérer tous les dangers d'une scène */
+  | { kind: 'hazard'; sceneId: string }
+
+/** Bloc d'apprentissage : une suite d'étapes, terminée quand toutes le sont. */
+export interface LearningModule {
+  id: string
+  title: string
+  description: string
+  themeIds: ThemeId[]
+  durationMin: number
+  steps: ModuleStep[]
+}
+
+/** Organisation d'un parcours en modules. */
+export interface ModulesPlan {
+  /**
+   * sequential : chaque module se débloque quand le précédent est terminé ;
+   * free : ordre conseillé, sans blocage.
+   */
+  ordering: 'sequential' | 'free'
+  /** Dans l'ordre du parcours */
+  modules: LearningModule[]
+}
+
+/** Catalogue de contenus d'un parcours (endpoint GET /api/parcours/:id/catalog). */
 export interface Catalog {
   resources: Resource[]
   flashcards: Flashcard[]
   quizQuestions: QuizQuestion[]
   hazardScenes: HazardScene[]
+  /** Absent si le parcours n'est pas organisé en modules */
+  modules?: ModulesPlan
 }

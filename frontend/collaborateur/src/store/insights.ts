@@ -1,6 +1,7 @@
 import type { ThemeId } from '@acculturator/contracts'
 import { getCatalog } from '@acculturator/core/catalog'
 import { THEMES } from '@acculturator/design-system/themes'
+import { currentModule, moduleStates } from './modules'
 import type { ProgressData, ProgressState } from './progress'
 
 /*
@@ -39,7 +40,7 @@ export function pillarScores(s: ProgressState): Record<PillarId, number> {
 
 export interface NextStep {
   id: string
-  kind: 'review' | 'watch' | 'practice' | 'hunt'
+  kind: 'review' | 'watch' | 'practice' | 'hunt' | 'module'
   title: string
   detail: string
   to: string
@@ -139,7 +140,20 @@ export function nextSteps(s: ProgressState, dueCount: number, limit = 3): NextSt
   }
 
   const ordered = candidates.sort((a, b) => scores[a.pillar] - scores[b.pillar]).map((c) => c.step)
-  return (pinned ? [pinned, ...ordered] : ordered).slice(0, limit)
+  // Parcours en modules : le module en cours vient juste après le contenu obligatoire
+  const catalog = getCatalog()
+  const mod = catalog.modules ? currentModule(moduleStates(s, catalog.modules, catalog)) : undefined
+  const moduleStep: NextStep | null = mod
+    ? {
+        id: `module-${mod.module.id}`,
+        kind: 'module',
+        title: `Module ${mod.index} : ${mod.module.title}`,
+        detail: `${mod.done}/${mod.total} étapes faites · ${mod.module.durationMin} min au total`,
+        to: `modules/${mod.module.id}`,
+        cta: mod.status === 'in-progress' ? 'Continuer' : 'Commencer',
+      }
+    : null
+  return [pinned, moduleStep, ...ordered].filter((x): x is NextStep => !!x).slice(0, limit)
 }
 
 /** Taille du contenu d'un parcours (catalogue chargé, ou chiffres de `Parcours.stats`). */

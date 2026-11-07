@@ -11,13 +11,16 @@ export type LearningEvent =
   | { type: 'question_answered'; questionId?: string; themeId: ThemeId; correct: boolean }
   | {
       type: 'quiz_completed'
-      mode: 'entrainement' | 'chrono' | 'defi-du-jour' | 'chasse'
+      mode: 'entrainement' | 'chrono' | 'defi-du-jour' | 'chasse' | 'module'
       themeId?: ThemeId
+      /** Quiz de validation d'un module */
+      moduleId?: string
       score: number
       total: number
     }
   | { type: 'hazard_found'; sceneId: string; hazardId: string }
   | { type: 'chat_question_asked' }
+  | { type: 'module_completed'; moduleId: string }
 
 export interface TrackedEvent {
   userId: string

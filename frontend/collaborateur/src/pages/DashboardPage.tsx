@@ -14,6 +14,7 @@ import {
   Sparkles,
   Target,
   type LucideIcon,
+  Milestone,
 } from 'lucide-react'
 import { useAuth } from '@acculturator/core/auth'
 import { useCatalog } from '@acculturator/core/catalog'
@@ -329,7 +330,13 @@ function StatTiles() {
   )
 }
 
-const STEP_ICON = { review: Layers, watch: PlayCircle, practice: Target, hunt: Crosshair }
+const STEP_ICON = {
+  review: Layers,
+  watch: PlayCircle,
+  practice: Target,
+  hunt: Crosshair,
+  module: Milestone,
+}
 
 function NextSteps() {
   const s = useProgress()

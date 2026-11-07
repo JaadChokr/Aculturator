@@ -91,6 +91,31 @@ interface Catalog {
 }
 ```
 
+`modules` (facultatif) organise le parcours en blocs ordonnés :
+
+```ts
+interface ModulesPlan {
+  ordering: 'sequential' | 'free' // sequential : un module se débloque quand le précédent est terminé
+  modules: LearningModule[] // dans l'ordre du parcours
+}
+interface LearningModule {
+  id: string
+  title: string
+  description: string
+  themeIds: ThemeId[]
+  durationMin: number
+  steps: ModuleStep[] // terminées dans n'importe quel ordre ; module terminé quand toutes le sont
+}
+type ModuleStep =
+  | { kind: 'resource'; resourceId: string }
+  | { kind: 'flashcards'; themeId: ThemeId } // toutes les cartes revues au moins une fois
+  | { kind: 'quiz'; questionIds: string[]; passRatio: number } // réussi à partir de passRatio (0-1)
+  | { kind: 'hazard'; sceneId: string } // tous les dangers repérés
+```
+
+La fin d'un module est signalée par l'événement `{ type: 'module_completed', moduleId }` ; le quiz
+de validation par `quiz_completed` avec `mode: 'module'` et `moduleId`.
+
 Détail des champs : `packages/contracts/src/content.ts`. `ThemeId` est une liste fermée de
 thématiques SST ; ajouter une thématique demande aussi d'ajouter son icône et sa couleur dans
 `frontend/design-system/src/themes/index.ts`.

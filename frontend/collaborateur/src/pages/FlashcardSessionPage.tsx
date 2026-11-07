@@ -15,6 +15,7 @@ import {
   spring,
   springBouncy,
 } from '@acculturator/design-system/motion'
+import { useReturnModule } from '../components/ModuleReturnLink'
 import { collabPath } from '../paths'
 import { ThemeBadge } from '../components/ThemeBadge'
 import { TutorialDialog, useTutorial, type TutorialStep } from '../components/TutorialDialog'
@@ -215,6 +216,7 @@ export default function FlashcardSessionPage() {
 }
 
 function Session() {
+  const fromModule = useReturnModule()
   const [params] = useSearchParams()
   const theme = params.get('theme') as ThemeId | null
   const mode = params.get('mode')
@@ -271,8 +273,8 @@ function Session() {
 
   const backLink = (
     <Button asChild variant="ghost" size="sm">
-      <Link to={collabPath('flashcards')}>
-        <ArrowLeft /> Flashcards
+      <Link to={collabPath(fromModule ? `modules/${fromModule.id}` : 'flashcards')}>
+        <ArrowLeft /> {fromModule ? 'Retour au module' : 'Flashcards'}
       </Link>
     </Button>
   )

@@ -42,10 +42,26 @@ const MODE_TITLE: Record<Exclude<QuizMode, 'chasse'>, string> = {
   entrainement: 'Entraînement',
   chrono: 'Défi chrono',
   'defi-du-jour': 'Défi du jour',
+  module: 'Quiz de validation',
 }
 
-function pickQuestions(mode: QuizMode, theme: ThemeId | null): QuizQuestion[] {
+/** Étape « quiz » d'un module (questions imposées, seuil de réussite). */
+function moduleQuiz(moduleId: string | null) {
+  const module = getCatalog().modules?.modules.find((m) => m.id === moduleId)
+  const step = module?.steps.find((st) => st.kind === 'quiz')
+  return module && step?.kind === 'quiz' ? { module, step } : null
+}
+
+function pickQuestions(
+  mode: QuizMode,
+  theme: ThemeId | null,
+  moduleId: string | null = null,
+): QuizQuestion[] {
   const { quizQuestions } = getCatalog()
+  if (mode === 'module') {
+    const ids = moduleQuiz(moduleId)?.step.questionIds ?? []
+    return shuffle(quizQuestions.filter((q) => ids.includes(q.id)))
+  }
   if (mode === 'chrono') return shuffle(quizQuestions).slice(0, 12)
   if (mode === 'defi-du-jour') {
     // Cible les thématiques les moins maîtrisées (apprentissage adaptatif)
@@ -97,7 +113,9 @@ function QuizGame() {
   const navigate = useNavigate()
   const mode = (params.get('mode') ?? 'entrainement') as Exclude<QuizMode, 'chasse'>
   const theme = params.get('theme') as ThemeId | null
-  const [questions, setQuestions] = useState(() => pickQuestions(mode, theme))
+  const moduleId = mode === 'module' ? params.get('module') : null
+  const validation = moduleQuiz(moduleId)
+  const [questions, setQuestions] = useState(() => pickQuestions(mode, theme, moduleId))
 
   const recordAnswer = useProgress((s) => s.recordAnswer)
   const recordQuiz = useProgress((s) => s.recordQuiz)
@@ -186,12 +204,19 @@ function QuizGame() {
   useEffect(() => {
     if (!finished || saved.current) return
     saved.current = true
-    recordQuiz({ mode, themeId: theme ?? undefined, score, total, xp: earned })
-  }, [finished, score, total, earned, mode, theme, recordQuiz])
+    recordQuiz({
+      mode,
+      themeId: theme ?? undefined,
+      moduleId: moduleId ?? undefined,
+      score,
+      total,
+      xp: earned,
+    })
+  }, [finished, score, total, earned, mode, theme, moduleId, recordQuiz])
 
   const restart = () => {
     saved.current = false
-    setQuestions(pickQuestions(mode, theme))
+    setQuestions(pickQuestions(mode, theme, moduleId))
     setIndex(0)
     setPicked(null)
     setRevealed(false)
@@ -203,7 +228,9 @@ function QuizGame() {
     setFinished(false)
   }
 
-  const title = `${MODE_TITLE[mode]}${theme ? ` · ${getTheme(theme).title}` : ''}`
+  const title = validation
+    ? `${MODE_TITLE[mode]} · ${validation.module.title}`
+    : `${MODE_TITLE[mode]}${theme ? ` · ${getTheme(theme).title}` : ''}`
 
   if (!questions.length) {
     return (
@@ -219,8 +246,12 @@ function QuizGame() {
     const pct = Math.round((score / total) * 100)
     const mistakes = log.filter((l) => !l.correct)
     const mood = pct >= 70 ? 'cheer' : pct >= 40 ? 'happy' : 'thinking'
-    const message =
-      pct === 100
+    const passed = validation ? score / total >= validation.step.passRatio : false
+    const message = validation
+      ? passed
+        ? 'Quiz validé !'
+        : `Encore un effort : ${Math.round(validation.step.passRatio * 100)} % de bonnes réponses sont nécessaires.`
+      : pct === 100
         ? 'Sans faute, impressionnant !'
         : pct >= 70
           ? 'Très beau résultat !'
@@ -323,11 +354,19 @@ function QuizGame() {
         )}
 
         <div className="flex flex-wrap justify-center gap-2">
-          <Button variant="outline" asChild>
-            <Link to={collabPath('quiz')}>
-              <ArrowLeft /> Tous les quiz
-            </Link>
-          </Button>
+          {validation ? (
+            <Button variant="outline" asChild>
+              <Link to={collabPath(`modules/${validation.module.id}`)}>
+                <ArrowLeft /> Retour au module
+              </Link>
+            </Button>
+          ) : (
+            <Button variant="outline" asChild>
+              <Link to={collabPath('quiz')}>
+                <ArrowLeft /> Tous les quiz
+              </Link>
+            </Button>
+          )}
           {mistakes.length > 0 && (
             <Button variant="outline" asChild>
               <Link to={collabPath(`flashcards/session?mode=all&theme=${mistakes[0].q.themeId}`)}>
@@ -359,7 +398,7 @@ function QuizGame() {
       <div>
         <div className="mb-4 flex items-center gap-3">
           <Button asChild variant="ghost" size="sm">
-            <Link to={collabPath('quiz')}>
+            <Link to={collabPath(validation ? `modules/${validation.module.id}` : 'quiz')}>
               <ArrowLeft /> Quitter
             </Link>
           </Button>

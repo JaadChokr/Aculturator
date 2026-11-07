@@ -14,6 +14,7 @@ import { HAZARD_SCENES } from './data/hazards.ts'
 import { notificationsForRole } from './data/notifications.ts'
 import { QUIZ_QUESTIONS } from './data/quiz.ts'
 import { RESOURCES } from './data/resources.ts'
+import { SST_MODULES } from './data/modules.ts'
 import { PARCOURS } from './data/parcours.ts'
 import { DEMO_USERS } from './data/users.ts'
 import type { KeyValueStore } from './store.ts'
@@ -126,6 +127,7 @@ export function createMockServer({ store, latency = true }: MockServerOptions) {
         flashcards: FLASHCARDS,
         quizQuestions: QUIZ_QUESTIONS,
         hazardScenes: HAZARD_SCENES,
+        modules: SST_MODULES,
       }
       return json(catalog)
     },

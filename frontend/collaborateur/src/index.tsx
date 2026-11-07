@@ -1,12 +1,31 @@
 import { lazy } from 'react'
-import { Bot, GraduationCap, Layers, LayoutDashboard, PlayCircle, Trophy } from 'lucide-react'
+import {
+  Bot,
+  GraduationCap,
+  Layers,
+  LayoutDashboard,
+  Milestone,
+  PlayCircle,
+  Trophy,
+} from 'lucide-react'
+import { getCatalog } from '@acculturator/core/catalog'
 import type { PortalDefinition } from '@acculturator/core/portal'
 import { HeaderStats } from './components/HeaderStats'
 import { parcoursProgress } from './store/parcoursProgress'
 import { countDue, useProgress } from './store/progress'
 import { COLLAB_BASE, collabPath } from './paths'
 
+const hasModules = () => {
+  try {
+    return !!getCatalog().modules?.modules.length
+  } catch {
+    return false
+  }
+}
+
 const DashboardPage = lazy(() => import('./pages/DashboardPage'))
+const ModulesPage = lazy(() => import('./pages/ModulesPage'))
+const ModulePage = lazy(() => import('./pages/ModulePage'))
 const ResourcesPage = lazy(() => import('./pages/ResourcesPage'))
 const FlashcardsPage = lazy(() => import('./pages/FlashcardsPage'))
 const FlashcardSessionPage = lazy(() => import('./pages/FlashcardSessionPage'))
@@ -36,6 +55,13 @@ export const collaborateurPortal: PortalDefinition = {
           to: COLLAB_BASE,
           icon: LayoutDashboard,
           end: true,
+        },
+        {
+          label: 'Modules',
+          to: collabPath('modules'),
+          icon: Milestone,
+          // Seulement pour les parcours organisés en modules
+          hidden: () => !hasModules(),
         },
         {
           label: 'Vidéos & ressources',
@@ -68,6 +94,8 @@ export const collaborateurPortal: PortalDefinition = {
   ],
   routes: [
     { index: true, element: <DashboardPage /> },
+    { path: 'modules', element: <ModulesPage /> },
+    { path: 'modules/:moduleId', element: <ModulePage /> },
     { path: 'ressources', element: <ResourcesPage /> },
     { path: 'flashcards', element: <FlashcardsPage /> },
     { path: 'flashcards/session', element: <FlashcardSessionPage /> },
