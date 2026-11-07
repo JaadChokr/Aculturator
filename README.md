@@ -110,6 +110,14 @@ flashcards **glissables** (droite = « Je sais », gauche = « À revoir ») emp
 qui défilent, cœurs et combos animés, scores et XP qui comptent, grille de ressources qui se réorganise au filtrage,
 marqueurs de la chasse aux risques à ressort, notifications empilées.
 
+## Point d'entrée : choix du parcours
+
+La plateforme s'ouvre sur une page de **choix du parcours** (`/`), prévue pour accueillir d'autres
+thématiques d'acculturation que la santé et la sécurité au travail. Une fois le parcours choisi,
+l'utilisateur arrive sur le portail d'accueil de son profil ; il peut en changer depuis le menu
+utilisateur (Parcours › Changer). Le catalogue, l'assistant et la progression sont propres à chaque
+parcours (voir [`docs/architecture.md`](docs/architecture.md#parcours)).
+
 ## Espace collaborateur — fonctionnalités
 
 | Rubrique                | Contenu                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Piliers mobilisés (conception)              |

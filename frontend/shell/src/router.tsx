@@ -3,21 +3,15 @@ import {
   createHashRouter,
   createMemoryRouter,
   Link,
-  Navigate,
   type RouteObject,
 } from 'react-router'
 import { Button } from '@acculturator/design-system/ui'
 import { Mascot } from '@acculturator/design-system/components'
-import { useAuth } from '@acculturator/core/auth'
-import { homePortalFor } from '@acculturator/core/portal'
+import { ParcoursPage } from './ParcoursPage'
 import { PortalLayout } from './PortalLayout'
+import { RequireParcours } from './RequireParcours'
 import { RequireRole } from './RequireRole'
 import { PORTALS } from './portals'
-
-function HomeRedirect() {
-  const { user } = useAuth()
-  return <Navigate to={homePortalFor(PORTALS, user.role)?.basePath ?? '/'} replace />
-}
 
 function NotFound() {
   return (
@@ -37,12 +31,15 @@ function NotFound() {
 }
 
 const routes: RouteObject[] = [
-  { path: '/', element: <HomeRedirect /> },
+  // Point d'entrée : choix du parcours, puis portail d'accueil du profil
+  { path: '/', element: <ParcoursPage /> },
   ...PORTALS.map<RouteObject>((portal) => ({
     path: portal.basePath,
     element: (
       <RequireRole roles={portal.allowedRoles}>
-        <PortalLayout portal={portal} />
+        <RequireParcours>
+          <PortalLayout portal={portal} />
+        </RequireParcours>
       </RequireRole>
     ),
     children: portal.routes,

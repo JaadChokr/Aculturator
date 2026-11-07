@@ -3,6 +3,7 @@ import type {
   Catalog,
   ChatReply,
   LearningEvent,
+  Parcours,
   Role,
   User,
 } from '@acculturator/contracts'
@@ -18,8 +19,14 @@ export interface AuthApi {
   switchDemoRole?(role: Role): Promise<void>
 }
 
+export interface ParcoursApi {
+  /** Parcours proposés par la plateforme. */
+  list(): Promise<Parcours[]>
+}
+
+/** Les services suivants portent sur le parcours en cours (voir `@acculturator/core/parcours`). */
 export interface ContentApi {
-  /** Catalogue pédagogique (ressources, flashcards, questions, scènes). */
+  /** Catalogue pédagogique du parcours (ressources, flashcards, questions, scènes). */
   getCatalog(): Promise<Catalog>
 }
 
@@ -40,6 +47,7 @@ export interface ProgressApi {
 
 export interface Api {
   auth: AuthApi
+  parcours: ParcoursApi
   content: ContentApi
   chat: ChatApi
   notifications: NotificationsApi

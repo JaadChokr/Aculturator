@@ -1,8 +1,19 @@
-import type { AppNotification, Catalog, ChatReply, Role, User } from '@acculturator/contracts'
+import type {
+  AppNotification,
+  Catalog,
+  ChatReply,
+  Parcours,
+  Role,
+  User,
+} from '@acculturator/contracts'
+import { currentParcoursId } from '../../parcours/store'
 import type { Api } from '../types'
 import { get, post } from './client'
 
 const DEMO_ROLE_SWITCHER = import.meta.env.VITE_DEMO_ROLE_SWITCHER === 'true'
+
+/** Chemin limité au parcours en cours : /parcours/:id/… */
+const inParcours = (path: string) => `/parcours/${encodeURIComponent(currentParcoursId())}${path}`
 
 /** Endpoints décrits dans docs/api-contract.md. */
 export const httpApi: Api = {
@@ -13,18 +24,21 @@ export const httpApi: Api = {
       switchDemoRole: (role: Role) => post<void>('/demo/role', { role }),
     }),
   },
+  parcours: {
+    list: () => get<Parcours[]>('/parcours'),
+  },
   content: {
-    getCatalog: () => get<Catalog>('/catalog'),
+    getCatalog: async () => get<Catalog>(inParcours('/catalog')),
   },
   chat: {
-    ask: (question) => post<ChatReply>('/chat', { question }),
-    getSuggestions: () => get<string[]>('/chat/suggestions'),
+    ask: async (question) => post<ChatReply>(inParcours('/chat'), { question }),
+    getSuggestions: async () => get<string[]>(inParcours('/chat/suggestions')),
   },
   notifications: {
     list: () => get<AppNotification[]>('/notifications'),
     markRead: (ids) => post<void>('/notifications/read', { ids }),
   },
   progress: {
-    track: (event) => post<void>('/progress/events', event),
+    track: async (event) => post<void>(inParcours('/progress/events'), event),
   },
 }

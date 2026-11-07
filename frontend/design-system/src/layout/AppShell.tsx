@@ -1,7 +1,7 @@
 import { Suspense, useCallback, useRef, useState, type ReactNode } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { Link, NavLink, useLocation } from 'react-router'
-import { Menu, Moon, Sun, Monitor, X, ChevronDown, Check, ShieldPlus } from 'lucide-react'
+import { Menu, Moon, Sun, Monitor, X, ChevronDown, Check, Route, ShieldPlus } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useTheme } from '../theme'
 import { Avatar, Button } from '../ui'
@@ -19,17 +19,22 @@ function PageLoader() {
   )
 }
 
-function Brand() {
+/** Logo et nom de la plateforme ; le sous-titre indique le parcours en cours. */
+export function Brand({ subtitle }: { subtitle?: string }) {
   return (
-    <Link to="/" className="flex items-center gap-2.5 px-2">
+    <Link
+      to="/"
+      className="flex items-center gap-2.5 px-2"
+      aria-label="Acculturator, choix du parcours"
+    >
       <span className="grid size-9 place-items-center rounded-md bg-primary text-primary-foreground">
         <ShieldPlus className="size-5" strokeWidth={2} />
       </span>
       <span className="leading-tight">
         <span className="block text-[15px] font-bold tracking-tight">Acculturator</span>
-        <span className="block text-[11px] font-medium text-sidebar-muted">
-          Santé & Sécurité au travail
-        </span>
+        {subtitle && (
+          <span className="block text-[11px] font-medium text-sidebar-muted">{subtitle}</span>
+        )}
       </span>
     </Link>
   )
@@ -115,6 +120,8 @@ export interface UserMenuProps {
   /** Portails accessibles (changement de portail) */
   portals: { id: string; label: string; icon: LucideIcon; current: boolean }[]
   onSelectPortal: (id: string) => void
+  /** Parcours en cours et retour à la page de choix du parcours */
+  parcours?: { label: string; onChange: () => void }
   /** Démo uniquement : profils proposés au changement */
   demoRoles?: { id: string; label: string; current: boolean }[]
   onSelectDemoRole?: (id: string) => void
@@ -125,6 +132,7 @@ export function UserMenu({
   user,
   portals,
   onSelectPortal,
+  parcours,
   demoRoles,
   onSelectDemoRole,
 }: UserMenuProps) {
@@ -211,9 +219,30 @@ export function UserMenu({
                 </button>
               ))}
             </div>
-            <div className="mt-1 border-t px-2 pt-2 pb-1 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
-              Mes portails
-            </div>
+            {parcours && (
+              <>
+                <div className="mt-1 border-t px-2 pt-2 pb-1 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
+                  Parcours
+                </div>
+                <button
+                  role="menuitem"
+                  onClick={() => {
+                    setOpen(false)
+                    parcours.onChange()
+                  }}
+                  className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm hover:bg-muted"
+                >
+                  <Route className="size-4 text-muted-foreground" />
+                  <span className="min-w-0 flex-1 truncate text-left">{parcours.label}</span>
+                  <span className="text-xs font-medium text-primary">Changer</span>
+                </button>
+              </>
+            )}
+            {portals.length > 0 && (
+              <div className="mt-1 border-t px-2 pt-2 pb-1 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
+                Mes portails
+              </div>
+            )}
             {portals.map((p) => (
               <button
                 key={p.id}
@@ -257,7 +286,7 @@ export function UserMenu({
   )
 }
 
-function ThemeToggle() {
+export function ThemeToggle() {
   const { theme, setTheme } = useTheme()
   const next = theme === 'light' ? 'dark' : theme === 'dark' ? 'system' : 'light'
   const Icon = theme === 'light' ? Sun : theme === 'dark' ? Moon : Monitor
@@ -276,6 +305,8 @@ function ThemeToggle() {
 }
 
 export interface AppShellProps {
+  /** Sous-titre de la marque (le parcours en cours) */
+  brandSubtitle?: string
   /** Libellé de la section courante (ex. nom du portail), affiché dans le fil d'Ariane */
   sectionLabel: string
   nav: NavSection[]
@@ -295,6 +326,7 @@ export interface AppShellProps {
  * navigation) sont fournies par l'application hôte.
  */
 export function AppShell({
+  brandSubtitle,
   sectionLabel,
   nav,
   headerSlot,
@@ -310,7 +342,7 @@ export function AppShell({
 
   const sidebar = (idPrefix: string) => (
     <div className="flex h-full flex-col gap-6 border-r border-sidebar-border bg-sidebar p-4 text-sidebar-foreground">
-      <Brand />
+      <Brand subtitle={brandSubtitle} />
       <div className="flex-1 overflow-y-auto">
         <SidebarNav nav={nav} idPrefix={idPrefix} onNavigate={() => setMobileOpen(false)} />
       </div>

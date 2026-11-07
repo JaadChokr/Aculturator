@@ -2,7 +2,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MotionConfig } from 'motion/react'
 import { RouterProvider } from 'react-router'
 import { AuthProvider } from '@acculturator/core/auth'
-import { CatalogProvider } from '@acculturator/core/catalog'
 import { FullPageLoader, Toaster } from '@acculturator/design-system/components'
 import { PortalRegistryProvider } from '@acculturator/core/portal'
 import { ThemeProvider } from '@acculturator/design-system/theme'
@@ -17,23 +16,23 @@ const queryClient = new QueryClient({
 
 /**
  * Assemblage de l'application :
- * thème → cache de données → utilisateur connecté → catalogue → registre des portails → routes.
+ * thème → cache de données → utilisateur connecté → registre des portails → routes.
+ * La route « / » est le choix du parcours ; chaque portail charge ensuite le catalogue
+ * du parcours choisi (RequireParcours).
  */
 export function App() {
   return (
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
         <AuthProvider fallback={<FullPageLoader label="Connexion…" />}>
-          <CatalogProvider fallback={<FullPageLoader label="Chargement des contenus…" />}>
-            <PortalRegistryProvider portals={PORTALS}>
-              <MotionConfig reducedMotion="user">
-                <TooltipProvider delayDuration={200}>
-                  <RouterProvider router={router} />
-                  <Toaster />
-                </TooltipProvider>
-              </MotionConfig>
-            </PortalRegistryProvider>
-          </CatalogProvider>
+          <PortalRegistryProvider portals={PORTALS}>
+            <MotionConfig reducedMotion="user">
+              <TooltipProvider delayDuration={200}>
+                <RouterProvider router={router} />
+                <Toaster />
+              </TooltipProvider>
+            </MotionConfig>
+          </PortalRegistryProvider>
         </AuthProvider>
       </QueryClientProvider>
     </ThemeProvider>

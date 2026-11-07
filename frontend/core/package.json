@@ -10,7 +10,8 @@
     "./catalog": "./src/catalog/index.ts",
     "./portal": "./src/portal/index.ts",
     "./content": "./src/content/index.ts",
-    "./notifications": "./src/notifications/index.ts"
+    "./notifications": "./src/notifications/index.ts",
+    "./parcours": "./src/parcours/index.ts"
   },
   "dependencies": {
     "@acculturator/contracts": "*",

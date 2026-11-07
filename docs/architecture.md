@@ -74,14 +74,15 @@ Points d'entrée publics (`exports` de `frontend/design-system/package.json`) :
 
 Tout ce que les portails partagent **sans être de l'interface** :
 
-| Point d'entrée   | Rôle                                                                                       |
-| ---------------- | ------------------------------------------------------------------------------------------ |
-| `/api`           | **Couche d'accès aux données** (voir ci-dessous)                                           |
-| `/auth`          | `AuthProvider`, `useAuth()`, libellés des rôles                                            |
-| `/catalog`       | Chargement unique du catalogue pédagogique (`CatalogProvider`, `useCatalog`, `getCatalog`) |
-| `/notifications` | `useNotifications()` : chargement, rafraîchissement et lecture des notifications           |
-| `/portal`        | Contrat `PortalDefinition` et registre des portails (`usePortalRegistry`)                  |
-| `/content`       | Référentiels fonctionnels : barème de gamification (XP, niveaux), libellés                 |
+| Point d'entrée   | Rôle                                                                                                  |
+| ---------------- | ----------------------------------------------------------------------------------------------------- |
+| `/api`           | **Couche d'accès aux données** (voir ci-dessous)                                                      |
+| `/auth`          | `AuthProvider`, `useAuth()`, libellés des rôles                                                       |
+| `/catalog`       | Chargement unique du catalogue pédagogique (`CatalogProvider`, `useCatalog`, `getCatalog`)            |
+| `/notifications` | `useNotifications()` : chargement, rafraîchissement et lecture des notifications                      |
+| `/parcours`      | Parcours proposés et parcours en cours (`useParcoursList`, `useCurrentParcours`, `useSelectParcours`) |
+| `/portal`        | Contrat `PortalDefinition` et registre des portails (`usePortalRegistry`)                             |
+| `/content`       | Référentiels fonctionnels : barème de gamification (XP, niveaux), libellés                            |
 
 Le lien entre les deux se fait dans le shell : `frontend/shell/src/PortalLayout.tsx` charge
 l'utilisateur, les portails accessibles et les notifications (`core`), puis les passe à `AppShell`,
@@ -130,13 +131,36 @@ hydrater le store depuis un endpoint `GET /progress` à la connexion.
 `frontend/shell/src/App.tsx` empile les providers :
 
 ```
-ThemeProvider → QueryClientProvider → AuthProvider → CatalogProvider
+ThemeProvider → QueryClientProvider → AuthProvider
   → PortalRegistryProvider(PORTALS) → MotionConfig → TooltipProvider → RouterProvider
 ```
 
 `frontend/shell/src/portals.ts` est **le seul endroit** qui connaît la liste des portails. Le routeur
-génère les routes à partir de chaque `PortalDefinition`, protège chaque portail par rôle
-(`RequireRole`) et redirige `/` vers le portail d'accueil du rôle connecté.
+génère les routes à partir de chaque `PortalDefinition` :
+
+```
+/                     ParcoursPage : choix du parcours (point d'entrée de la plateforme)
+/<portail>/…          RequireRole → RequireParcours → PortalLayout → pages du portail
+```
+
+### Parcours
+
+La plateforme est prévue pour plusieurs parcours d'acculturation (SST aujourd'hui). Le parcours
+choisi est mémorisé dans le navigateur (`@acculturator/core/parcours`) et :
+
+- les appels propres à un parcours (catalogue, assistant, événements de progression) sont
+  automatiquement préfixés par `/parcours/:id` dans `frontend/core/src/api/http/` : les pages des
+  portails n'ont pas à s'en occuper ;
+- `RequireParcours` renvoie vers `/` si aucun parcours n'est choisi (lien direct, première visite),
+  puis charge le catalogue du parcours avant d'afficher le portail ;
+- changer de parcours (menu utilisateur › Parcours › Changer) oublie les données de l'ancien parcours
+  en cache ; l'utilisateur, les notifications et la liste des parcours sont conservés.
+
+Ajouter un parcours : le backend le renvoie dans `GET /parcours` et sert ses endpoints
+`/parcours/:id/…` ; côté frontend, seule une icône est à déclarer (`PARCOURS_ICON` dans
+`frontend/shell/src/ParcoursPage.tsx`, icône par défaut sinon). À prévoir quand un deuxième parcours
+arrivera : rattacher au parcours la progression locale du portail collaborateur (aujourd'hui
+unique).
 
 Variables d'environnement (`frontend/shell/.env.*`) :
 

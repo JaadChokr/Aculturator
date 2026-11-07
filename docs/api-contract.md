@@ -21,15 +21,35 @@ devrait les importer (s'il est en TypeScript) ou les reproduire à l'identique.
 | Méthode | Chemin                | Corps               | Réponse             | Usage                                                          |
 | ------- | --------------------- | ------------------- | ------------------- | -------------------------------------------------------------- |
 | `GET`   | `/me`                 | —                   | `User`              | Utilisateur connecté et son rôle (pilote l'accès aux portails) |
-| `GET`   | `/catalog`            | —                   | `Catalog`           | Catalogue pédagogique chargé au démarrage                      |
-| `POST`  | `/chat`               | `ChatRequest`       | `ChatReply`         | Question à l'assistant SST                                     |
-| `GET`   | `/chat/suggestions`   | —                   | `string[]`          | Idées de questions proposées dans le carrousel                 |
+| `GET`   | `/parcours`           | —                   | `Parcours[]`        | Parcours proposés sur la page de choix                         |
 | `GET`   | `/notifications`      | —                   | `AppNotification[]` | Notifications de l'utilisateur (le contenu dépend du rôle)     |
 | `POST`  | `/notifications/read` | `{ ids: string[] }` | `204`               | Marquer des notifications comme lues                           |
-| `POST`  | `/progress/events`    | `LearningEvent`     | `204`               | Événement d'apprentissage (envoi « fire and forget »)          |
+
+Endpoints **propres à un parcours**, préfixés par `/parcours/:id` (ex. `/parcours/sst/catalog`) ;
+un parcours inconnu ou non disponible répond `404` :
+
+| Méthode | Chemin                           | Corps           | Réponse     | Usage                                                 |
+| ------- | -------------------------------- | --------------- | ----------- | ----------------------------------------------------- |
+| `GET`   | `/parcours/:id/catalog`          | —               | `Catalog`   | Catalogue du parcours, chargé à l'entrée d'un portail |
+| `POST`  | `/parcours/:id/chat`             | `ChatRequest`   | `ChatReply` | Question à l'assistant du parcours                    |
+| `GET`   | `/parcours/:id/chat/suggestions` | —               | `string[]`  | Idées de questions proposées dans le carrousel        |
+| `POST`  | `/parcours/:id/progress/events`  | `LearningEvent` | `204`       | Événement d'apprentissage (envoi « fire and forget ») |
 
 > Hors contrat : `POST /demo/role` (`{ role }` → `204`) n'existe que dans `mock-server`, pour le
 > sélecteur de profil de la démo. Le vrai backend ne l'implémente pas : le rôle vient du SSO.
+
+### `Parcours`
+
+```ts
+interface Parcours {
+  id: string // ex. "sst", utilisé dans les chemins /parcours/:id/…
+  title: string // "Santé & Sécurité au Travail"
+  shortTitle: string // affiché sous la marque et dans le menu utilisateur
+  description: string
+  status: 'available' | 'coming_soon'
+  stats: { themes: number; resources: number; flashcards: number; quizQuestions: number }
+}
+```
 
 ### `User`
 
@@ -112,7 +132,7 @@ type LearningEvent =
 ```
 
 Le backend horodate et rattache l'événement à l'utilisateur de la session
-(`TrackedEvent { userId, occurredAt, event }`). Ces événements alimentent la progression et les
+et au parcours de l'URL (`TrackedEvent { userId, occurredAt, event }`). Ces événements alimentent la progression et les
 statistiques des portails référent et administrateur.
 
 ## Évolutions prévues
