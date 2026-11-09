@@ -7,16 +7,18 @@ import {
   BookOpen,
   CheckCircle2,
   CircleHelp,
+  Dumbbell,
   Heart,
   MousePointerClick,
   RotateCcw,
   Timer,
   XCircle,
+  type LucideIcon,
 } from 'lucide-react'
 import type { Difficulty, QuizQuestion, ThemeId } from '@acculturator/contracts'
 import { getCatalog, useCatalog } from '@acculturator/core/catalog'
 import { THEMES, getTheme } from '@acculturator/design-system/themes'
-import { DIFFICULTY_LABEL, XP } from '@acculturator/core/content'
+import { DIFFICULTY_LABEL, DIFFICULTY_LEVELS, XP } from '@acculturator/core/content'
 import { Confetti, Mascot, ProgressRing } from '@acculturator/design-system/components'
 import { Button, Card, CardContent, Progress } from '@acculturator/design-system/ui'
 import { cn, shuffle } from '@acculturator/design-system/lib'
@@ -31,7 +33,7 @@ import {
 import { collabPath } from '../paths'
 import { ThemeBadge } from '../components/ThemeBadge'
 import { TutorialDialog, useTutorial, type TutorialStep } from '../components/TutorialDialog'
-import { themeMastery } from '../store/insights'
+import { overallMastery, recommendedLevel, themeMastery } from '../store/insights'
 import { useProgress, type QuizMode } from '../store/progress'
 import { parseLevel, useQuizPrefs } from '../store/quizPrefs'
 
@@ -60,8 +62,27 @@ function moduleQuiz(moduleId: string | null) {
 function byLevel(pool: QuizQuestion[], level: Difficulty, size: number, minSize: number) {
   const exact = shuffle(pool.filter((q) => q.difficulty === level))
   const near = shuffle(pool.filter((q) => Math.abs(q.difficulty - level) === 1))
-  const wanted = Math.min(size, Math.max(minSize, exact.length))
-  return shuffle([...exact, ...near].slice(0, wanted))
+  return shuffle([...exact, ...near].slice(0, levelCount(pool, level, size, minSize)))
+}
+
+/** Nombre de questions d'un quiz au niveau donné (sans tirage). */
+function levelCount(pool: QuizQuestion[], level: Difficulty, size: number, minSize: number) {
+  const exact = pool.filter((q) => q.difficulty === level).length
+  const near = pool.filter((q) => Math.abs(q.difficulty - level) === 1).length
+  return Math.min(Math.min(size, Math.max(minSize, exact)), exact + near)
+}
+
+/** Nombre de questions du défi chrono ou de l'entraînement, selon le niveau. */
+function questionCount(
+  mode: 'chrono' | 'entrainement',
+  theme: ThemeId | null,
+  level: Difficulty | null,
+) {
+  const pool = getCatalog().quizQuestions.filter(
+    (q) => mode === 'chrono' || !theme || q.themeId === theme,
+  )
+  const [size, minSize] = mode === 'chrono' ? [12, 12] : [8, 4]
+  return level ? levelCount(pool, level, size, minSize) : Math.min(size, pool.length)
 }
 
 function pickQuestions(
@@ -117,9 +138,140 @@ const QUIZ_TUTORIAL: TutorialStep[] = [
 ]
 
 /** Remonte le jeu à chaque changement de paramètres (mode / thématique). */
+/** Valeur de `niveau` quand l'utilisateur choisit « tous niveaux ». */
+const ALL_LEVELS = 'tous'
+
 export default function QuizPlayPage() {
   const [params] = useSearchParams()
+  const mode = params.get('mode') ?? 'entrainement'
+  // Défi chrono et entraînement : on choisit d'abord son niveau, puis le quiz commence
+  if ((mode === 'chrono' || mode === 'entrainement') && !params.get('niveau'))
+    return <LevelChooser mode={mode} theme={params.get('theme') as ThemeId | null} />
   return <QuizGame key={params.toString()} />
+}
+
+const MODE_INTRO: Record<'chrono' | 'entrainement', { icon: LucideIcon; text: string }> = {
+  chrono: {
+    icon: Timer,
+    text: '15 secondes par question, 3 vies, des combos pour multiplier les points.',
+  },
+  entrainement: {
+    icon: Dumbbell,
+    text: 'Sans chrono ni pression : chaque réponse est corrigée et expliquée.',
+  },
+}
+
+/** Étape entre le choix du défi et le quiz : le niveau de difficulté. */
+function LevelChooser({ mode, theme }: { mode: 'chrono' | 'entrainement'; theme: ThemeId | null }) {
+  const [params, setParams] = useSearchParams()
+  const catalog = useCatalog()
+  const s = useProgress()
+  const remembered = useQuizPrefs((p) => p.level)
+  const setLevel = useQuizPrefs((p) => p.setLevel)
+  const [choice, setChoice] = useState<Difficulty | null>(remembered)
+  const recommended = recommendedLevel(
+    theme
+      ? themeMastery(s, theme)
+      : overallMastery(s, {
+          themes: THEMES.length,
+          resources: catalog.resources.length,
+          flashcards: catalog.flashcards.length,
+        }),
+  )
+  const intro = MODE_INTRO[mode]
+  const options: { value: Difficulty | null; label: string; description: string }[] = [
+    { value: null, label: 'Tous niveaux', description: 'Un mélange de questions' },
+    ...DIFFICULTY_LEVELS,
+  ]
+
+  const start = () => {
+    setLevel(choice)
+    const next = new URLSearchParams(params)
+    next.set('niveau', choice ? String(choice) : ALL_LEVELS)
+    setParams(next, { replace: true })
+  }
+
+  return (
+    <div className="mx-auto max-w-3xl">
+      <Button asChild variant="ghost" size="sm" className="mb-4">
+        <Link to={collabPath('quiz')}>
+          <ArrowLeft /> Quiz & défis
+        </Link>
+      </Button>
+      <Card>
+        <CardContent className="flex flex-col gap-6 p-6 sm:p-8">
+          <div className="flex items-start gap-4">
+            <span className="grid size-12 shrink-0 place-items-center rounded-md bg-primary text-primary-foreground">
+              <intro.icon className="size-6" />
+            </span>
+            <div>
+              <h1 className="text-xl font-bold sm:text-2xl">
+                {MODE_TITLE[mode]}
+                {theme ? ` · ${getTheme(theme).title}` : ''}
+              </h1>
+              <p className="text-muted-foreground">{intro.text}</p>
+            </div>
+          </div>
+
+          <div>
+            <h2 className="mb-3 font-semibold">Choisissez votre niveau</h2>
+            <div
+              role="radiogroup"
+              aria-label="Niveau de difficulté"
+              className="grid gap-3 sm:grid-cols-2"
+            >
+              {options.map((o) => {
+                const active = choice === o.value
+                return (
+                  <button
+                    key={o.label}
+                    type="button"
+                    role="radio"
+                    aria-checked={active}
+                    onClick={() => setChoice(o.value)}
+                    onDoubleClick={start}
+                    className={cn(
+                      'flex flex-col gap-1 rounded-lg border-2 p-4 text-left transition-colors',
+                      active
+                        ? 'border-primary bg-primary/5'
+                        : 'border-border hover:border-primary/40 hover:bg-muted/40',
+                    )}
+                  >
+                    <span className="flex items-center justify-between gap-2">
+                      <span className="flex items-center gap-2 font-semibold">
+                        {o.label}
+                        {o.value && (
+                          <span aria-hidden className="text-xs tracking-tight text-primary">
+                            {'●'.repeat(o.value)}
+                            <span className="text-muted-foreground/40">
+                              {'●'.repeat(3 - o.value)}
+                            </span>
+                          </span>
+                        )}
+                      </span>
+                      {o.value === recommended && (
+                        <span className="rounded-sm bg-primary/10 px-1.5 py-0.5 text-[11px] font-semibold text-primary">
+                          Conseillé
+                        </span>
+                      )}
+                    </span>
+                    <span className="text-sm text-muted-foreground">{o.description}</span>
+                    <span className="text-xs text-muted-foreground tabular-nums">
+                      {questionCount(mode, theme, o.value)} questions
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          <Button size="lg" className="self-start" onClick={start}>
+            Commencer <ArrowRight />
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  )
 }
 
 function QuizGame() {
@@ -273,6 +425,11 @@ function QuizGame() {
     const mood = pct >= 70 ? 'cheer' : pct >= 40 ? 'happy' : 'thinking'
     // Très bon score : on propose le niveau au-dessus (la difficulté suit les progrès)
     const nextLevel = level && level < 3 && pct >= 80 ? ((level + 1) as Difficulty) : null
+    const withoutLevel = () => {
+      const p = new URLSearchParams(params)
+      p.delete('niveau')
+      return p.toString()
+    }
     const levelParams = (l: Difficulty) => {
       const p = new URLSearchParams(params)
       p.set('niveau', String(l))
@@ -409,6 +566,11 @@ function QuizGame() {
           <Button variant={nextLevel ? 'outline' : 'default'} onClick={restart}>
             <RotateCcw /> Rejouer
           </Button>
+          {(mode === 'chrono' || mode === 'entrainement') && (
+            <Button variant="ghost" asChild>
+              <Link to={collabPath(`quiz/jouer?${withoutLevel()}`)}>Changer de niveau</Link>
+            </Button>
+          )}
           {nextLevel && (
             <Button asChild onClick={() => setLevel(nextLevel)}>
               <Link to={collabPath(`quiz/jouer?${levelParams(nextLevel)}`)}>
