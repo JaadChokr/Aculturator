@@ -60,6 +60,14 @@
   --xp-foreground: oklch(1 0 0);
   --streak: oklch(0.58 0.17 38);
 
+  /* Niveaux de difficulté : du rouge clair au bordeaux, plus c'est foncé plus c'est difficile */
+  --level-1: oklch(0.74 0.12 22);
+  --level-1-foreground: oklch(0.25 0.06 22);
+  --level-2: oklch(0.56 0.2 25);
+  --level-2-foreground: oklch(1 0 0);
+  --level-3: oklch(0.37 0.14 18);
+  --level-3-foreground: oklch(1 0 0);
+
   /* Navigation latérale : blanche, item actif teinté rouge */
   --sidebar: oklch(1 0 0);
   --sidebar-foreground: oklch(0.3 0.01 265);
@@ -100,6 +108,13 @@
   --xp: oklch(0.8 0.03 260);
   --xp-foreground: oklch(0.18 0.01 260);
   --streak: oklch(0.7 0.16 45);
+
+  --level-1: oklch(0.8 0.1 22);
+  --level-1-foreground: oklch(0.22 0.05 22);
+  --level-2: oklch(0.64 0.19 25);
+  --level-2-foreground: oklch(1 0 0);
+  --level-3: oklch(0.5 0.17 20);
+  --level-3-foreground: oklch(1 0 0);
 
   --sidebar: oklch(0.185 0.006 265);
   --sidebar-foreground: oklch(0.88 0.004 265);
@@ -147,6 +162,12 @@
   --color-xp: var(--xp);
   --color-xp-foreground: var(--xp-foreground);
   --color-streak: var(--streak);
+  --color-level-1: var(--level-1);
+  --color-level-1-foreground: var(--level-1-foreground);
+  --color-level-2: var(--level-2);
+  --color-level-2-foreground: var(--level-2-foreground);
+  --color-level-3: var(--level-3);
+  --color-level-3-foreground: var(--level-3-foreground);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-muted: var(--sidebar-muted);

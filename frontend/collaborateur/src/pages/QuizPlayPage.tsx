@@ -31,6 +31,7 @@ import {
   springBouncy,
 } from '@acculturator/design-system/motion'
 import { collabPath } from '../paths'
+import { LEVEL_STYLE, LevelDots } from '../components/LevelDots'
 import { ThemeBadge } from '../components/ThemeBadge'
 import { TutorialDialog, useTutorial, type TutorialStep } from '../components/TutorialDialog'
 import { overallMastery, recommendedLevel, themeMastery } from '../store/insights'
@@ -231,23 +232,28 @@ function LevelChooser({ mode, theme }: { mode: 'chrono' | 'entrainement'; theme:
                     onClick={() => setChoice(o.value)}
                     onDoubleClick={start}
                     className={cn(
-                      'flex flex-col gap-1 rounded-lg border-2 p-4 text-left transition-colors',
+                      'relative flex flex-col gap-1 overflow-hidden rounded-lg border-2 p-4 pl-6 text-left transition-colors',
                       active
-                        ? 'border-primary bg-primary/5'
-                        : 'border-border hover:border-primary/40 hover:bg-muted/40',
+                        ? o.value
+                          ? cn(LEVEL_STYLE[o.value].border, LEVEL_STYLE[o.value].tint)
+                          : 'border-primary bg-primary/5'
+                        : 'border-border hover:bg-muted/40',
                     )}
                   >
+                    {/* Bande de couleur : plus elle est foncée, plus le niveau est difficile */}
+                    <span
+                      aria-hidden
+                      className={cn(
+                        'absolute inset-y-0 left-0 w-2',
+                        o.value
+                          ? LEVEL_STYLE[o.value].bar
+                          : 'bg-gradient-to-b from-level-1 via-level-2 to-level-3',
+                      )}
+                    />
                     <span className="flex items-center justify-between gap-2">
                       <span className="flex items-center gap-2 font-semibold">
                         {o.label}
-                        {o.value && (
-                          <span aria-hidden className="text-xs tracking-tight text-primary">
-                            {'●'.repeat(o.value)}
-                            <span className="text-muted-foreground/40">
-                              {'●'.repeat(3 - o.value)}
-                            </span>
-                          </span>
-                        )}
+                        {o.value && <LevelDots level={o.value} />}
                       </span>
                       {o.value === recommended && (
                         <span className="rounded-sm bg-primary/10 px-1.5 py-0.5 text-[11px] font-semibold text-primary">
@@ -621,7 +627,12 @@ function QuizGame() {
         <div className="mb-4 flex min-h-9 flex-wrap items-center gap-3">
           <span className="text-sm font-bold text-primary">{title}</span>
           {level && (
-            <span className="rounded-sm border px-2 py-0.5 text-xs font-semibold">
+            <span
+              className={cn(
+                'rounded-sm px-2 py-0.5 text-xs font-semibold',
+                LEVEL_STYLE[level].solid,
+              )}
+            >
               Niveau {DIFFICULTY_LABEL[level]}
             </span>
           )}
@@ -700,9 +711,9 @@ function QuizGame() {
           >
             <Card className="mb-4">
               <CardContent className="p-6 sm:p-8">
-                <div className="mb-1 text-xs font-bold text-muted-foreground">
-                  Difficulté {'●'.repeat(q.difficulty)}
-                  {'○'.repeat(3 - q.difficulty)}
+                <div className="mb-1 flex items-center gap-2 text-xs font-bold text-muted-foreground">
+                  Difficulté <LevelDots level={q.difficulty} />
+                  <span className="sr-only">{DIFFICULTY_LABEL[q.difficulty]}</span>
                 </div>
                 <h2 className="mb-6 text-xl leading-snug font-bold sm:text-2xl lg:text-[1.75rem]">
                   {q.question}

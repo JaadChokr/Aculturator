@@ -2,8 +2,11 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { useSearchParams } from 'react-router'
 import {
+  ArrowLeft,
+  ArrowRight,
   Bookmark,
   BookmarkCheck,
+  Check,
   CheckCircle2,
   Clock,
   FileText,
@@ -284,35 +287,123 @@ function MediaPlayer({ r, onComplete }: { r: Resource; onComplete: () => void })
   )
 }
 
-function ResourceDialog({ r, onClose }: { r: Resource | null; onClose: () => void }) {
-  const markViewed = useProgress((s) => s.markResourceViewed)
-  const checkPassed = useProgress((s) => s.resourceCheckPassed)
-  const viewed = useProgress((s) => (r ? s.viewedResources.includes(r.id) : false))
-  const [unlocked, setUnlocked] = useState(false)
-  const isMedia = r?.type === 'video' || r?.type === 'podcast'
-  const showContent = viewed || unlocked || !isMedia
+type StepId = 'watch' | 'read' | 'keypoints' | 'check'
 
+/** Une ressource se parcourt par étapes : consulter, retenir l'essentiel, vérifier. */
+function resourceSteps(r: Resource): StepId[] {
+  const isMedia = r.type === 'video' || r.type === 'podcast'
+  return [
+    ...(isMedia ? (['watch', 'keypoints'] as const) : (['read'] as const)),
+    ...(r.check ? (['check'] as const) : []),
+  ]
+}
+
+const STEP_LABEL = (r: Resource): Record<StepId, string> => ({
+  watch: r.type === 'podcast' ? 'Écouter' : 'Regarder',
+  read: 'Lire',
+  keypoints: 'À retenir',
+  check: 'Check express',
+})
+
+function ResourceDialog({ r, onClose }: { r: Resource | null; onClose: () => void }) {
   return (
     <Dialog open={!!r} onOpenChange={(o) => !o && onClose()}>
       {r && (
         <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <div className="flex flex-wrap items-center gap-2">
-              <ThemeBadge themeId={r.themeId} />
-              <Badge variant="secondary">
-                <Clock /> {r.durationMin} min
-              </Badge>
-              {viewed && (
-                <Badge variant="success">
-                  <CheckCircle2 /> Consulté
-                </Badge>
-              )}
-            </div>
-            <DialogTitle className="text-xl">{r.title}</DialogTitle>
-            <DialogDescription>{r.summary}</DialogDescription>
-          </DialogHeader>
+          <ResourceSteps key={r.id} r={r} onClose={onClose} />
+        </DialogContent>
+      )}
+    </Dialog>
+  )
+}
 
-          {isMedia && (
+function ResourceSteps({ r, onClose }: { r: Resource; onClose: () => void }) {
+  const markViewed = useProgress((s) => s.markResourceViewed)
+  const checkPassed = useProgress((s) => s.resourceCheckPassed)
+  const viewed = useProgress((s) => s.viewedResources.includes(r.id))
+  const [unlocked, setUnlocked] = useState(false)
+  const steps = resourceSteps(r)
+  const labels = STEP_LABEL(r)
+  const [index, setIndex] = useState(0)
+  const step = steps[index]
+  const last = index === steps.length - 1
+  const nextLabel = last ? 'Terminer' : `Suivant : ${labels[steps[index + 1]]}`
+
+  // Une vidéo ou un podcast doit être lu jusqu'au bout avant de passer à la suite
+  const locked = step === 'watch' && !viewed && !unlocked
+
+  const next = () => {
+    if (step === 'read' && !viewed) markViewed(r.id)
+    if (last) onClose()
+    else setIndex((i) => i + 1)
+  }
+
+  return (
+    <>
+      <DialogHeader>
+        <div className="flex flex-wrap items-center gap-2">
+          <ThemeBadge themeId={r.themeId} />
+          <Badge variant="secondary">
+            <Clock /> {r.durationMin} min
+          </Badge>
+          {viewed && (
+            <Badge variant="success">
+              <CheckCircle2 /> Consulté
+            </Badge>
+          )}
+        </div>
+        <DialogTitle className="text-xl">{r.title}</DialogTitle>
+        <DialogDescription>{r.summary}</DialogDescription>
+      </DialogHeader>
+
+      {steps.length > 1 && (
+        <ol
+          className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-semibold"
+          aria-label="Étapes"
+        >
+          {steps.map((s, i) => (
+            <li key={s} className="flex items-center gap-2">
+              {i > 0 && <span aria-hidden className="h-px w-4 bg-border sm:w-8" />}
+              <span
+                aria-current={i === index ? 'step' : undefined}
+                className={cn(
+                  'flex items-center gap-1.5',
+                  i === index
+                    ? 'text-primary'
+                    : i < index
+                      ? 'text-foreground'
+                      : 'text-muted-foreground',
+                )}
+              >
+                <span
+                  className={cn(
+                    'grid size-5 place-items-center rounded-full text-[11px]',
+                    i === index
+                      ? 'bg-primary text-primary-foreground'
+                      : i < index
+                        ? 'bg-success text-white'
+                        : 'bg-muted text-muted-foreground',
+                  )}
+                >
+                  {i < index ? <Check className="size-3" /> : i + 1}
+                </span>
+                {labels[s]}
+              </span>
+            </li>
+          ))}
+        </ol>
+      )}
+
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={step}
+          initial={{ opacity: 0, x: 16 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -16 }}
+          transition={{ duration: 0.2 }}
+          className="min-w-0"
+        >
+          {step === 'watch' && (
             <MediaPlayer
               r={r}
               onComplete={() => {
@@ -322,46 +413,53 @@ function ResourceDialog({ r, onClose }: { r: Resource | null; onClose: () => voi
             />
           )}
 
-          <div
-            className={cn(
-              'transition-opacity',
-              !showContent && 'pointer-events-none opacity-40 blur-[2px]',
-            )}
-          >
-            <h4 className="mb-2 text-sm font-bold">{isMedia ? 'À retenir' : 'L’essentiel'}</h4>
-            <ul className="flex flex-col gap-2">
-              {r.keyPoints.map((k, i) => (
-                <li key={k} className="flex gap-3 rounded-lg bg-muted/60 p-3 text-sm">
-                  <span className="grid size-6 shrink-0 place-items-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
-                    {i + 1}
-                  </span>
-                  {k}
-                </li>
-              ))}
-            </ul>
-          </div>
-          {!showContent && (
-            <p className="-mt-2 text-center text-xs text-muted-foreground">
-              Lancez la lecture pour débloquer le résumé.
-            </p>
+          {(step === 'keypoints' || step === 'read') && (
+            <div>
+              <h4 className="mb-2 text-sm font-bold">
+                {step === 'read' ? 'L’essentiel' : 'À retenir'}
+              </h4>
+              <ul className="flex flex-col gap-2">
+                {r.keyPoints.map((k, i) => (
+                  <li key={k} className="flex gap-3 rounded-lg bg-muted/60 p-3 text-sm">
+                    <span className="grid size-6 shrink-0 place-items-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                      {i + 1}
+                    </span>
+                    {k}
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
 
-          {!isMedia && !viewed && (
-            <Button onClick={() => markViewed(r.id)} className="justify-self-start">
+          {step === 'check' && r.check && (
+            <CheckQuestionBlock check={r.check} onAnswered={(ok) => ok && checkPassed()} />
+          )}
+        </motion.div>
+      </AnimatePresence>
+
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-4">
+        {index > 0 ? (
+          <Button variant="ghost" onClick={() => setIndex((i) => i - 1)}>
+            <ArrowLeft /> Précédent
+          </Button>
+        ) : (
+          <span className="text-xs text-muted-foreground">
+            {locked ? 'Terminez la lecture pour passer à la suite.' : ''}
+          </span>
+        )}
+        <Button onClick={next} disabled={locked} className="ml-auto">
+          {step === 'read' && !viewed ? (
+            <>
               <CheckCircle2 /> J’ai pris connaissance de cette fiche
-            </Button>
+            </>
+          ) : (
+            <>
+              {nextLabel} {!last && <ArrowRight />}
+            </>
           )}
-
-          {r.check && (viewed || unlocked) && (
-            <CheckQuestionBlock
-              key={r.id}
-              check={r.check}
-              onAnswered={(ok) => ok && checkPassed()}
-            />
-          )}
-        </DialogContent>
-      )}
-    </Dialog>
+        </Button>
+      </div>
+    </>
   )
 }
 
