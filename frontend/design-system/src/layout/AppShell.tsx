@@ -9,6 +9,8 @@ import { cn } from '../lib'
 import { EASE_OUT, spring } from '../motion'
 import { useDismiss } from '../hooks'
 import { headerIconButton } from '../components/notifications/NotificationsMenu'
+import { Eyebrow } from '../components/Eyebrow'
+import { SegmentedControl } from '../components/SegmentedControl'
 import type { NavSection } from './types'
 
 function PageLoader() {
@@ -192,43 +194,48 @@ export function UserMenu({
                 )}
               </div>
             </div>
-            <div className="px-2 pt-2 pb-1 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
+            <Eyebrow as="div" tone="muted" className="px-2 pt-2 pb-1">
               Apparence
-            </div>
-            <div
-              className="mx-2 mb-1 grid grid-cols-3 gap-1 rounded-md bg-muted p-1"
-              role="radiogroup"
-              aria-label="Thème"
-            >
-              {(
-                [
-                  ['light', 'Clair', Sun],
-                  ['dark', 'Sombre', Moon],
-                  ['system', 'Système', Monitor],
-                ] as const
-              ).map(([value, label, Icon]) => (
-                <button
-                  key={value}
-                  role="radio"
-                  aria-checked={theme === value}
-                  onClick={() => setTheme(value)}
-                  className={cn(
-                    'flex items-center justify-center gap-1.5 rounded-sm px-2 py-1.5 text-xs font-medium transition-colors',
-                    theme === value
-                      ? 'bg-card text-foreground shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground',
-                  )}
-                >
-                  <Icon className="size-3.5" />
-                  {label}
-                </button>
-              ))}
-            </div>
+            </Eyebrow>
+            <SegmentedControl
+              label="Thème"
+              value={theme}
+              onChange={setTheme}
+              fullWidth
+              size="sm"
+              className="mx-2 mb-1"
+              options={[
+                {
+                  value: 'light',
+                  label: (
+                    <>
+                      <Sun /> Clair
+                    </>
+                  ),
+                },
+                {
+                  value: 'dark',
+                  label: (
+                    <>
+                      <Moon /> Sombre
+                    </>
+                  ),
+                },
+                {
+                  value: 'system',
+                  label: (
+                    <>
+                      <Monitor /> Système
+                    </>
+                  ),
+                },
+              ]}
+            />
             {parcours && (
               <>
-                <div className="mt-1 border-t px-2 pt-2 pb-1 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
+                <Eyebrow as="div" tone="muted" className="mt-1 border-t px-2 pt-2 pb-1">
                   Parcours
-                </div>
+                </Eyebrow>
                 <button
                   role="menuitem"
                   onClick={() => {
@@ -244,9 +251,9 @@ export function UserMenu({
               </>
             )}
             {portals.length > 0 && (
-              <div className="mt-1 border-t px-2 pt-2 pb-1 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
+              <Eyebrow as="div" tone="muted" className="mt-1 border-t px-2 pt-2 pb-1">
                 Mes portails
-              </div>
+              </Eyebrow>
             )}
             {portals.map((p) => (
               <button
@@ -265,9 +272,9 @@ export function UserMenu({
             ))}
             {demoRoles && onSelectDemoRole && (
               <>
-                <div className="mt-2 border-t px-2 pt-2 pb-1 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
+                <Eyebrow as="div" tone="muted" className="mt-2 border-t px-2 pt-2 pb-1">
                   Démo · changer de profil
-                </div>
+                </Eyebrow>
                 {demoRoles.map((r) => (
                   <button
                     key={r.id}

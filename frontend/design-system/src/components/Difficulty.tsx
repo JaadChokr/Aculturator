@@ -1,11 +1,12 @@
 import type { Difficulty } from '@acculturator/contracts'
-import { cn } from '@acculturator/design-system/lib'
+import { cn } from '../lib'
 
 /**
  * Teintes des niveaux de difficulté : du rouge clair (découverte) au bordeaux (expert).
- * Noms de classes écrits en entier pour que Tailwind les génère.
+ * Les couleurs sont les jetons --level-1/2/3 (styles/index.css) ; noms de classes écrits en
+ * entier pour que Tailwind les génère.
  */
-export const LEVEL_STYLE: Record<
+export const DIFFICULTY_STYLE: Record<
   Difficulty,
   { solid: string; dot: string; border: string; tint: string; bar: string }
 > = {
@@ -32,8 +33,11 @@ export const LEVEL_STYLE: Record<
   },
 }
 
+/** Bande « tous niveaux » : dégradé du plus facile au plus difficile. */
+export const ALL_LEVELS_BAND = 'bg-gradient-to-b from-level-1 via-level-2 to-level-3'
+
 /** Trois pastilles, remplies dans la teinte du niveau. */
-export function LevelDots({ level, className }: { level: Difficulty; className?: string }) {
+export function DifficultyDots({ level, className }: { level: Difficulty; className?: string }) {
   return (
     <span aria-hidden className={cn('inline-flex items-center gap-1', className)}>
       {[1, 2, 3].map((i) => (
@@ -41,7 +45,7 @@ export function LevelDots({ level, className }: { level: Difficulty; className?:
           key={i}
           className={cn(
             'size-2 rounded-full',
-            i <= level ? LEVEL_STYLE[level].dot : 'bg-muted-foreground/25',
+            i <= level ? DIFFICULTY_STYLE[level].dot : 'bg-muted-foreground/25',
           )}
         />
       ))}

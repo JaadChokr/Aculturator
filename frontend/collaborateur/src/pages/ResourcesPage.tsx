@@ -46,6 +46,7 @@ import { CheckQuestionBlock } from '../components/CheckQuestionBlock'
 import { ThemeBadge } from '../components/ThemeBadge'
 import { useProgress } from '../store/progress'
 import { ModuleReturnLink } from '../components/ModuleReturnLink'
+import { Eyebrow } from '@acculturator/design-system/components'
 
 const TYPE_ICON: Record<ResourceType, typeof Video> = {
   video: Video,
@@ -221,10 +222,10 @@ function MediaPlayer({ r, onComplete }: { r: Resource; onComplete: () => void })
             : 'aspect-video p-5',
         )}
       >
-        <div className="flex items-center gap-2 text-xs font-semibold tracking-wider uppercase opacity-80">
+        <Eyebrow as="div" tone="current" className="flex items-center gap-2 opacity-80">
           <span className="h-3 w-1 bg-primary" />
           {r.type === 'podcast' ? 'Podcast' : 'Vidéo'} · aperçu de démonstration
-        </div>
+        </Eyebrow>
         <p
           key={step}
           className={cn(

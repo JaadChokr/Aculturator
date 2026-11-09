@@ -59,16 +59,34 @@ jamais l'API, ne connaît ni l'utilisateur ni les portails, et reçoit en props 
 
 Points d'entrée publics (`exports` de `frontend/design-system/package.json`) :
 
-| Point d'entrée   | Rôle                                                                                                               |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `/ui`            | Composants shadcn/ui (Button, Card, Dialog, Tabs…)                                                                 |
-| `/components`    | Composants transverses : PageHeader, Mascot, ProgressRing, Confetti, Toaster, NotificationsMenu, chargement/erreur |
-| `/layout`        | `AppShell` (barre latérale, en-tête, navigation mobile, transitions) et `UserMenu`                                 |
-| `/motion`        | Réglages d'animation communs (ressorts, apparitions, `Stagger`, `Reveal`, `AnimatedNumber`)                        |
-| `/theme`         | Thème clair / sombre / système                                                                                     |
-| `/themes`        | Icône et couleur de repère de chaque thématique SST (`THEMES`, `getTheme`)                                         |
-| `/lib`, `/hooks` | Utilitaires (`cn`, dates…) et hooks d'interface                                                                    |
-| `/styles.css`    | Design tokens (couleurs, rayons, animations) et Tailwind                                                           |
+| Point d'entrée   | Rôle                                                                                                                                                                                                                                                                                       |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `/ui`            | Composants shadcn/ui (Button, Card, Dialog, Tabs…)                                                                                                                                                                                                                                         |
+| `/components`    | Composants transverses : PageHeader, Eyebrow (sur-titre), SegmentedControl (choix exclusif en barre), ChoiceGroup + ChoiceCard (choix en cartes), DifficultyDots / DIFFICULTY_STYLE (teintes de difficulté), Mascot, ProgressRing, Confetti, Toaster, NotificationsMenu, chargement/erreur |
+| `/layout`        | `AppShell` (barre latérale, en-tête, navigation mobile, transitions), `UserMenu`, `Page` / `PAGE_WIDTH` (largeurs de page : full, wide, focus, narrow)                                                                                                                                     |
+| `/motion`        | Réglages d'animation communs (ressorts, apparitions, `Stagger`, `Reveal`, `AnimatedNumber`)                                                                                                                                                                                                |
+| `/theme`         | Thème clair / sombre / système                                                                                                                                                                                                                                                             |
+| `/themes`        | Icône et couleur de repère de chaque thématique SST (`THEMES`, `getTheme`)                                                                                                                                                                                                                 |
+| `/lib`, `/hooks` | Utilitaires (`cn`, dates…) et hooks d'interface                                                                                                                                                                                                                                            |
+| `/styles.css`    | Design tokens (couleurs, rayons, animations) et Tailwind                                                                                                                                                                                                                                   |
+
+### Rester conforme au style partagé
+
+Les pages ne recopient pas de classes de style : elles utilisent les briques ci-dessus, définies une
+seule fois. ESLint le vérifie dans les portails et le shell (`SHARED_STYLE_RULES` dans
+`eslint.config.js`) :
+
+| Interdit dans une page                              | À utiliser                                                  |
+| --------------------------------------------------- | ----------------------------------------------------------- |
+| Conteneur centré à largeur fixe (`mx-auto max-w-…`) | `<Page width>` ou `PAGE_WIDTH.full / wide / focus / narrow` |
+| Sur-titre recopié (`tracking-[0.12em] uppercase`…)  | `<Eyebrow tone>`                                            |
+| `role="radiogroup"` fait main                       | `SegmentedControl`, ou `ChoiceGroup` + `ChoiceCard`         |
+| Couleurs de niveau (`bg-level-2`…)                  | `DIFFICULTY_STYLE`, `DifficultyDots`, `ALL_LEVELS_BAND`     |
+
+Une page d'activité (quiz, choix du niveau, résultats, assistant) est en largeur `focus` ; une
+rubrique (tableau de bord, listes) en `full` ; une carte à la fois (flashcards) en `narrow`.
+Pour faire évoluer le style, on modifie la brique ou le jeton (`styles/index.css`) : toutes les
+pages suivent.
 
 ## Le socle applicatif (`@acculturator/core`)
 

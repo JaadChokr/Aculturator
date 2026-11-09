@@ -14,7 +14,12 @@ export default defineConfig(({ mode }) => ({
   },
   server: {
     // Préparé pour le backend : les appels /api sont relayés vers le serveur local
-    proxy: { '/api': { target: process.env.VITE_API_PROXY_TARGET ?? 'http://localhost:3000', changeOrigin: true } },
+    proxy: {
+      '/api': {
+        target: process.env.VITE_API_PROXY_TARGET ?? 'http://localhost:3000',
+        changeOrigin: true,
+      },
+    },
   },
   build: {
     outDir: mode === 'demo' ? 'dist-demo' : 'dist',

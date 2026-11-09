@@ -11,8 +11,13 @@ import {
 } from 'lucide-react'
 import type { Parcours, ParcoursProgress } from '@acculturator/contracts'
 import { Badge, Button, Card, CardContent, Input, Progress } from '@acculturator/design-system/ui'
-import { Brand, ThemeToggle, UserMenu } from '@acculturator/design-system/layout'
-import { FullPageLoader, LoadError } from '@acculturator/design-system/components'
+import { Brand, PAGE_WIDTH, ThemeToggle, UserMenu } from '@acculturator/design-system/layout'
+import {
+  Eyebrow,
+  FullPageLoader,
+  LoadError,
+  SegmentedControl,
+} from '@acculturator/design-system/components'
 import { Reveal, Stagger } from '@acculturator/design-system/motion'
 import { cn, daysBetween, todayISO } from '@acculturator/design-system/lib'
 import { useAuth } from '@acculturator/core/auth'
@@ -96,7 +101,7 @@ export function ParcoursPage() {
   return (
     <div className="min-h-dvh overflow-x-clip bg-background">
       <header className="sticky top-0 z-20 border-b bg-background/85 backdrop-blur-md">
-        <div className="mx-auto flex h-16 w-full max-w-6xl items-center gap-3 px-4 sm:px-6">
+        <div className={cn(PAGE_WIDTH.wide, 'flex h-16 items-center gap-3 px-4 sm:px-6')}>
           <Brand />
           <div className="ml-auto flex items-center gap-2">
             <span className="hidden sm:contents">
@@ -108,12 +113,10 @@ export function ParcoursPage() {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:py-16">
+      <main className={cn(PAGE_WIDTH.wide, 'px-4 py-10 sm:px-6 lg:py-16')}>
         <Stagger className="flex flex-col gap-8">
           <Reveal className="max-w-3xl">
-            <p className="mb-2 text-xs font-semibold tracking-[0.12em] text-primary uppercase">
-              Vos parcours d’acculturation
-            </p>
+            <Eyebrow className="mb-2">Vos parcours d’acculturation</Eyebrow>
             <h1 className="mb-3 text-3xl leading-tight font-bold text-balance sm:text-4xl">
               Bonjour {user.firstName}, quel parcours souhaitez-vous suivre ?
             </h1>
@@ -135,32 +138,17 @@ export function ParcoursPage() {
                 className="bg-card pl-9"
               />
             </div>
-            <div
-              role="radiogroup"
-              aria-label="Filtrer les parcours"
-              className="flex gap-1 self-start rounded-md bg-muted p-1 sm:self-auto"
-            >
-              {FILTERS.map((f) => {
-                const count = items.filter((i) => matchesFilter(f.id, i.progress)).length
-                return (
-                  <button
-                    key={f.id}
-                    role="radio"
-                    aria-checked={filter === f.id}
-                    onClick={() => setFilter(f.id)}
-                    className={cn(
-                      'flex items-center gap-1.5 rounded-sm px-3 py-1.5 text-sm font-medium transition-colors',
-                      filter === f.id
-                        ? 'bg-card text-foreground shadow-sm'
-                        : 'text-muted-foreground hover:text-foreground',
-                    )}
-                  >
-                    {f.label}
-                    <span className="text-xs text-muted-foreground tabular-nums">{count}</span>
-                  </button>
-                )
-              })}
-            </div>
+            <SegmentedControl
+              label="Filtrer les parcours"
+              value={filter}
+              onChange={setFilter}
+              className="self-start sm:self-auto"
+              options={FILTERS.map((f) => ({
+                value: f.id,
+                label: f.label,
+                count: items.filter((i) => matchesFilter(f.id, i.progress)).length,
+              }))}
+            />
           </Reveal>
 
           <div className="grid gap-6 md:grid-cols-2">

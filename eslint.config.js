@@ -25,6 +25,40 @@ const PUBLIC_ENTRY_POINTS = {
   message:
     'Utiliser uniquement les points d’entrée publics des paquets (ex. @acculturator/design-system/ui, @acculturator/core/api).',
 }
+/**
+ * Style partagé : les pages utilisent les briques du design system plutôt que de recopier
+ * leurs classes (largeurs de page, sur-titres, choix exclusifs, teintes de difficulté).
+ */
+const SHARED_STYLE_RULES = {
+  'no-restricted-syntax': [
+    'error',
+    ...['Literal', 'TemplateElement'].flatMap((node) => {
+      const value = node === 'Literal' ? 'value' : 'value.raw'
+      return [
+        {
+          selector: `${node}[${value}=/mx-auto[^'"]*max-w-|max-w-[^'"]*mx-auto/]`,
+          message:
+            'Largeur de page : utiliser <Page width> ou PAGE_WIDTH de @acculturator/design-system/layout.',
+        },
+        {
+          selector: `${node}[${value}=/tracking-\\[0\\.12em\\]|tracking-wider[^'"]*uppercase|uppercase[^'"]*tracking-wider/]`,
+          message: 'Sur-titre : utiliser <Eyebrow> de @acculturator/design-system/components.',
+        },
+        {
+          selector: `${node}[${value}=/(bg|text|border|from|via|to)-level-[123]/]`,
+          message:
+            'Teintes de difficulté : utiliser DIFFICULTY_STYLE / DifficultyDots de @acculturator/design-system/components.',
+        },
+      ]
+    }),
+    {
+      selector: "JSXAttribute[name.name='role'][value.value='radiogroup']",
+      message:
+        'Choix exclusif : utiliser SegmentedControl ou ChoiceGroup + ChoiceCard de @acculturator/design-system/components.',
+    },
+  ],
+}
+
 const NO_RELATIVE_ESCAPE = {
   group: ['../../*/src/*', '**/frontend/**'],
   message:
@@ -77,6 +111,11 @@ export default tseslint.config(
       PUBLIC_ENTRY_POINTS,
       NO_RELATIVE_ESCAPE,
     ]),
+  },
+  // Portails et application hôte : style partagé du design system
+  {
+    files: [...PORTALS.map((p) => `frontend/${p}/src/**/*.tsx`), 'frontend/shell/src/**/*.tsx'],
+    rules: SHARED_STYLE_RULES,
   },
   // Portails : autonomes les uns des autres
   ...PORTALS.map((portal) => ({

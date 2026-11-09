@@ -19,6 +19,8 @@ import { spring } from '@acculturator/design-system/motion'
 import { useAuth } from '@acculturator/core/auth'
 import { collabPath } from '../paths'
 import { useProgress } from '../store/progress'
+import { PAGE_WIDTH } from '@acculturator/design-system/layout'
+import { cn } from '@acculturator/design-system/lib'
 
 interface Message {
   id: number
@@ -90,7 +92,7 @@ function PromptCarousel({
     ref.current?.scrollBy({ left: dir * ref.current.clientWidth * 0.8, behavior: 'smooth' })
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl items-center gap-1.5">
+    <div className={cn(PAGE_WIDTH.focus, 'flex items-center gap-1.5')}>
       <MessageCircleQuestion
         aria-hidden
         className="hidden size-4 shrink-0 text-muted-foreground sm:block"
@@ -231,7 +233,7 @@ export default function ChatbotPage() {
           </div>
 
           <div className="flex-1 overflow-y-auto bg-muted/30 p-4 sm:p-6" aria-live="polite">
-            <div className="mx-auto flex w-full max-w-5xl flex-col gap-4">
+            <div className={cn(PAGE_WIDTH.focus, 'flex flex-col gap-4')}>
               {messages.map((m) =>
                 m.role === 'user' ? (
                   <motion.div
@@ -335,7 +337,7 @@ export default function ChatbotPage() {
             {remaining.length > 0 && (
               <PromptCarousel ideas={remaining} disabled={typing} onPick={send} />
             )}
-            <div className="mx-auto flex w-full max-w-5xl items-end gap-2">
+            <div className={cn(PAGE_WIDTH.focus, 'flex items-end gap-2')}>
               <textarea
                 ref={inputRef}
                 value={input}
@@ -360,7 +362,7 @@ export default function ChatbotPage() {
                 <SendHorizontal />
               </Button>
             </div>
-            <p className="mx-auto w-full max-w-5xl px-1 text-[11px] text-muted-foreground">
+            <p className={cn(PAGE_WIDTH.focus, 'px-1 text-[11px] text-muted-foreground')}>
               Prévi donne des repères généraux validés par l’équipe QHSE. Il ne remplace ni votre
               référent SST, ni le médecin du travail, ni les secours.
             </p>

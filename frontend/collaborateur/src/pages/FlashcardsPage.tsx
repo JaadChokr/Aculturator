@@ -3,7 +3,7 @@ import { Link } from 'react-router'
 import { Layers, Play, Repeat, Sparkles } from 'lucide-react'
 import { useCatalog } from '@acculturator/core/catalog'
 import { THEMES } from '@acculturator/design-system/themes'
-import { PageHeader } from '@acculturator/design-system/components'
+import { PageHeader, Eyebrow } from '@acculturator/design-system/components'
 import { Badge, Button, Card, CardContent, Progress } from '@acculturator/design-system/ui'
 import { todayISO } from '@acculturator/design-system/lib'
 import { Reveal, Stagger } from '@acculturator/design-system/motion'
@@ -32,9 +32,9 @@ export default function FlashcardsPage() {
         <Card className="relative overflow-hidden border-0 border-l-4 border-l-primary bg-inverse text-inverse-foreground">
           <CardContent className="relative flex flex-col gap-5 p-6 sm:flex-row sm:items-center">
             <div className="flex-1">
-              <div className="mb-1 text-xs font-semibold tracking-[0.12em] text-inverse-foreground/70 uppercase">
+              <Eyebrow as="div" tone="on-inverse" className="mb-1">
                 Révision du jour
-              </div>
+              </Eyebrow>
               <div className="mb-2 text-4xl font-bold tabular-nums">
                 {review.length}{' '}
                 <span className="text-lg font-medium text-inverse-foreground/70">

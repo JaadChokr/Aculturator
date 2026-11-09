@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { cn } from '../lib'
+import { Eyebrow } from './Eyebrow'
 
 export function PageHeader({
   title,
@@ -23,9 +24,9 @@ export function PageHeader({
     >
       <div className="min-w-0">
         {eyebrow && (
-          <div className="mb-1 text-xs font-bold tracking-wider text-primary uppercase">
+          <Eyebrow as="div" className="mb-1">
             {eyebrow}
-          </div>
+          </Eyebrow>
         )}
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{title}</h1>
         {description && <p className="mt-1 max-w-2xl text-muted-foreground">{description}</p>}

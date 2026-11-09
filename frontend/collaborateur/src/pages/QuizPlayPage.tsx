@@ -19,8 +19,17 @@ import type { Difficulty, QuizQuestion, ThemeId } from '@acculturator/contracts'
 import { getCatalog, useCatalog } from '@acculturator/core/catalog'
 import { THEMES, getTheme } from '@acculturator/design-system/themes'
 import { DIFFICULTY_LABEL, DIFFICULTY_LEVELS, XP } from '@acculturator/core/content'
-import { Confetti, Mascot, ProgressRing } from '@acculturator/design-system/components'
-import { Button, Card, CardContent, Progress } from '@acculturator/design-system/ui'
+import {
+  Confetti,
+  Mascot,
+  ProgressRing,
+  ALL_LEVELS_BAND,
+  ChoiceCard,
+  ChoiceGroup,
+  DIFFICULTY_STYLE,
+  DifficultyDots,
+} from '@acculturator/design-system/components'
+import { Badge, Button, Card, CardContent, Progress } from '@acculturator/design-system/ui'
 import { cn, shuffle } from '@acculturator/design-system/lib'
 import {
   AnimatedNumber,
@@ -31,12 +40,12 @@ import {
   springBouncy,
 } from '@acculturator/design-system/motion'
 import { collabPath } from '../paths'
-import { LEVEL_STYLE, LevelDots } from '../components/LevelDots'
 import { ThemeBadge } from '../components/ThemeBadge'
 import { TutorialDialog, useTutorial, type TutorialStep } from '../components/TutorialDialog'
 import { overallMastery, recommendedLevel, themeMastery } from '../store/insights'
 import { useProgress, type QuizMode } from '../store/progress'
 import { parseLevel, useQuizPrefs } from '../store/quizPrefs'
+import { PAGE_WIDTH } from '@acculturator/design-system/layout'
 
 const CHRONO_SECONDS = 15
 const LIVES = 3
@@ -193,7 +202,7 @@ function LevelChooser({ mode, theme }: { mode: 'chrono' | 'entrainement'; theme:
   }
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className={PAGE_WIDTH.focus}>
       <Button asChild variant="ghost" size="sm" className="mb-4">
         <Link to={collabPath('quiz')}>
           <ArrowLeft /> Quiz & défis
@@ -216,59 +225,32 @@ function LevelChooser({ mode, theme }: { mode: 'chrono' | 'entrainement'; theme:
 
           <div>
             <h2 className="mb-3 font-semibold">Choisissez votre niveau</h2>
-            <div
-              role="radiogroup"
-              aria-label="Niveau de difficulté"
-              className="grid gap-3 sm:grid-cols-2"
-            >
-              {options.map((o) => {
-                const active = choice === o.value
-                return (
-                  <button
-                    key={o.label}
-                    type="button"
-                    role="radio"
-                    aria-checked={active}
-                    onClick={() => setChoice(o.value)}
-                    onDoubleClick={start}
-                    className={cn(
-                      'relative flex flex-col gap-1 overflow-hidden rounded-lg border-2 p-4 pl-6 text-left transition-colors',
-                      active
-                        ? o.value
-                          ? cn(LEVEL_STYLE[o.value].border, LEVEL_STYLE[o.value].tint)
-                          : 'border-primary bg-primary/5'
-                        : 'border-border hover:bg-muted/40',
-                    )}
-                  >
-                    {/* Bande de couleur : plus elle est foncée, plus le niveau est difficile */}
-                    <span
-                      aria-hidden
-                      className={cn(
-                        'absolute inset-y-0 left-0 w-2',
-                        o.value
-                          ? LEVEL_STYLE[o.value].bar
-                          : 'bg-gradient-to-b from-level-1 via-level-2 to-level-3',
-                      )}
-                    />
-                    <span className="flex items-center justify-between gap-2">
-                      <span className="flex items-center gap-2 font-semibold">
-                        {o.label}
-                        {o.value && <LevelDots level={o.value} />}
-                      </span>
-                      {o.value === recommended && (
-                        <span className="rounded-sm bg-primary/10 px-1.5 py-0.5 text-[11px] font-semibold text-primary">
-                          Conseillé
-                        </span>
-                      )}
-                    </span>
-                    <span className="text-sm text-muted-foreground">{o.description}</span>
-                    <span className="text-xs text-muted-foreground tabular-nums">
-                      {questionCount(mode, theme, o.value)} questions
-                    </span>
-                  </button>
-                )
-              })}
-            </div>
+            <ChoiceGroup label="Niveau de difficulté">
+              {options.map((o) => (
+                <ChoiceCard
+                  key={o.label}
+                  selected={choice === o.value}
+                  onSelect={() => setChoice(o.value)}
+                  onConfirm={start}
+                  // Bande de couleur : plus elle est foncée, plus le niveau est difficile
+                  band={o.value ? DIFFICULTY_STYLE[o.value].bar : ALL_LEVELS_BAND}
+                  selectedClassName={
+                    o.value
+                      ? cn(DIFFICULTY_STYLE[o.value].border, DIFFICULTY_STYLE[o.value].tint)
+                      : undefined
+                  }
+                  title={
+                    <>
+                      {o.label}
+                      {o.value && <DifficultyDots level={o.value} />}
+                    </>
+                  }
+                  badge={o.value === recommended && <Badge>Conseillé</Badge>}
+                  description={o.description}
+                  meta={`${questionCount(mode, theme, o.value)} questions`}
+                />
+              ))}
+            </ChoiceGroup>
           </div>
 
           <Button size="lg" className="self-start" onClick={start}>
@@ -454,7 +436,7 @@ function QuizGame() {
             ? 'Bien joué, vous progressez.'
             : 'Chaque erreur est une occasion d’apprendre.'
     return (
-      <div className="mx-auto max-w-6xl">
+      <div className={PAGE_WIDTH.focus}>
         {pct >= 70 && <Confetti />}
         <motion.div
           initial={{ opacity: 0, scale: 0.96 }}
@@ -594,7 +576,7 @@ function QuizGame() {
   const resource = q.resourceId ? (resources.find((r) => r.id === q.resourceId) ?? null) : null
 
   return (
-    <div className="mx-auto max-w-5xl">
+    <div className={PAGE_WIDTH.focus}>
       <TutorialDialog
         open={tutorial.open}
         onClose={tutorial.close}
@@ -630,7 +612,7 @@ function QuizGame() {
             <span
               className={cn(
                 'rounded-sm px-2 py-0.5 text-xs font-semibold',
-                LEVEL_STYLE[level].solid,
+                DIFFICULTY_STYLE[level].solid,
               )}
             >
               Niveau {DIFFICULTY_LABEL[level]}
@@ -712,7 +694,7 @@ function QuizGame() {
             <Card className="mb-4">
               <CardContent className="p-6 sm:p-8">
                 <div className="mb-1 flex items-center gap-2 text-xs font-bold text-muted-foreground">
-                  Difficulté <LevelDots level={q.difficulty} />
+                  Difficulté <DifficultyDots level={q.difficulty} />
                   <span className="sr-only">{DIFFICULTY_LABEL[q.difficulty]}</span>
                 </div>
                 <h2 className="mb-6 text-xl leading-snug font-bold sm:text-2xl lg:text-[1.75rem]">

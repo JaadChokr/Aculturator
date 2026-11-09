@@ -19,7 +19,7 @@ import {
 import type { Catalog, ModuleStep } from '@acculturator/contracts'
 import { useCatalog } from '@acculturator/core/catalog'
 import { RESOURCE_TYPE_LABEL } from '@acculturator/core/content'
-import { PageHeader } from '@acculturator/design-system/components'
+import { PageHeader, Eyebrow } from '@acculturator/design-system/components'
 import { EASE_OUT } from '@acculturator/design-system/motion'
 import { getTheme } from '@acculturator/design-system/themes'
 import { Button, Card, CardContent, Progress } from '@acculturator/design-system/ui'
@@ -252,9 +252,7 @@ function ModuleItem({
             <CardContent className="flex flex-col gap-3 p-4 sm:p-5">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-                    Module {index}
-                  </p>
+                  <Eyebrow tone="muted">Module {index}</Eyebrow>
                   <h2
                     id={titleId}
                     className={cn('font-bold sm:text-lg', locked && 'text-muted-foreground')}

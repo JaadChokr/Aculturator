@@ -19,7 +19,7 @@ import {
 import { useAuth } from '@acculturator/core/auth'
 import { useCatalog } from '@acculturator/core/catalog'
 import { levelFromXp } from '@acculturator/core/content'
-import { ProgressRing } from '@acculturator/design-system/components'
+import { ProgressRing, Eyebrow } from '@acculturator/design-system/components'
 import {
   Badge,
   Button,
@@ -45,6 +45,7 @@ import { BADGES } from '../store/badges'
 import { allThemeMastery, nextSteps, overallMastery } from '../store/insights'
 import { MISSIONS } from '../store/missions'
 import { countDue, useProgress } from '../store/progress'
+import { useCurrentParcours } from '@acculturator/core/parcours'
 
 const TEAM = [
   { name: 'Inès R.', xp: 1240 },
@@ -62,15 +63,16 @@ function Hero() {
   const due = countDue(cards)
   const hour = new Date().getHours()
   const hello = hour < 18 ? 'Bonjour' : 'Bonsoir'
+  const parcours = useCurrentParcours()
   const LevelIcon = current.icon
 
   return (
     <Card className="overflow-hidden border-0 bg-primary text-primary-foreground shadow-md">
       <CardContent className="grid gap-6 p-6 sm:p-8 lg:grid-cols-[1fr_340px] lg:items-center">
         <div className="min-w-0">
-          <p className="mb-2 text-xs font-semibold tracking-[0.12em] text-primary-foreground/75 uppercase">
-            Parcours Santé & Sécurité au travail
-          </p>
+          <Eyebrow tone="on-primary" className="mb-2">
+            {parcours ? `Parcours ${parcours.title}` : 'Votre parcours'}
+          </Eyebrow>
           <h1 className="mb-2 text-2xl leading-tight font-bold text-balance sm:text-3xl">
             {hello} {user.firstName}
           </h1>

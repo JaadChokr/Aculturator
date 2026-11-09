@@ -85,6 +85,9 @@ Chaque thématique SST a une icône et un repère couleur discret (`THEMES[x].ic
 - Réutiliser `@acculturator/design-system/ui` ; pour un nouveau composant shadcn : `cd frontend/design-system && npx shadcn@latest add <composant>`
   (le fichier `components.json` du socle pointe vers `src/ui`).
 - Chaque page commence par un `<PageHeader eyebrow title description />`.
+- Largeurs, sur-titres, choix exclusifs et teintes de difficulté passent par les briques du design system
+  (`Page`/`PAGE_WIDTH`, `Eyebrow`, `SegmentedControl`, `ChoiceGroup`/`ChoiceCard`, `DIFFICULTY_STYLE`) ;
+  ESLint refuse leurs équivalents recopiés (voir `docs/architecture.md`, « Rester conforme au style partagé »).
 - Icône et repère couleur des thématiques : `THEMES[x].icon` / `.dot` (`frontend/design-system/src/themes/index.ts`).
 - Sur mobile : barre de navigation basse (5 premières entrées de la `nav`), libellés courts via `short`.
 

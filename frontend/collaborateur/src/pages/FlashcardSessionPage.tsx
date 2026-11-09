@@ -5,7 +5,7 @@ import { ArrowLeft, Check, CircleHelp, Lightbulb, type LucideIcon, RotateCcw } f
 import type { Flashcard, ThemeId } from '@acculturator/contracts'
 import { getCatalog } from '@acculturator/core/catalog'
 import { getTheme } from '@acculturator/design-system/themes'
-import { Confetti, Mascot } from '@acculturator/design-system/components'
+import { Confetti, Mascot, Eyebrow } from '@acculturator/design-system/components'
 import { Button, Card, CardContent, Progress } from '@acculturator/design-system/ui'
 import { cn, shuffle } from '@acculturator/design-system/lib'
 import {
@@ -20,6 +20,7 @@ import { collabPath } from '../paths'
 import { ThemeBadge } from '../components/ThemeBadge'
 import { TutorialDialog, useTutorial, type TutorialStep } from '../components/TutorialDialog'
 import { dueCards, useProgress, type CardGrade } from '../store/progress'
+import { PAGE_WIDTH } from '@acculturator/design-system/layout'
 
 const GRADES: {
   grade: CardGrade
@@ -162,7 +163,7 @@ function SwipeCard({
         <Card className="backface-hidden rotate-y-180 absolute inset-0 flex flex-col overflow-hidden border-primary/30 bg-card shadow-lg">
           <div className="h-1 bg-primary" />
           <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center">
-            <span className="text-xs font-bold tracking-wider text-primary uppercase">Réponse</span>
+            <Eyebrow as="span">Réponse</Eyebrow>
             <p className="text-lg leading-relaxed font-semibold whitespace-pre-line sm:text-xl lg:text-2xl">
               {card.back}
             </p>
@@ -281,7 +282,7 @@ function Session() {
 
   if (!initialSize) {
     return (
-      <div className="mx-auto max-w-3xl text-center">
+      <div className={cn(PAGE_WIDTH.narrow, 'text-center')}>
         {backLink}
         <Mascot mood="cheer" className="mx-auto my-6 size-28" />
         <h1 className="mb-2 text-2xl font-bold">Aucune révision en attente</h1>
@@ -300,7 +301,7 @@ function Session() {
   if (!card) {
     const total = stats.again + stats.hard + stats.good
     return (
-      <div className="mx-auto max-w-3xl text-center">
+      <div className={cn(PAGE_WIDTH.narrow, 'text-center')}>
         <Confetti />
         <motion.div
           initial={{ scale: 0, rotate: -20 }}
@@ -345,7 +346,7 @@ function Session() {
   const remaining = queue.length
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className={PAGE_WIDTH.narrow}>
       <TutorialDialog
         open={tutorial.open}
         onClose={tutorial.close}

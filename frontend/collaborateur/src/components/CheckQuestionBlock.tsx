@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { CheckCircle2, XCircle } from 'lucide-react'
 import type { CheckQuestion } from '@acculturator/contracts'
 import { cn } from '@acculturator/design-system/lib'
+import { Eyebrow } from '@acculturator/design-system/components'
 
 /** Question de vérification avec retour immédiat et expliqué (pilier « retour d'information »). */
 export function CheckQuestionBlock({
@@ -17,9 +18,9 @@ export function CheckQuestionBlock({
 
   return (
     <div className="rounded-xl border bg-muted/40 p-4">
-      <div className="mb-1 text-xs font-bold tracking-wider text-primary uppercase">
+      <Eyebrow as="div" className="mb-1">
         Check express
-      </div>
+      </Eyebrow>
       <p className="mb-3 font-semibold">{check.question}</p>
       <div className="grid gap-2 sm:grid-cols-2">
         {check.options.map((opt, i) => {
