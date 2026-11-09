@@ -1,7 +1,7 @@
 import { Flag, Flame, Target, Zap } from 'lucide-react'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { LearningEvent, ThemeId } from '@acculturator/contracts'
+import type { Difficulty, LearningEvent, ThemeId } from '@acculturator/contracts'
 import { api } from '@acculturator/core/api'
 import { getSelectedParcoursId, onParcoursChange } from '@acculturator/core/parcours'
 import { getCatalog } from '@acculturator/core/catalog'
@@ -33,6 +33,8 @@ export interface QuizRecord {
   themeId?: ThemeId
   /** Quiz de validation d'un module */
   moduleId?: string
+  /** Niveau choisi (absent : tous niveaux) */
+  difficulty?: Difficulty
   score: number
   total: number
   xp: number
@@ -398,6 +400,7 @@ export const useProgress = create<ProgressState>()(
             mode: r.mode,
             themeId: r.themeId,
             moduleId: r.moduleId,
+            difficulty: r.difficulty,
             score: r.score,
             total: r.total,
           })

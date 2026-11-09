@@ -1,4 +1,4 @@
-import type { ThemeId } from './content'
+import type { Difficulty, ThemeId } from './content'
 
 /**
  * Événements d'apprentissage émis par le frontend (endpoint POST /api/progress/events).
@@ -15,6 +15,8 @@ export type LearningEvent =
       themeId?: ThemeId
       /** Quiz de validation d'un module */
       moduleId?: string
+      /** Niveau choisi (absent : tous niveaux) */
+      difficulty?: Difficulty
       score: number
       total: number
     }

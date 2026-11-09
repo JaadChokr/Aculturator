@@ -37,4 +37,6 @@ export const XP = {
   chatQuestion: 3,
   dailyMission: 25,
   moduleCompleted: 50,
+  /** Bonus par bonne réponse, par niveau au-dessus de « découverte » (+5 confirmé, +10 expert) */
+  quizDifficultyStep: 5,
 } as const

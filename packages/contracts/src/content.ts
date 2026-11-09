@@ -9,6 +9,9 @@ export type ThemeId =
 
 export type ResourceType = 'video' | 'fiche' | 'infographie' | 'podcast'
 
+/** Niveau de difficulté d'une question : 1 découverte, 2 confirmé, 3 expert */
+export type Difficulty = 1 | 2 | 3
+
 export interface CheckQuestion {
   question: string
   options: string[]
@@ -43,7 +46,7 @@ export interface Flashcard {
 export interface QuizQuestion {
   id: string
   themeId: ThemeId
-  difficulty: 1 | 2 | 3
+  difficulty: Difficulty
   question: string
   options: string[]
   answer: number

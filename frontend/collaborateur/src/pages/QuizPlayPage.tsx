@@ -13,10 +13,10 @@ import {
   Timer,
   XCircle,
 } from 'lucide-react'
-import type { QuizQuestion, ThemeId } from '@acculturator/contracts'
+import type { Difficulty, QuizQuestion, ThemeId } from '@acculturator/contracts'
 import { getCatalog, useCatalog } from '@acculturator/core/catalog'
 import { THEMES, getTheme } from '@acculturator/design-system/themes'
-import { XP } from '@acculturator/core/content'
+import { DIFFICULTY_LABEL, XP } from '@acculturator/core/content'
 import { Confetti, Mascot, ProgressRing } from '@acculturator/design-system/components'
 import { Button, Card, CardContent, Progress } from '@acculturator/design-system/ui'
 import { cn, shuffle } from '@acculturator/design-system/lib'
@@ -33,6 +33,7 @@ import { ThemeBadge } from '../components/ThemeBadge'
 import { TutorialDialog, useTutorial, type TutorialStep } from '../components/TutorialDialog'
 import { themeMastery } from '../store/insights'
 import { useProgress, type QuizMode } from '../store/progress'
+import { parseLevel, useQuizPrefs } from '../store/quizPrefs'
 
 const CHRONO_SECONDS = 15
 const LIVES = 3
@@ -52,17 +53,30 @@ function moduleQuiz(moduleId: string | null) {
   return module && step?.kind === 'quiz' ? { module, step } : null
 }
 
+/**
+ * Questions du niveau choisi en priorité, complétées par le niveau voisin quand il en manque
+ * (jamais par l'extrême opposé) : un quiz « expert » ne contient pas de questions de découverte.
+ */
+function byLevel(pool: QuizQuestion[], level: Difficulty, size: number, minSize: number) {
+  const exact = shuffle(pool.filter((q) => q.difficulty === level))
+  const near = shuffle(pool.filter((q) => Math.abs(q.difficulty - level) === 1))
+  const wanted = Math.min(size, Math.max(minSize, exact.length))
+  return shuffle([...exact, ...near].slice(0, wanted))
+}
+
 function pickQuestions(
   mode: QuizMode,
   theme: ThemeId | null,
   moduleId: string | null = null,
+  level: Difficulty | null = null,
 ): QuizQuestion[] {
   const { quizQuestions } = getCatalog()
   if (mode === 'module') {
     const ids = moduleQuiz(moduleId)?.step.questionIds ?? []
     return shuffle(quizQuestions.filter((q) => ids.includes(q.id)))
   }
-  if (mode === 'chrono') return shuffle(quizQuestions).slice(0, 12)
+  if (mode === 'chrono')
+    return level ? byLevel(quizQuestions, level, 12, 12) : shuffle(quizQuestions).slice(0, 12)
   if (mode === 'defi-du-jour') {
     // Cible les thématiques les moins maîtrisées (apprentissage adaptatif)
     const s = useProgress.getState()
@@ -72,7 +86,8 @@ function pickQuestions(
       .map((t) => t.id)
     return shuffle(quizQuestions.filter((q) => weakest.includes(q.themeId))).slice(0, 5)
   }
-  return shuffle(quizQuestions.filter((q) => !theme || q.themeId === theme)).slice(0, 8)
+  const pool = quizQuestions.filter((q) => !theme || q.themeId === theme)
+  return level ? byLevel(pool, level, 8, 4) : shuffle(pool).slice(0, 8)
 }
 
 interface AnswerLog {
@@ -115,7 +130,11 @@ function QuizGame() {
   const theme = params.get('theme') as ThemeId | null
   const moduleId = mode === 'module' ? params.get('module') : null
   const validation = moduleQuiz(moduleId)
-  const [questions, setQuestions] = useState(() => pickQuestions(mode, theme, moduleId))
+  // Niveau de difficulté : entraînement et défi chrono (le défi du jour s'adapte seul)
+  const level =
+    mode === 'chrono' || mode === 'entrainement' ? parseLevel(params.get('niveau')) : null
+  const setLevel = useQuizPrefs((s) => s.setLevel)
+  const [questions, setQuestions] = useState(() => pickQuestions(mode, theme, moduleId, level))
 
   const recordAnswer = useProgress((s) => s.recordAnswer)
   const recordQuiz = useProgress((s) => s.recordQuiz)
@@ -197,7 +216,12 @@ function QuizGame() {
   // Calcul de l'XP gagnée (valeur dérivée) puis enregistrement unique du résultat
   const score = log.filter((l) => l.correct).length
   const total = log.length || 1
-  let earned = score * XP.quizCorrect + bonus
+  // Une bonne réponse rapporte davantage quand la question est plus difficile
+  let earned =
+    log
+      .filter((l) => l.correct)
+      .reduce((xp, l) => xp + XP.quizCorrect + (l.q.difficulty - 1) * XP.quizDifficultyStep, 0) +
+    bonus
   if (score === total && total >= 4) earned += XP.quizPerfectBonus
   if (mode === 'defi-du-jour') earned *= 2
 
@@ -208,15 +232,16 @@ function QuizGame() {
       mode,
       themeId: theme ?? undefined,
       moduleId: moduleId ?? undefined,
+      difficulty: level ?? undefined,
       score,
       total,
       xp: earned,
     })
-  }, [finished, score, total, earned, mode, theme, moduleId, recordQuiz])
+  }, [finished, score, total, earned, mode, theme, moduleId, level, recordQuiz])
 
   const restart = () => {
     saved.current = false
-    setQuestions(pickQuestions(mode, theme, moduleId))
+    setQuestions(pickQuestions(mode, theme, moduleId, level))
     setIndex(0)
     setPicked(null)
     setRevealed(false)
@@ -246,6 +271,13 @@ function QuizGame() {
     const pct = Math.round((score / total) * 100)
     const mistakes = log.filter((l) => !l.correct)
     const mood = pct >= 70 ? 'cheer' : pct >= 40 ? 'happy' : 'thinking'
+    // Très bon score : on propose le niveau au-dessus (la difficulté suit les progrès)
+    const nextLevel = level && level < 3 && pct >= 80 ? ((level + 1) as Difficulty) : null
+    const levelParams = (l: Difficulty) => {
+      const p = new URLSearchParams(params)
+      p.set('niveau', String(l))
+      return p.toString()
+    }
     const passed = validation ? score / total >= validation.step.passRatio : false
     const message = validation
       ? passed
@@ -374,9 +406,16 @@ function QuizGame() {
               </Link>
             </Button>
           )}
-          <Button onClick={restart}>
+          <Button variant={nextLevel ? 'outline' : 'default'} onClick={restart}>
             <RotateCcw /> Rejouer
           </Button>
+          {nextLevel && (
+            <Button asChild onClick={() => setLevel(nextLevel)}>
+              <Link to={collabPath(`quiz/jouer?${levelParams(nextLevel)}`)}>
+                Passer au niveau {DIFFICULTY_LABEL[nextLevel]} <ArrowRight />
+              </Link>
+            </Button>
+          )}
         </div>
       </div>
     )
@@ -419,6 +458,11 @@ function QuizGame() {
 
         <div className="mb-4 flex min-h-9 flex-wrap items-center gap-3">
           <span className="text-sm font-bold text-primary">{title}</span>
+          {level && (
+            <span className="rounded-sm border px-2 py-0.5 text-xs font-semibold">
+              Niveau {DIFFICULTY_LABEL[level]}
+            </span>
+          )}
           <ThemeBadge themeId={q.themeId} />
           <span className="ml-auto flex items-center gap-3">
             <AnimatePresence mode="popLayout">

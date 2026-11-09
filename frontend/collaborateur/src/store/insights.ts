@@ -1,4 +1,4 @@
-import type { ThemeId } from '@acculturator/contracts'
+import type { Difficulty, ThemeId } from '@acculturator/contracts'
 import { getCatalog } from '@acculturator/core/catalog'
 import { THEMES } from '@acculturator/design-system/themes'
 import { currentModule, moduleStates } from './modules'
@@ -188,6 +188,11 @@ export function overallMastery(
 /** Flashcards bien ancrées : arrivées en boîte 3 ou plus. */
 export const anchoredCards = (s: Pick<ProgressData, 'cards'>) =>
   Object.values(s.cards).filter((c) => c.box >= 3).length
+
+/** Niveau de quiz conseillé selon la maîtrise (0-100) : on vise le juste niveau de difficulté. */
+export function recommendedLevel(mastery: number): Difficulty {
+  return mastery < 40 ? 1 : mastery < 70 ? 2 : 3
+}
 
 export function themeMastery(s: ProgressState, themeId: ThemeId) {
   const a = s.answers[themeId]
