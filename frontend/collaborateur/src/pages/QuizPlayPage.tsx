@@ -356,7 +356,7 @@ function QuizGame() {
         <div className="flex flex-wrap justify-center gap-2">
           {validation ? (
             <Button variant="outline" asChild>
-              <Link to={collabPath(`modules/${validation.module.id}`)}>
+              <Link to={collabPath(`modules?module=${validation.module.id}`)}>
                 <ArrowLeft /> Retour au module
               </Link>
             </Button>
@@ -398,7 +398,7 @@ function QuizGame() {
       <div>
         <div className="mb-4 flex items-center gap-3">
           <Button asChild variant="ghost" size="sm">
-            <Link to={collabPath(validation ? `modules/${validation.module.id}` : 'quiz')}>
+            <Link to={collabPath(validation ? `modules?module=${validation.module.id}` : 'quiz')}>
               <ArrowLeft /> Quitter
             </Link>
           </Button>

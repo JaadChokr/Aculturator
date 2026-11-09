@@ -149,7 +149,7 @@ export function nextSteps(s: ProgressState, dueCount: number, limit = 3): NextSt
         kind: 'module',
         title: `Module ${mod.index} : ${mod.module.title}`,
         detail: `${mod.done}/${mod.total} étapes faites · ${mod.module.durationMin} min au total`,
-        to: `modules/${mod.module.id}`,
+        to: `modules?module=${mod.module.id}`,
         cta: mod.status === 'in-progress' ? 'Continuer' : 'Commencer',
       }
     : null

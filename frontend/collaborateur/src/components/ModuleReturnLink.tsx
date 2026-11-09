@@ -22,7 +22,7 @@ export function ModuleReturnLink({ className }: { className?: string }) {
   if (!module) return null
   return (
     <Button variant="outline" size="sm" asChild className={cn('mb-4 max-w-full', className)}>
-      <Link to={collabPath(`modules/${module.id}`)}>
+      <Link to={collabPath(`modules?module=${module.id}`)}>
         <ArrowLeft />
         <span className="truncate">Retour au module : {module.title}</span>
       </Link>

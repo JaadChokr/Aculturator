@@ -25,7 +25,6 @@ const hasModules = () => {
 
 const DashboardPage = lazy(() => import('./pages/DashboardPage'))
 const ModulesPage = lazy(() => import('./pages/ModulesPage'))
-const ModulePage = lazy(() => import('./pages/ModulePage'))
 const ResourcesPage = lazy(() => import('./pages/ResourcesPage'))
 const FlashcardsPage = lazy(() => import('./pages/FlashcardsPage'))
 const FlashcardSessionPage = lazy(() => import('./pages/FlashcardSessionPage'))
@@ -95,7 +94,6 @@ export const collaborateurPortal: PortalDefinition = {
   routes: [
     { index: true, element: <DashboardPage /> },
     { path: 'modules', element: <ModulesPage /> },
-    { path: 'modules/:moduleId', element: <ModulePage /> },
     { path: 'ressources', element: <ResourcesPage /> },
     { path: 'flashcards', element: <FlashcardsPage /> },
     { path: 'flashcards/session', element: <FlashcardSessionPage /> },

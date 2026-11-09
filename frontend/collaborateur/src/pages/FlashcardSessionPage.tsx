@@ -273,7 +273,7 @@ function Session() {
 
   const backLink = (
     <Button asChild variant="ghost" size="sm">
-      <Link to={collabPath(fromModule ? `modules/${fromModule.id}` : 'flashcards')}>
+      <Link to={collabPath(fromModule ? `modules?module=${fromModule.id}` : 'flashcards')}>
         <ArrowLeft /> {fromModule ? 'Retour au module' : 'Flashcards'}
       </Link>
     </Button>

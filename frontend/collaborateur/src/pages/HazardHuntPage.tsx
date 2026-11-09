@@ -124,7 +124,7 @@ export default function HazardHuntPage() {
       {done && <Confetti count={80} />}
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <Button asChild variant="ghost" size="sm">
-          <Link to={collabPath(fromModule ? `modules/${fromModule.id}` : 'quiz')}>
+          <Link to={collabPath(fromModule ? `modules?module=${fromModule.id}` : 'quiz')}>
             <ArrowLeft /> {fromModule ? 'Retour au module' : 'Quiz & défis'}
           </Link>
         </Button>
