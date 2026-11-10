@@ -23,13 +23,11 @@ import {
   Confetti,
   Mascot,
   ProgressRing,
-  ALL_LEVELS_BAND,
-  ChoiceCard,
-  ChoiceGroup,
   DIFFICULTY_STYLE,
   DifficultyDots,
+  DifficultyPicker,
 } from '@acculturator/design-system/components'
-import { Badge, Button, Card, CardContent, Progress } from '@acculturator/design-system/ui'
+import { Button, Card, CardContent, Progress } from '@acculturator/design-system/ui'
 import { cn, shuffle } from '@acculturator/design-system/lib'
 import {
   AnimatedNumber,
@@ -225,32 +223,16 @@ function LevelChooser({ mode, theme }: { mode: 'chrono' | 'entrainement'; theme:
 
           <div>
             <h2 className="mb-3 font-semibold">Choisissez votre niveau</h2>
-            <ChoiceGroup label="Niveau de difficulté">
-              {options.map((o) => (
-                <ChoiceCard
-                  key={o.label}
-                  selected={choice === o.value}
-                  onSelect={() => setChoice(o.value)}
-                  onConfirm={start}
-                  // Bande de couleur : plus elle est foncée, plus le niveau est difficile
-                  band={o.value ? DIFFICULTY_STYLE[o.value].bar : ALL_LEVELS_BAND}
-                  selectedClassName={
-                    o.value
-                      ? cn(DIFFICULTY_STYLE[o.value].border, DIFFICULTY_STYLE[o.value].tint)
-                      : undefined
-                  }
-                  title={
-                    <>
-                      {o.label}
-                      {o.value && <DifficultyDots level={o.value} />}
-                    </>
-                  }
-                  badge={o.value === recommended && <Badge>Conseillé</Badge>}
-                  description={o.description}
-                  meta={`${questionCount(mode, theme, o.value)} questions`}
-                />
-              ))}
-            </ChoiceGroup>
+            <DifficultyPicker
+              value={choice}
+              onChange={setChoice}
+              onConfirm={start}
+              recommended={recommended}
+              options={options.map((o) => ({
+                ...o,
+                meta: `${questionCount(mode, theme, o.value)} questions`,
+              }))}
+            />
           </div>
 
           <Button size="lg" className="self-start" onClick={start}>

@@ -8,6 +8,12 @@ export { Toaster } from './toast/Toaster'
 export { toast, useToastStore, type Toast, type ToastTone } from './toast/toast-store'
 export { NotificationsMenu, headerIconButton } from './notifications/NotificationsMenu'
 export { ChoiceCard, ChoiceGroup } from './ChoiceCard'
-export { ALL_LEVELS_BAND, DIFFICULTY_STYLE, DifficultyDots } from './Difficulty'
+export {
+  ALL_LEVELS_BAND,
+  DIFFICULTY_STYLE,
+  DifficultyDots,
+  DifficultyPicker,
+  type DifficultyOption,
+} from './Difficulty'
 export { Eyebrow } from './Eyebrow'
 export { SegmentedControl, type SegmentedOption } from './SegmentedControl'
