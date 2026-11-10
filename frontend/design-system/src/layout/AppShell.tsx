@@ -11,6 +11,7 @@ import { useDismiss } from '../hooks'
 import { headerIconButton } from '../components/notifications/NotificationsMenu'
 import { Eyebrow } from '../components/Eyebrow'
 import { SegmentedControl } from '../components/SegmentedControl'
+import { CONTENT_AREA, HEADER_BAR } from './frame'
 import type { NavSection } from './types'
 
 function PageLoader() {
@@ -403,7 +404,7 @@ export function AppShell({
       </AnimatePresence>
 
       <div className="lg:pl-64">
-        <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b bg-background/85 px-4 backdrop-blur-md sm:px-6">
+        <header className={HEADER_BAR}>
           <Button
             variant="ghost"
             size="icon-sm"
@@ -433,7 +434,7 @@ export function AppShell({
           </div>
         </header>
 
-        <main className="mx-auto w-full max-w-[1760px] px-4 py-6 pb-28 sm:px-6 lg:px-8 lg:pb-10">
+        <main className={cn(CONTENT_AREA, 'pb-28 lg:pb-10')}>
           <Suspense fallback={<PageLoader />}>
             <motion.div
               key={location.pathname}

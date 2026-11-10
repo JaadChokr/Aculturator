@@ -11,16 +11,18 @@ import {
 } from 'lucide-react'
 import type { Parcours, ParcoursProgress } from '@acculturator/contracts'
 import { Badge, Button, Card, CardContent, Input, Progress } from '@acculturator/design-system/ui'
-import { Brand, PAGE_WIDTH, ThemeToggle, UserMenu } from '@acculturator/design-system/layout'
+import { StandaloneShell, ThemeToggle, UserMenu } from '@acculturator/design-system/layout'
 import {
-  Eyebrow,
   FullPageLoader,
   LoadError,
+  NotificationsMenu,
+  PageHeader,
   SegmentedControl,
 } from '@acculturator/design-system/components'
 import { Reveal, Stagger } from '@acculturator/design-system/motion'
 import { cn, daysBetween, todayISO } from '@acculturator/design-system/lib'
 import { useAuth } from '@acculturator/core/auth'
+import { useNotifications } from '@acculturator/core/notifications'
 import { useCurrentParcours, useParcoursList, useSelectParcours } from '@acculturator/core/parcours'
 import { homePortalFor, portalsForRole, usePortalRegistry } from '@acculturator/core/portal'
 import { useUserMenu } from './useUserMenu'
@@ -65,6 +67,7 @@ export function ParcoursPage() {
   const select = useSelectParcours()
   const navigate = useNavigate()
   const userMenu = useUserMenu()
+  const notifications = useNotifications()
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState<Filter>('all')
 
@@ -99,87 +102,77 @@ export function ParcoursPage() {
   }
 
   return (
-    <div className="min-h-dvh overflow-x-clip bg-background">
-      <header className="sticky top-0 z-20 border-b bg-background/85 backdrop-blur-md">
-        <div className={cn(PAGE_WIDTH.wide, 'flex h-16 items-center gap-3 px-4 sm:px-6')}>
-          <Brand />
-          <div className="ml-auto flex items-center gap-2">
-            <span className="hidden sm:contents">
-              <ThemeToggle />
-            </span>
-            <span aria-hidden className="mx-1 hidden h-6 w-px bg-border sm:block" />
-            <UserMenu {...userMenu} />
-          </div>
-        </div>
-      </header>
-
-      <main className={cn(PAGE_WIDTH.wide, 'px-4 py-10 sm:px-6 lg:py-16')}>
-        <Stagger className="flex flex-col gap-8">
-          <Reveal className="max-w-3xl">
-            <Eyebrow className="mb-2">Vos parcours d’acculturation</Eyebrow>
-            <h1 className="mb-3 text-3xl leading-tight font-bold text-balance sm:text-4xl">
-              Bonjour {user.firstName}, quel parcours souhaitez-vous suivre ?
-            </h1>
-            <p className="text-muted-foreground">
-              Chaque parcours réunit des contenus courts, des révisions et des défis sur une
-              thématique. Vous pourrez en changer à tout moment depuis votre menu.
-            </p>
-          </Reveal>
-
-          <Reveal className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="relative w-full sm:max-w-sm">
-              <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                type="search"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Rechercher un parcours…"
-                aria-label="Rechercher un parcours"
-                className="bg-card pl-9"
-              />
-            </div>
-            <SegmentedControl
-              label="Filtrer les parcours"
-              value={filter}
-              onChange={setFilter}
-              className="self-start sm:self-auto"
-              options={FILTERS.map((f) => ({
-                value: f.id,
-                label: f.label,
-                count: items.filter((i) => matchesFilter(f.id, i.progress)).length,
-              }))}
+    <StandaloneShell
+      actions={
+        <>
+          <NotificationsMenu items={notifications.items} onMarkRead={notifications.markRead} />
+          <span className="hidden sm:contents">
+            <ThemeToggle />
+          </span>
+          <span aria-hidden className="mx-1 hidden h-6 w-px bg-border sm:block" />
+          <UserMenu {...userMenu} />
+        </>
+      }
+    >
+      <PageHeader
+        eyebrow="Vos parcours d’acculturation"
+        title={`Bonjour ${user.firstName}, quel parcours souhaitez-vous suivre ?`}
+        description="Chaque parcours réunit des contenus courts, des révisions et des défis sur une thématique. Vous pourrez en changer à tout moment depuis votre menu."
+      />
+      <Stagger className="flex flex-col gap-6">
+        <Reveal className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="relative w-full sm:max-w-sm">
+            <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Rechercher un parcours…"
+              aria-label="Rechercher un parcours"
+              className="bg-card pl-9"
             />
-          </Reveal>
-
-          <div className="grid gap-6 md:grid-cols-2">
-            {visible.map(({ parcours, progress }) => (
-              <Reveal key={parcours.id} className="h-full">
-                <ParcoursCard
-                  parcours={parcours}
-                  progress={progress}
-                  current={current?.id === parcours.id}
-                  onOpen={() => open(parcours)}
-                />
-              </Reveal>
-            ))}
-            {!filtered && (
-              <Reveal className="h-full">
-                <UpcomingCard />
-              </Reveal>
-            )}
-            {visible.length === 0 && (
-              <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed p-10 text-center md:col-span-2">
-                <SearchX className="size-8 text-muted-foreground" />
-                <p className="font-semibold">Aucun parcours ne correspond à votre recherche.</p>
-                <Button variant="outline" onClick={reset}>
-                  Réinitialiser les filtres
-                </Button>
-              </div>
-            )}
           </div>
-        </Stagger>
-      </main>
-    </div>
+          <SegmentedControl
+            label="Filtrer les parcours"
+            value={filter}
+            onChange={setFilter}
+            className="self-start sm:self-auto"
+            options={FILTERS.map((f) => ({
+              value: f.id,
+              label: f.label,
+              count: items.filter((i) => matchesFilter(f.id, i.progress)).length,
+            }))}
+          />
+        </Reveal>
+
+        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+          {visible.map(({ parcours, progress }) => (
+            <Reveal key={parcours.id} className="h-full">
+              <ParcoursCard
+                parcours={parcours}
+                progress={progress}
+                current={current?.id === parcours.id}
+                onOpen={() => open(parcours)}
+              />
+            </Reveal>
+          ))}
+          {!filtered && (
+            <Reveal className="h-full">
+              <UpcomingCard />
+            </Reveal>
+          )}
+          {visible.length === 0 && (
+            <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed p-10 text-center md:col-span-2">
+              <SearchX className="size-8 text-muted-foreground" />
+              <p className="font-semibold">Aucun parcours ne correspond à votre recherche.</p>
+              <Button variant="outline" onClick={reset}>
+                Réinitialiser les filtres
+              </Button>
+            </div>
+          )}
+        </div>
+      </Stagger>
+    </StandaloneShell>
   )
 }
 
@@ -205,7 +198,7 @@ function ParcoursCard({
         current && 'ring-2 ring-primary/30',
       )}
     >
-      <CardContent className="flex h-full flex-col gap-5 p-6 sm:p-7">
+      <CardContent className="@container flex h-full flex-col gap-5 p-6 sm:p-7">
         <div className="flex items-start justify-between gap-3">
           <span
             className={cn(
@@ -224,7 +217,7 @@ function ParcoursCard({
           <p className="text-sm text-muted-foreground">{parcours.description}</p>
         </div>
 
-        <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <dl className="grid grid-cols-2 gap-3 @md:grid-cols-4">
           {STATS.map((s) => (
             <div key={s.key} className="rounded-md bg-muted/60 px-3 py-2">
               <dt className="sr-only">{s.label}</dt>
