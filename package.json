@@ -17,7 +17,7 @@
     "preview": "npm run preview -w @acculturator/shell",
     "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.node.json",
     "lint": "eslint .",
-    "format": "prettier --write \"frontend/*/src/**/*.{ts,tsx,css}\" \"packages/*/src/**/*.ts\" \"mock-server/src/**/*.ts\""
+    "format": "prettier --write \"frontend/*/src/**/*.{ts,tsx,css}\" \"packages/*/src/**/*.{ts,tsx,css}\" \"mock-server/src/**/*.ts\""
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",

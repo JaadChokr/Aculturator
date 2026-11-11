@@ -60,7 +60,7 @@ const SHARED_STYLE_RULES = {
 }
 
 const NO_RELATIVE_ESCAPE = {
-  group: ['../../*/src/*', '**/frontend/**'],
+  group: ['../../*/src/*', '**/frontend/**', '**/packages/**'],
   message:
     'Importer les autres modules par leur nom de paquet (@acculturator/…), pas par chemin relatif.',
 }
@@ -79,7 +79,7 @@ export default tseslint.config(
   },
   // Design system : identité visuelle uniquement
   {
-    files: ['frontend/design-system/src/**/*.{ts,tsx}'],
+    files: ['packages/design-system/src/**/*.{ts,tsx}'],
     rules: restrict([
       {
         regex: '^@acculturator/(?!contracts$)',
@@ -96,7 +96,7 @@ export default tseslint.config(
   },
   // Core : données, authentification, contrat des portails
   {
-    files: ['frontend/core/src/**/*.{ts,tsx}'],
+    files: ['packages/core/src/**/*.{ts,tsx}'],
     rules: restrict([
       {
         group: [
