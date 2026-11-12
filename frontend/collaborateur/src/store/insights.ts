@@ -1,6 +1,6 @@
 import type { Difficulty, ThemeId } from '@acculturator/contracts'
 import { getCatalog } from '@acculturator/core/catalog'
-import { THEMES } from '@acculturator/design-system/themes'
+import { offers } from './activities'
 import { currentModule, moduleStates } from './modules'
 import type { ProgressData, ProgressState } from './progress'
 
@@ -56,7 +56,9 @@ export interface NextStep {
 export function nextSteps(s: ProgressState, dueCount: number, limit = 3): NextStep[] {
   const scores = pillarScores(s)
   const candidates: { pillar: PillarId; step: NextStep }[] = []
-  const unseenRes = getCatalog().resources.filter((r) => !s.viewedResources.includes(r.id))
+  const unseenRes = offers('resources')
+    ? getCatalog().resources.filter((r) => !s.viewedResources.includes(r.id))
+    : []
 
   // 1) Contenu obligatoire non consulté : épinglé en tête, quel que soit le reste
   const mandatory = unseenRes
@@ -78,7 +80,7 @@ export function nextSteps(s: ProgressState, dueCount: number, limit = 3): NextSt
       }
     : null
 
-  if (dueCount > 0) {
+  if (dueCount > 0 && offers('flashcards')) {
     candidates.push({
       pillar: 'consolidation',
       step: {
@@ -110,29 +112,32 @@ export function nextSteps(s: ProgressState, dueCount: number, limit = 3): NextSt
     })
   }
 
-  const weakest = [...THEMES].sort((a, b) => themeMastery(s, a.id) - themeMastery(s, b.id))[0]
-  candidates.push({
-    pillar: 'feedback',
-    step: {
-      id: 'practice',
-      kind: 'practice',
-      title: `S’entraîner : ${weakest.title}`,
-      detail: `Thématique la moins maîtrisée (${themeMastery(s, weakest.id)} %).`,
-      to: `quiz/jouer?mode=entrainement&theme=${weakest.id}`,
-      cta: 'S’entraîner',
-    },
-  })
+  const weakest = [...getCatalog().themes].sort(
+    (a, b) => themeMastery(s, a.id) - themeMastery(s, b.id),
+  )[0]
+  if (weakest && offers('quiz'))
+    candidates.push({
+      pillar: 'feedback',
+      step: {
+        id: 'practice',
+        kind: 'practice',
+        title: `S’entraîner : ${weakest.title}`,
+        detail: `Thématique la moins maîtrisée (${themeMastery(s, weakest.id)} %).`,
+        to: `quiz/jouer?mode=entrainement&theme=${weakest.id}`,
+        cta: 'S’entraîner',
+      },
+    })
 
-  const scene = getCatalog().hazardScenes[0]
-  const found = s.hazardsFound[scene.id]?.length ?? 0
-  if (found < scene.hazards.length) {
+  const scene = offers('hazard-hunt') ? getCatalog().hazardScenes[0] : undefined
+  const found = scene ? (s.hazardsFound[scene.id]?.length ?? 0) : 0
+  if (scene && found < scene.hazards.length) {
     candidates.push({
       pillar: 'engagement',
       step: {
         id: 'hunt',
         kind: 'hunt',
         title: 'Chasse aux risques',
-        detail: `${scene.hazards.length - found} situation${scene.hazards.length - found > 1 ? 's' : ''} dangereuse${scene.hazards.length - found > 1 ? 's' : ''} à repérer dans l’open space.`,
+        detail: `${scene.hazards.length - found} situation${scene.hazards.length - found > 1 ? 's' : ''} dangereuse${scene.hazards.length - found > 1 ? 's' : ''} à repérer : ${scene.title}.`,
         to: 'quiz/chasse-aux-risques',
         cta: 'Commencer',
       },
@@ -209,5 +214,5 @@ export function themeMastery(s: ProgressState, themeId: ThemeId) {
 }
 
 export function allThemeMastery(s: ProgressState) {
-  return THEMES.map((t) => ({ theme: t, mastery: themeMastery(s, t.id) }))
+  return getCatalog().themes.map((t) => ({ theme: t, mastery: themeMastery(s, t.id) }))
 }

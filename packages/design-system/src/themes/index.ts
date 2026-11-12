@@ -1,83 +1,60 @@
-import { Brain, Car, Flame, HeartPulse, Monitor, PersonStanding, ShieldCheck } from 'lucide-react'
+import {
+  BookOpen,
+  Brain,
+  Car,
+  Flame,
+  Globe,
+  HeartPulse,
+  Leaf,
+  Lightbulb,
+  Lock,
+  Monitor,
+  PersonStanding,
+  Scale,
+  ShieldCheck,
+  ShieldPlus,
+  Users,
+} from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import type { ThemeId } from '@acculturator/contracts'
 
 /**
- * Référentiel des thématiques SST et leur habillage (icône, repère couleur).
- * Les identifiants sont partagés avec le backend ; l'habillage reste propre au frontend.
+ * Habillage des thématiques (et icône des parcours). Les thématiques elles-mêmes (titres, descriptions) viennent du
+ * catalogue de chaque parcours (`Catalog.themes`) ; celui-ci choisit pour chacune une icône et une
+ * couleur parmi les clés ci-dessous. Une clé inconnue retombe sur un habillage neutre : ajouter un
+ * parcours ne demande pas de toucher au code, sauf pour enrichir ces palettes.
  */
-export interface Theme {
-  id: ThemeId
-  title: string
-  short: string
-  description: string
-  icon: LucideIcon
-  /** Repère couleur discret de la thématique (classe Tailwind statique) */
-  dot: string
+export const THEME_ICONS: Record<string, LucideIcon> = {
+  shield: ShieldCheck,
+  'shield-plus': ShieldPlus,
+  posture: PersonStanding,
+  screen: Monitor,
+  mind: Brain,
+  fire: Flame,
+  health: HeartPulse,
+  car: Car,
+  book: BookOpen,
+  idea: Lightbulb,
+  lock: Lock,
+  leaf: Leaf,
+  scale: Scale,
+  people: Users,
+  globe: Globe,
 }
 
-export const THEMES: Theme[] = [
-  {
-    id: 'fondamentaux',
-    title: 'Fondamentaux SST',
-    short: 'Fondamentaux',
-    description:
-      'Acteurs, droits et obligations : DUERP, droit d’alerte et de retrait, accident du travail.',
-    icon: ShieldCheck,
-    dot: 'bg-primary',
-  },
-  {
-    id: 'postures',
-    title: 'Gestes & postures',
-    short: 'Postures',
-    description: 'Prévenir les troubles musculosquelettiques (TMS) et bien porter une charge.',
-    icon: PersonStanding,
-    dot: 'bg-amber-600',
-  },
-  {
-    id: 'ecran',
-    title: 'Travail sur écran',
-    short: 'Écran',
-    description: 'Régler son poste, protéger ses yeux et bouger régulièrement.',
-    icon: Monitor,
-    dot: 'bg-sky-700',
-  },
-  {
-    id: 'rps',
-    title: 'Risques psychosociaux',
-    short: 'RPS',
-    description: 'Stress, charge mentale, harcèlement : repérer, en parler, être aidé.',
-    icon: Brain,
-    dot: 'bg-violet-700',
-  },
-  {
-    id: 'incendie',
-    title: 'Incendie & évacuation',
-    short: 'Incendie',
-    description: 'Réagir à un départ de feu, utiliser le bon extincteur, évacuer en sécurité.',
-    icon: Flame,
-    dot: 'bg-orange-600',
-  },
-  {
-    id: 'secours',
-    title: 'Premiers secours',
-    short: 'Secours',
-    description: 'Protéger, alerter, secourir : les bons réflexes face à un accident.',
-    icon: HeartPulse,
-    dot: 'bg-emerald-700',
-  },
-  {
-    id: 'routier',
-    title: 'Risque routier',
-    short: 'Routier',
-    description: 'Trajets et déplacements professionnels : anticiper, ne pas se laisser distraire.',
-    icon: Car,
-    dot: 'bg-slate-500',
-  },
-]
+/** Repère couleur discret d'une thématique (classes Tailwind écrites en entier pour le build). */
+export const THEME_COLORS: Record<string, string> = {
+  primary: 'bg-primary',
+  amber: 'bg-amber-600',
+  sky: 'bg-sky-700',
+  violet: 'bg-violet-700',
+  orange: 'bg-orange-600',
+  emerald: 'bg-emerald-700',
+  slate: 'bg-slate-500',
+  teal: 'bg-teal-700',
+  indigo: 'bg-indigo-700',
+  rose: 'bg-rose-700',
+  stone: 'bg-stone-500',
+}
 
-export const THEME_BY_ID = Object.fromEntries(THEMES.map((t) => [t.id, t])) as Record<
-  ThemeId,
-  Theme
->
-export const getTheme = (id: ThemeId) => THEME_BY_ID[id]
+export const themeIcon = (key: string): LucideIcon => THEME_ICONS[key] ?? BookOpen
+export const themeDot = (key: string): string => THEME_COLORS[key] ?? 'bg-muted-foreground'

@@ -12,14 +12,14 @@ const Page = lazy(() => import('./pages/ReferentPlaceholder'))
 const base = '/referent'
 
 /**
- * Portail Référent SST — squelette à développer.
+ * Portail Référent — squelette à développer.
  * Toutes les rubriques pointent vers un gabarit décrivant le périmètre attendu.
  */
 export const referentPortal: PortalDefinition = {
   id: 'referent',
   label: 'Portail référent',
   basePath: base,
-  description: 'Suivi de l’acculturation de son périmètre et animation de la prévention.',
+  description: 'Suivi de l’acculturation de son périmètre et animation des parcours.',
   icon: Users,
   allowedRoles: ['referent', 'admin'],
   nav: [

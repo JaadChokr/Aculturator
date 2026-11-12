@@ -19,7 +19,7 @@ import { cn } from '@acculturator/design-system/lib'
 import { spring, springBouncy } from '@acculturator/design-system/motion'
 import { useReturnModule } from '../components/ModuleReturnLink'
 import { collabPath } from '../paths'
-import { OfficeScene } from '../components/OfficeScene'
+import { SceneCanvas } from '../components/SceneCanvas'
 import { ThemeBadge } from '../components/ThemeBadge'
 import { useProgress } from '../store/progress'
 
@@ -143,7 +143,7 @@ export default function HazardHuntPage() {
         <div>
           <Card className="overflow-hidden p-0">
             <div className="relative">
-              <OfficeScene ref={svgRef} onClick={handleClick}>
+              <SceneCanvas scene={scene} ref={svgRef} onClick={handleClick}>
                 {scene.hazards
                   .filter((h) => found.includes(h.id))
                   .map((h) => (
@@ -213,7 +213,7 @@ export default function HazardHuntPage() {
                     />
                   </motion.g>
                 ))}
-              </OfficeScene>
+              </SceneCanvas>
               {done && (
                 <motion.div
                   className="absolute inset-0 grid place-items-center bg-black/40 p-4 backdrop-blur-[2px]"

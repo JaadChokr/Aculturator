@@ -2,15 +2,21 @@ import { cn } from '../lib'
 
 type Mood = 'happy' | 'thinking' | 'cheer' | 'oops'
 
-/** « Prévi », la mascotte de la plateforme : un bouclier casqué bienveillant. */
-export function Mascot({ mood = 'happy', className }: { mood?: Mood; className?: string }) {
+/**
+ * La mascotte de la plateforme : un bouclier casqué bienveillant. Elle prête son visage à
+ * l'assistant de chaque parcours (`label` : son nom).
+ */
+export function Mascot({
+  mood = 'happy',
+  label = 'La mascotte',
+  className,
+}: {
+  mood?: Mood
+  label?: string
+  className?: string
+}) {
   return (
-    <svg
-      viewBox="0 0 120 130"
-      className={cn('size-20', className)}
-      role="img"
-      aria-label="Prévi, la mascotte"
-    >
+    <svg viewBox="0 0 120 130" className={cn('size-20', className)} role="img" aria-label={label}>
       <defs>
         <linearGradient id="prevBody" x1="0" x2="0" y1="0" y2="1">
           <stop offset="0" stopColor="#e03a45" />

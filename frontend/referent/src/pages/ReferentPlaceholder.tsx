@@ -24,7 +24,7 @@ const SECTIONS = {
   },
   stats: {
     title: 'Statistiques',
-    description: 'Analyse des résultats pour cibler les actions de prévention.',
+    description: 'Analyse des résultats pour cibler les actions de sensibilisation.',
     features: [
       'Questions les plus échouées',
       'Indicateurs pédagogiques (engagement, réussite, ancrage des connaissances)',
@@ -34,7 +34,7 @@ const SECTIONS = {
   },
   campaigns: {
     title: 'Campagnes & défis',
-    description: 'Animer la prévention avec des défis d’équipe ponctuels.',
+    description: 'Animer le parcours avec des défis d’équipe ponctuels.',
     features: [
       'Créer un défi d’équipe daté',
       'Affecter un parcours obligatoire',

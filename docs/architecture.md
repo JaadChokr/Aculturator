@@ -69,7 +69,7 @@ Points d'entrée publics (`exports` de `packages/design-system/package.json`) :
 | `/layout`        | `AppShell` (barre latérale, en-tête, navigation mobile, transitions), `UserMenu`, `StandaloneShell` (même cadre pour les pages hors portail, ex. choix du parcours), `HEADER_BAR` / `CONTENT_AREA` (cadre commun), `Page` / `PAGE_WIDTH` (largeurs de page : full, focus, narrow)                                                                                                                                        |
 | `/motion`        | Réglages d'animation communs (ressorts, apparitions, `Stagger`, `Reveal`, `AnimatedNumber`)                                                                                                                                                                                                                                                                                                                              |
 | `/theme`         | Thème clair / sombre / système                                                                                                                                                                                                                                                                                                                                                                                           |
-| `/themes`        | Icône et couleur de repère de chaque thématique SST (`THEMES`, `getTheme`)                                                                                                                                                                                                                                                                                                                                               |
+| `/themes`        | Palettes d'icônes et de couleurs (`THEME_ICONS`, `THEME_COLORS`, `themeIcon`, `themeDot`) dans lesquelles chaque parcours choisit l'habillage de ses thématiques                                                                                                                                                                                                                                                         |
 | `/lib`, `/hooks` | Utilitaires (`cn`, dates…) et hooks d'interface                                                                                                                                                                                                                                                                                                                                                                          |
 | `/styles.css`    | Design tokens (couleurs, rayons, animations) et Tailwind                                                                                                                                                                                                                                                                                                                                                                 |
 
@@ -95,15 +95,15 @@ pages suivent.
 
 Tout ce que les portails partagent **sans être de l'interface** :
 
-| Point d'entrée   | Rôle                                                                                                  |
-| ---------------- | ----------------------------------------------------------------------------------------------------- |
-| `/api`           | **Couche d'accès aux données** (voir ci-dessous)                                                      |
-| `/auth`          | `AuthProvider`, `useAuth()`, libellés des rôles                                                       |
-| `/catalog`       | Chargement unique du catalogue pédagogique (`CatalogProvider`, `useCatalog`, `getCatalog`)            |
-| `/notifications` | `useNotifications()` : chargement, rafraîchissement et lecture des notifications                      |
-| `/parcours`      | Parcours proposés et parcours en cours (`useParcoursList`, `useCurrentParcours`, `useSelectParcours`) |
-| `/portal`        | Contrat `PortalDefinition` et registre des portails (`usePortalRegistry`)                             |
-| `/content`       | Référentiels fonctionnels : barème de gamification (XP, niveaux), libellés                            |
+| Point d'entrée   | Rôle                                                                                                                                               |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/api`           | **Couche d'accès aux données** (voir ci-dessous)                                                                                                   |
+| `/auth`          | `AuthProvider`, `useAuth()`, libellés des rôles                                                                                                    |
+| `/catalog`       | Chargement unique du catalogue pédagogique (`CatalogProvider`, `useCatalog`, `getCatalog`) et de ses thématiques (`useTheme`, `getTheme`)          |
+| `/notifications` | `useNotifications()` : chargement, rafraîchissement et lecture des notifications                                                                   |
+| `/parcours`      | Parcours proposés et parcours en cours (`useParcoursList`, `useCurrentParcours`, `useSelectParcours`), son identité (`useBranding`, `getBranding`) |
+| `/portal`        | Contrat `PortalDefinition` et registre des portails (`usePortalRegistry`)                                                                          |
+| `/content`       | Référentiels fonctionnels : barème de gamification (XP, paliers de niveaux, `levelsWith`), libellés                                                |
 
 Le lien entre les deux se fait dans le shell : `frontend/shell/src/PortalLayout.tsx` charge
 l'utilisateur, les portails accessibles et les notifications (`core`), puis les passe à `AppShell`,
@@ -177,9 +177,20 @@ choisi est mémorisé dans le navigateur (`@acculturator/core/parcours`) et :
 - changer de parcours (menu utilisateur › Parcours › Changer) oublie les données de l'ancien parcours
   en cache ; l'utilisateur, les notifications et la liste des parcours sont conservés.
 
-Ajouter un parcours : le backend le renvoie dans `GET /parcours` et sert ses endpoints
-`/parcours/:id/…` ; côté frontend, seule une icône est à déclarer (`PARCOURS_ICON` dans
-`frontend/shell/src/ParcoursPage.tsx`, icône par défaut sinon).
+**Un parcours se décrit par ses données, pas par du code.** Tout ce qui est propre à une thématique
+d'acculturation vient de l'API :
+
+| Donnée                                 | Ce qu'elle pilote dans l'interface                                                                                                                                     |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Parcours.activities`                  | Rubriques proposées (ressources, flashcards, quiz, chasse aux risques, assistant) : menu, routes (`RequireActivity`), recommandations, missions et badges s'y limitent |
+| `Parcours.branding`                    | Icône du parcours, nom et périmètre de l'assistant, mise en garde, titres des niveaux                                                                                  |
+| `Catalog.themes`                       | Thématiques (titres, descriptions) et leur habillage, choisi par clé dans les palettes de `@acculturator/design-system/themes`                                         |
+| `Catalog.hazardScenes[].image`         | Illustration de chaque scène de chasse aux risques ; dangers et leurres sont placés dans son repère                                                                    |
+| `Catalog.resources`, `flashcards`, `…` | Contenus pédagogiques                                                                                                                                                  |
+
+Une activité est aussi masquée quand le catalogue n'a rien pour l'alimenter (aucune scène, aucune
+flashcard…). Côté portail collaborateur : `store/activities.ts` (`offers`, `useOffers`) et
+`store/levels.ts` (titres des niveaux du parcours).
 
 **Page de choix du parcours.** Chaque carte affiche la maîtrise du parcours (barre de progression,
 ressources consultées, cartes ancrées, dernière activité) ; une recherche (insensible aux accents) et
@@ -206,6 +217,19 @@ Variables d'environnement (`frontend/shell/.env.*`) :
 | `VITE_DEMO_ROLE_SWITCHER` | `true` \| `false`               | Sélecteur de profil de démo dans le menu utilisateur |
 
 ## Recettes
+
+### Ajouter un parcours
+
+1. Côté backend : renvoyer le parcours dans `GET /parcours` (statut, chiffres, `activities`,
+   `branding`) et servir ses endpoints `/parcours/:id/…`, à commencer par son catalogue
+   (`themes`, contenus, scènes illustrées). Le serveur de démo (`mock-server/src/data/`) donne
+   l'exemple du parcours SST.
+2. Côté frontend : rien à écrire. Seulement si une thématique a besoin d'une icône ou d'une couleur
+   qui n'existe pas encore, l'ajouter aux palettes de `packages/design-system/src/themes/index.ts`
+   (une clé inconnue prend un habillage neutre en attendant).
+3. Une nouvelle **activité** (un nouveau type d'exercice), elle, demande du code : l'ajouter à
+   `ActivityId` (`packages/contracts/src/parcours.ts`), créer sa rubrique dans le portail et la
+   relier à `offers`.
 
 ### Ajouter une rubrique à un portail
 

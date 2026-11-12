@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Flame, Layers, Lock, RotateCcw, Trophy, Zap } from 'lucide-react'
-import { LEVELS, levelFromXp } from '@acculturator/core/content'
+import { levelFromXp } from '@acculturator/core/content'
+import { useLevels } from '../store/levels'
 import { PageHeader, ProgressRing } from '@acculturator/design-system/components'
 import {
   Button,
@@ -12,15 +13,17 @@ import {
 } from '@acculturator/design-system/ui'
 import { cn, formatNumber } from '@acculturator/design-system/lib'
 import { AnimatedNumber, Reveal, Stagger } from '@acculturator/design-system/motion'
-import { BADGES } from '../store/badges'
+import { activeBadges } from '../store/badges'
 import { useProgress } from '../store/progress'
 
 export default function TrophiesPage() {
   const s = useProgress()
   const [confirmReset, setConfirmReset] = useState(false)
-  const { current, next, progress, toNext } = levelFromXp(s.xp)
+  const levels = useLevels()
+  const { current, next, progress, toNext } = levelFromXp(s.xp, levels)
   const reviews = Object.values(s.cards).reduce((a, c) => a + c.reviews, 0)
-  const unlocked = BADGES.filter((b) => s.badges[b.id]).length
+  const badges = activeBadges()
+  const unlocked = badges.filter((b) => s.badges[b.id]).length
 
   const stats = [
     { label: 'XP totale', value: s.xp, suffix: '', icon: Zap, tone: 'text-xp bg-xp/10' },
@@ -52,7 +55,7 @@ export default function TrophiesPage() {
       <PageHeader
         eyebrow="Ma progression"
         title="Trophées & niveaux"
-        description="Chaque action compte : regardez, révisez, jouez… et devenez ambassadeur·rice de la prévention."
+        description="Chaque action compte : regardez, révisez, jouez… et progressez de niveau en niveau."
         actions={
           confirmReset ? (
             <div className="flex items-center gap-2 text-sm">
@@ -114,7 +117,7 @@ export default function TrophiesPage() {
           </CardHeader>
           <CardContent>
             <ol className="relative flex flex-col gap-3 sm:flex-row sm:gap-0">
-              {LEVELS.map((l, i) => {
+              {levels.map((l, i) => {
                 const reached = s.xp >= l.minXp
                 const isCurrent = l.level === current.level
                 return (
@@ -185,7 +188,7 @@ export default function TrophiesPage() {
       <h2 className="mb-3 text-lg font-bold">
         Badges{' '}
         <span className="text-muted-foreground">
-          · {unlocked}/{BADGES.length}
+          · {unlocked}/{badges.length}
         </span>
       </h2>
       <Stagger
@@ -193,7 +196,7 @@ export default function TrophiesPage() {
         stagger={0.05}
         delay={0.2}
       >
-        {BADGES.map((b) => {
+        {badges.map((b) => {
           const date = s.badges[b.id]
           return (
             <Reveal key={b.id} variant="pop" whileHover={date ? { y: -3 } : undefined}>

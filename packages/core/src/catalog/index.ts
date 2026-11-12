@@ -1,1 +1,8 @@
-export { CatalogProvider, CATALOG_QUERY_KEY, getCatalog, useCatalog } from './CatalogProvider'
+export {
+  CatalogProvider,
+  CATALOG_QUERY_KEY,
+  getCatalog,
+  getTheme,
+  useCatalog,
+  useTheme,
+} from './CatalogProvider'

@@ -2,6 +2,7 @@ import { motion } from 'motion/react'
 import { Link } from 'react-router'
 import { Flame, Zap } from 'lucide-react'
 import { levelFromXp } from '@acculturator/core/content'
+import { useLevels } from '../store/levels'
 import { ProgressRing } from '@acculturator/design-system/components'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@acculturator/design-system/ui'
 import { AnimatedNumber, springBouncy } from '@acculturator/design-system/motion'
@@ -10,7 +11,7 @@ import { useProgress } from '../store/progress'
 export function HeaderStats() {
   const xp = useProgress((s) => s.xp)
   const streak = useProgress((s) => s.streak.count)
-  const { current, progress, toNext, next } = levelFromXp(xp)
+  const { current, progress, toNext, next } = levelFromXp(xp, useLevels())
 
   return (
     <div className="flex items-center gap-1.5 sm:gap-2">

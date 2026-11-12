@@ -15,6 +15,7 @@ import { notificationsForRole } from './data/notifications.ts'
 import { QUIZ_QUESTIONS } from './data/quiz.ts'
 import { RESOURCES } from './data/resources.ts'
 import { SST_MODULES } from './data/modules.ts'
+import { SST_THEMES } from './data/themes.ts'
 import { PARCOURS } from './data/parcours.ts'
 import { DEMO_USERS } from './data/users.ts'
 import type { KeyValueStore } from './store.ts'
@@ -123,6 +124,7 @@ export function createMockServer({ store, latency = true }: MockServerOptions) {
     'GET /catalog': async () => {
       await delay(120)
       const catalog: Catalog = {
+        themes: SST_THEMES,
         resources: RESOURCES,
         flashcards: FLASHCARDS,
         quizQuestions: QUIZ_QUESTIONS,

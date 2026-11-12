@@ -2,7 +2,6 @@ import { motion } from 'motion/react'
 import { Link } from 'react-router'
 import { Layers, Play, Repeat, Sparkles } from 'lucide-react'
 import { useCatalog } from '@acculturator/core/catalog'
-import { THEMES } from '@acculturator/design-system/themes'
 import { PageHeader, Eyebrow } from '@acculturator/design-system/components'
 import { Badge, Button, Card, CardContent, Progress } from '@acculturator/design-system/ui'
 import { todayISO } from '@acculturator/design-system/lib'
@@ -12,7 +11,7 @@ import { ThemeIcon } from '../components/ThemeBadge'
 import { dueCards, useProgress } from '../store/progress'
 
 export default function FlashcardsPage() {
-  const { flashcards } = useCatalog()
+  const { flashcards, themes } = useCatalog()
   const cards = useProgress((s) => s.cards)
   const { review, fresh } = dueCards(cards)
   const sessionSize = Math.min(12, review.length + fresh.length)
@@ -89,7 +88,7 @@ export default function FlashcardsPage() {
         stagger={0.05}
         delay={0.15}
       >
-        {THEMES.map((t) => {
+        {themes.map((t) => {
           const deck = flashcards.filter((c) => c.themeId === t.id)
           const deckDue = deck.filter((c) => !cards[c.id] || cards[c.id].due <= today).length
           const solid = deck.filter((c) => (cards[c.id]?.box ?? 0) >= 3).length

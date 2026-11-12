@@ -3,8 +3,7 @@ import { AnimatePresence, motion, useMotionValue, useTransform, type PanInfo } f
 import { Link, useSearchParams } from 'react-router'
 import { ArrowLeft, Check, CircleHelp, Lightbulb, type LucideIcon, RotateCcw } from 'lucide-react'
 import type { Flashcard, ThemeId } from '@acculturator/contracts'
-import { getCatalog } from '@acculturator/core/catalog'
-import { getTheme } from '@acculturator/design-system/themes'
+import { getCatalog, useTheme } from '@acculturator/core/catalog'
 import { Confetti, Mascot, Eyebrow } from '@acculturator/design-system/components'
 import { Button, Card, CardContent, Progress } from '@acculturator/design-system/ui'
 import { cn, shuffle } from '@acculturator/design-system/lib'
@@ -17,7 +16,7 @@ import {
 } from '@acculturator/design-system/motion'
 import { useReturnModule } from '../components/ModuleReturnLink'
 import { collabPath } from '../paths'
-import { ThemeBadge } from '../components/ThemeBadge'
+import { ThemeBadge, ThemeGlyph } from '../components/ThemeBadge'
 import { TutorialDialog, useTutorial, type TutorialStep } from '../components/TutorialDialog'
 import { dueCards, useProgress, type CardGrade } from '../store/progress'
 import { PAGE_WIDTH } from '@acculturator/design-system/layout'
@@ -96,7 +95,7 @@ function SwipeCard({
   onFlip: () => void
   onSwipe: (g: CardGrade) => void
 }) {
-  const t = getTheme(card.themeId)
+  const t = useTheme(card.themeId)
   const x = useMotionValue(0)
   const rotate = useTransform(x, [-260, 260], [-14, 14])
   const goodOpacity = useTransform(x, [25, SWIPE_THRESHOLD], [0, 1])
@@ -139,7 +138,7 @@ function SwipeCard({
               className="grid size-12 place-items-center rounded-md bg-muted text-foreground"
               aria-hidden
             >
-              <t.icon className="size-6" strokeWidth={1.75} />
+              <ThemeGlyph theme={t} className="size-6" strokeWidth={1.75} />
             </span>
             <p className="text-xl leading-snug font-semibold text-balance sm:text-2xl lg:text-3xl">
               {card.front}

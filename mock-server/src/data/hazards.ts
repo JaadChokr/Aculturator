@@ -1,4 +1,5 @@
 import type { DecoySpot, HazardScene } from '@acculturator/contracts'
+import { OPEN_SPACE_SVG, svgDataUri } from './scenes/open-space.ts'
 
 const OPEN_SPACE_DECOYS: DecoySpot[] = [
   {
@@ -19,10 +20,11 @@ const OPEN_SPACE_DECOYS: DecoySpot[] = [
   },
 ]
 
-/** Coordonnées alignées sur l'illustration `OfficeScene` (viewBox 0 0 1000 600). */
+/** Coordonnées dans le repère de l'illustration de la scène (1000 × 600). */
 export const HAZARD_SCENES: HazardScene[] = [
   {
     id: 'open-space',
+    image: { src: svgDataUri(OPEN_SPACE_SVG), width: 1000, height: 600 },
     title: 'L’open space du lundi matin',
     description:
       'Six situations dangereuses se cachent dans ce bureau. Saurez-vous toutes les repérer ?',

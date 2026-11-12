@@ -10,7 +10,9 @@ import {
   Timer,
   type LucideIcon,
 } from 'lucide-react'
+import type { ActivityId } from '@acculturator/contracts'
 import { getCatalog } from '@acculturator/core/catalog'
+import { offers } from './activities'
 import type { ProgressState } from './progress'
 
 export type BadgeId =
@@ -29,6 +31,8 @@ export interface Badge {
   name: string
   description: string
   icon: LucideIcon
+  /** Activité requise : le badge n'est proposé que si le parcours la propose */
+  activity?: ActivityId
   isUnlocked: (s: ProgressState) => boolean
 }
 
@@ -38,6 +42,7 @@ export const BADGES: Badge[] = [
     name: 'Premiers pas',
     icon: Footprints,
     description: 'Terminer un premier quiz',
+    activity: 'quiz',
     isUnlocked: (s) => s.quizHistory.length >= 1,
   },
   {
@@ -45,13 +50,15 @@ export const BADGES: Badge[] = [
     name: 'Sans faute',
     icon: BadgeCheck,
     description: 'Obtenir 100 % à un quiz',
+    activity: 'quiz',
     isUnlocked: (s) => s.quizHistory.some((q) => q.mode !== 'chasse' && q.score === q.total),
   },
   {
     id: 'cinephile',
-    name: 'Cinéphile prévention',
+    name: 'Cinéphile',
     icon: Clapperboard,
     description: 'Consulter 5 ressources',
+    activity: 'resources',
     isUnlocked: (s) => s.viewedResources.length >= 5,
   },
   {
@@ -66,6 +73,7 @@ export const BADGES: Badge[] = [
     name: 'Œil de lynx',
     icon: ScanEye,
     description: 'Trouver tous les dangers d’une scène',
+    activity: 'hazard-hunt',
     isUnlocked: (s) =>
       getCatalog().hazardScenes.some(
         (sc) => (s.hazardsFound[sc.id]?.length ?? 0) >= sc.hazards.length,
@@ -76,6 +84,7 @@ export const BADGES: Badge[] = [
     name: 'Mémoire d’éléphant',
     icon: Brain,
     description: 'Amener 15 flashcards en boîte 4 ou plus',
+    activity: 'flashcards',
     isUnlocked: (s) =>
       getCatalog().flashcards.filter((c) => (s.cards[c.id]?.box ?? 0) >= 4).length >= 15,
   },
@@ -83,7 +92,8 @@ export const BADGES: Badge[] = [
     id: 'curieux',
     name: 'Esprit curieux',
     icon: Lightbulb,
-    description: 'Poser 5 questions à Prévi',
+    description: 'Poser 5 questions à l’assistant',
+    activity: 'assistant',
     isUnlocked: (s) => s.chatQuestions >= 5,
   },
   {
@@ -91,13 +101,21 @@ export const BADGES: Badge[] = [
     name: 'Réflexes éclair',
     icon: Timer,
     description: 'Atteindre 9 bonnes réponses en défi chrono',
+    activity: 'quiz',
     isUnlocked: (s) => s.bestChrono >= 9,
   },
   {
     id: 'sentinelle',
     name: 'Sentinelle',
     icon: ShieldCheck,
-    description: 'Répondre à des questions dans les 7 thématiques',
-    isUnlocked: (s) => Object.keys(s.answers).length >= 7,
+    description: 'Répondre à des questions dans toutes les thématiques',
+    activity: 'quiz',
+    isUnlocked: (s) => {
+      const { themes } = getCatalog()
+      return themes.length > 0 && themes.every((t) => s.answers[t.id])
+    },
   },
 ]
+
+/** Badges proposés dans le parcours en cours. */
+export const activeBadges = () => BADGES.filter((b) => !b.activity || offers(b.activity))

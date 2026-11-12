@@ -21,8 +21,7 @@ import {
   Video,
 } from 'lucide-react'
 import type { Resource, ResourceType, ThemeId } from '@acculturator/contracts'
-import { useCatalog } from '@acculturator/core/catalog'
-import { THEMES, getTheme } from '@acculturator/design-system/themes'
+import { useCatalog, useTheme } from '@acculturator/core/catalog'
 import { RESOURCE_TYPE_LABEL } from '@acculturator/core/content'
 import { PageHeader } from '@acculturator/design-system/components'
 import {
@@ -43,7 +42,7 @@ import {
 import { cn } from '@acculturator/design-system/lib'
 import { spring } from '@acculturator/design-system/motion'
 import { CheckQuestionBlock } from '../components/CheckQuestionBlock'
-import { ThemeBadge } from '../components/ThemeBadge'
+import { ThemeBadge, ThemeGlyph } from '../components/ThemeBadge'
 import { useProgress } from '../store/progress'
 import { ModuleReturnLink } from '../components/ModuleReturnLink'
 import { Eyebrow } from '@acculturator/design-system/components'
@@ -61,7 +60,7 @@ function ResourceCard({ r, onOpen }: { r: Resource; onOpen: () => void }) {
   const viewed = useProgress((s) => s.viewedResources.includes(r.id))
   const saved = useProgress((s) => s.bookmarks.includes(r.id))
   const toggleBookmark = useProgress((s) => s.toggleBookmark)
-  const theme = getTheme(r.themeId)
+  const theme = useTheme(r.themeId)
   const Icon = TYPE_ICON[r.type]
 
   return (
@@ -73,7 +72,8 @@ function ResourceCard({ r, onOpen }: { r: Resource; onOpen: () => void }) {
       >
         <div className="absolute inset-0 bg-inverse" />
         <div aria-hidden className="absolute inset-x-0 bottom-0 h-1 bg-primary" />
-        <theme.icon
+        <ThemeGlyph
+          theme={theme}
           aria-hidden
           strokeWidth={1.25}
           className="absolute -right-3 -bottom-4 size-32 text-inverse-foreground/10 transition-transform duration-500 group-hover:scale-105"
@@ -140,7 +140,7 @@ function MediaPlayer({ r, onComplete }: { r: Resource; onComplete: () => void })
   const [fs, setFs] = useState<FullscreenMode>('none')
   const done = useRef(false)
   const containerRef = useRef<HTMLDivElement>(null)
-  const theme = getTheme(r.themeId)
+  const theme = useTheme(r.themeId)
 
   useEffect(() => {
     if (!playing) return
@@ -206,7 +206,8 @@ function MediaPlayer({ r, onComplete }: { r: Resource; onComplete: () => void })
       )}
       onDoubleClick={toggleFullscreen}
     >
-      <theme.icon
+      <ThemeGlyph
+        theme={theme}
         aria-hidden
         strokeWidth={1}
         className={cn(
@@ -465,7 +466,7 @@ function ResourceSteps({ r, onClose }: { r: Resource; onClose: () => void }) {
 }
 
 export default function ResourcesPage() {
-  const { resources } = useCatalog()
+  const { resources, themes } = useCatalog()
   const [params, setParams] = useSearchParams()
   const [query, setQuery] = useState('')
   const [theme, setTheme] = useState<ThemeId | 'all'>((params.get('theme') as ThemeId) ?? 'all')
@@ -573,7 +574,7 @@ export default function ResourcesPage() {
           )}
           <span className="relative">Toutes les thématiques</span>
         </button>
-        {THEMES.map((t) => (
+        {themes.map((t) => (
           <button
             key={t.id}
             onClick={() => setTheme(t.id)}
@@ -590,7 +591,8 @@ export default function ResourcesPage() {
               />
             )}
             <span className="relative">
-              <t.icon aria-hidden className="mr-1 inline size-3.5 align-[-2px]" /> {t.short}
+              <ThemeGlyph theme={t} aria-hidden className="mr-1 inline size-3.5 align-[-2px]" />{' '}
+              {t.short}
             </span>
           </button>
         ))}

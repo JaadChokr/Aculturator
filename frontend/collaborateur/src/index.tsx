@@ -1,4 +1,5 @@
-import { lazy } from 'react'
+import { lazy, type ReactNode } from 'react'
+import type { ActivityId } from '@acculturator/contracts'
 import {
   Bot,
   GraduationCap,
@@ -11,6 +12,8 @@ import {
 import { getCatalog } from '@acculturator/core/catalog'
 import type { PortalDefinition } from '@acculturator/core/portal'
 import { HeaderStats } from './components/HeaderStats'
+import { RequireActivity } from './components/RequireActivity'
+import { offers } from './store/activities'
 import { parcoursProgress } from './store/parcoursProgress'
 import { countDue, useProgress } from './store/progress'
 import { COLLAB_BASE, collabPath } from './paths'
@@ -22,6 +25,10 @@ const hasModules = () => {
     return false
   }
 }
+
+const only = (activity: ActivityId | ActivityId[], page: ReactNode) => (
+  <RequireActivity activity={activity}>{page}</RequireActivity>
+)
 
 const DashboardPage = lazy(() => import('./pages/DashboardPage'))
 const ModulesPage = lazy(() => import('./pages/ModulesPage'))
@@ -38,7 +45,7 @@ export const collaborateurPortal: PortalDefinition = {
   id: 'collaborateur',
   label: 'Espace collaborateur',
   basePath: COLLAB_BASE,
-  description: 'Se former à la santé et la sécurité au travail, à son rythme et en jouant.',
+  description: 'Se former aux contenus de son parcours, à son rythme et en jouant.',
   icon: GraduationCap,
   // Les référents et admins sont aussi des collaborateurs : ils accèdent à cet espace.
   allowedRoles: ['collaborateur', 'referent', 'admin'],
@@ -67,6 +74,7 @@ export const collaborateurPortal: PortalDefinition = {
           short: 'Ressources',
           to: collabPath('ressources'),
           icon: PlayCircle,
+          hidden: () => !offers('resources'),
         },
         {
           label: 'Flashcards',
@@ -74,9 +82,21 @@ export const collaborateurPortal: PortalDefinition = {
           to: collabPath('flashcards'),
           icon: Layers,
           badge: () => countDue(useProgress.getState().cards) || null,
+          hidden: () => !offers('flashcards'),
         },
-        { label: 'Quiz & défis', short: 'Quiz', to: collabPath('quiz'), icon: Trophy },
-        { label: 'Prévi, l’assistant', short: 'Prévi', to: collabPath('assistant'), icon: Bot },
+        {
+          label: 'Quiz & défis',
+          short: 'Quiz',
+          to: collabPath('quiz'),
+          icon: Trophy,
+          hidden: () => !offers('quiz') && !offers('hazard-hunt'),
+        },
+        {
+          label: 'Assistant',
+          to: collabPath('assistant'),
+          icon: Bot,
+          hidden: () => !offers('assistant'),
+        },
       ],
     },
     {
@@ -94,13 +114,13 @@ export const collaborateurPortal: PortalDefinition = {
   routes: [
     { index: true, element: <DashboardPage /> },
     { path: 'modules', element: <ModulesPage /> },
-    { path: 'ressources', element: <ResourcesPage /> },
-    { path: 'flashcards', element: <FlashcardsPage /> },
-    { path: 'flashcards/session', element: <FlashcardSessionPage /> },
-    { path: 'quiz', element: <QuizHubPage /> },
-    { path: 'quiz/jouer', element: <QuizPlayPage /> },
-    { path: 'quiz/chasse-aux-risques', element: <HazardHuntPage /> },
-    { path: 'assistant', element: <ChatbotPage /> },
+    { path: 'ressources', element: only('resources', <ResourcesPage />) },
+    { path: 'flashcards', element: only('flashcards', <FlashcardsPage />) },
+    { path: 'flashcards/session', element: only('flashcards', <FlashcardSessionPage />) },
+    { path: 'quiz', element: only(['quiz', 'hazard-hunt'], <QuizHubPage />) },
+    { path: 'quiz/jouer', element: only('quiz', <QuizPlayPage />) },
+    { path: 'quiz/chasse-aux-risques', element: only('hazard-hunt', <HazardHuntPage />) },
+    { path: 'assistant', element: only('assistant', <ChatbotPage />) },
     { path: 'trophees', element: <TrophiesPage /> },
   ],
 }

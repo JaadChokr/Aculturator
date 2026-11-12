@@ -4,8 +4,23 @@
  * le portail collaborateur les consomme.
  */
 
-export type ThemeId =
-  'fondamentaux' | 'postures' | 'ecran' | 'rps' | 'incendie' | 'secours' | 'routier'
+/** Identifiant d'une thématique, propre à chaque parcours (ex. « incendie » pour le parcours SST) */
+export type ThemeId = string
+
+/**
+ * Thématique d'un parcours. Son habillage est choisi dans les palettes du design system :
+ * `icon` et `color` sont des clés (ex. « fire », « orange ») ; une clé inconnue prend un habillage
+ * neutre.
+ */
+export interface Theme {
+  id: ThemeId
+  title: string
+  /** Libellé court (étiquettes, filtres) */
+  short: string
+  description: string
+  icon: string
+  color: string
+}
 
 export type ResourceType = 'video' | 'fiche' | 'infographie' | 'podcast'
 
@@ -56,7 +71,7 @@ export interface QuizQuestion {
 
 export interface Hazard {
   id: string
-  /** Coordonnées dans le viewBox 0 0 1000 600 de la scène */
+  /** Coordonnées dans le repère de l'illustration de la scène (`HazardScene.image`) */
   x: number
   y: number
   r: number
@@ -75,6 +90,11 @@ export interface DecoySpot {
 
 export interface HazardScene {
   id: string
+  /**
+   * Illustration de la scène (URL ou URI data:) et ses dimensions : les coordonnées des dangers et
+   * des leurres sont exprimées dans ce repère (largeur × hauteur).
+   */
+  image: { src: string; width: number; height: number }
   title: string
   description: string
   hazards: Hazard[]
@@ -115,6 +135,8 @@ export interface ModulesPlan {
 
 /** Catalogue de contenus d'un parcours (endpoint GET /api/parcours/:id/catalog). */
 export interface Catalog {
+  /** Thématiques du parcours, dans l'ordre d'affichage */
+  themes: Theme[]
   resources: Resource[]
   flashcards: Flashcard[]
   quizQuestions: QuizQuestion[]

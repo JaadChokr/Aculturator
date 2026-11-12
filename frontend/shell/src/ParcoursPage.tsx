@@ -1,14 +1,6 @@
-import { useState } from 'react'
+import { createElement, useState } from 'react'
 import { useNavigate } from 'react-router'
-import {
-  ArrowRight,
-  GraduationCap,
-  Search,
-  SearchX,
-  ShieldPlus,
-  Sparkles,
-  type LucideIcon,
-} from 'lucide-react'
+import { ArrowRight, GraduationCap, Search, SearchX, Sparkles } from 'lucide-react'
 import type { Parcours, ParcoursProgress } from '@acculturator/contracts'
 import { Badge, Button, Card, CardContent, Input, Progress } from '@acculturator/design-system/ui'
 import { StandaloneShell, ThemeToggle, UserMenu } from '@acculturator/design-system/layout'
@@ -21,14 +13,12 @@ import {
 } from '@acculturator/design-system/components'
 import { Reveal, Stagger } from '@acculturator/design-system/motion'
 import { cn, daysBetween, todayISO } from '@acculturator/design-system/lib'
+import { THEME_ICONS } from '@acculturator/design-system/themes'
 import { useAuth } from '@acculturator/core/auth'
 import { useNotifications } from '@acculturator/core/notifications'
 import { useCurrentParcours, useParcoursList, useSelectParcours } from '@acculturator/core/parcours'
 import { homePortalFor, portalsForRole, usePortalRegistry } from '@acculturator/core/portal'
 import { useUserMenu } from './useUserMenu'
-
-/** Icône de chaque parcours (les nouveaux parcours prennent l'icône par défaut). */
-const PARCOURS_ICON: Record<string, LucideIcon> = { sst: ShieldPlus }
 
 const STATS: { key: keyof Parcours['stats']; label: string }[] = [
   { key: 'themes', label: 'thématiques' },
@@ -187,7 +177,7 @@ function ParcoursCard({
   current: boolean
   onOpen: () => void
 }) {
-  const Icon = PARCOURS_ICON[parcours.id] ?? GraduationCap
+  const icon = THEME_ICONS[parcours.branding.icon ?? ''] ?? GraduationCap
   const available = parcours.status === 'available'
   const last = lastActivityLabel(progress?.lastActivity)
   return (
@@ -206,7 +196,7 @@ function ParcoursCard({
               available ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground',
             )}
           >
-            <Icon className="size-6" />
+            {createElement(icon, { className: 'size-6' })}
           </span>
           {current && <Badge>Parcours actuel</Badge>}
           {!available && <Badge variant="accent">Bientôt disponible</Badge>}

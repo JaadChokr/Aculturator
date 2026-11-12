@@ -48,7 +48,19 @@ interface Parcours {
   description: string
   status: 'available' | 'coming_soon'
   stats: { themes: number; resources: number; flashcards: number; quizQuestions: number }
+  activities: ActivityId[] // rubriques proposées ; les autres sont masquées dans les portails
+  branding: ParcoursBranding
   progress?: ParcoursProgress // avancement de l'utilisateur connecté, absent s'il n'a pas commencé
+}
+
+type ActivityId = 'resources' | 'flashcards' | 'quiz' | 'hazard-hunt' | 'assistant'
+
+interface ParcoursBranding {
+  icon?: string // clé de la palette d'icônes du design system (ex. "shield-plus")
+  assistantName: string // ex. "Prévi"
+  assistantScope: string // ex. "la santé et la sécurité au travail"
+  assistantDisclaimer?: string // mise en garde affichée sous le champ de l'assistant
+  levelTitles?: string[] // titres des 6 niveaux de joueur ; titres génériques sinon
 }
 
 interface ParcoursProgress {
@@ -84,10 +96,11 @@ interface User {
 
 ```ts
 interface Catalog {
+  themes: Theme[] // thématiques du parcours, dans l'ordre d'affichage
   resources: Resource[] // vidéos, fiches, infographies, podcasts (+ check express)
   flashcards: Flashcard[]
   quizQuestions: QuizQuestion[]
-  hazardScenes: HazardScene[] // chasse aux risques : dangers + leurres, coordonnées dans un viewBox 1000×600
+  hazardScenes: HazardScene[] // chasse aux risques : illustration + dangers et leurres placés dans son repère
   modules?: ModulesPlan // parcours organisé en modules (voir ci-dessous)
 }
 ```
@@ -117,9 +130,29 @@ type ModuleStep =
 La fin d'un module est signalée par l'événement `{ type: 'module_completed', moduleId }` ; le quiz
 de validation par `quiz_completed` avec `mode: 'module'` et `moduleId`.
 
-Détail des champs : `packages/contracts/src/content.ts`. `ThemeId` est une liste fermée de
-thématiques SST ; ajouter une thématique demande aussi d'ajouter son icône et sa couleur dans
-`packages/design-system/src/themes/index.ts`.
+Thématiques et scènes :
+
+```ts
+interface Theme {
+  id: ThemeId // string, propre au parcours (ex. "incendie")
+  title: string
+  short: string // libellé court (étiquettes, filtres)
+  description: string
+  icon: string // clé de la palette d'icônes (ex. "fire") ; inconnue → icône neutre
+  color: string // clé de la palette de couleurs (ex. "orange") ; inconnue → couleur neutre
+}
+interface HazardScene {
+  id: string
+  image: { src: string; width: number; height: number } // URL (ou URI data:) de l'illustration
+  title: string
+  description: string
+  hazards: Hazard[] // { id, x, y, r, label, explanation, themeId } dans le repère de l'image
+  decoys: DecoySpot[] // { x, y, r, label, explanation }
+}
+```
+
+Détail des champs : `packages/contracts/src/content.ts`. Les clés d'icône et de couleur disponibles
+sont listées dans `packages/design-system/src/themes/index.ts`.
 
 ### `ChatReply`
 

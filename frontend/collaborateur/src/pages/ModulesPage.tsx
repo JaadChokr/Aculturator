@@ -17,11 +17,10 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import type { Catalog, ModuleStep } from '@acculturator/contracts'
-import { useCatalog } from '@acculturator/core/catalog'
+import { getTheme, useCatalog } from '@acculturator/core/catalog'
 import { RESOURCE_TYPE_LABEL } from '@acculturator/core/content'
 import { PageHeader, Eyebrow } from '@acculturator/design-system/components'
 import { EASE_OUT } from '@acculturator/design-system/motion'
-import { getTheme } from '@acculturator/design-system/themes'
 import { Button, Card, CardContent, Progress } from '@acculturator/design-system/ui'
 import { cn } from '@acculturator/design-system/lib'
 import { ModuleStatusBadge } from '../components/ModuleStatusBadge'

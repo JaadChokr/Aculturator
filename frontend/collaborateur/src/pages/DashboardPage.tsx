@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '@acculturator/core/auth'
 import { useCatalog } from '@acculturator/core/catalog'
+import { ThemeGlyph } from '../components/ThemeBadge'
 import { levelFromXp } from '@acculturator/core/content'
 import { ProgressRing, Eyebrow } from '@acculturator/design-system/components'
 import {
@@ -39,11 +40,12 @@ import {
   spring,
 } from '@acculturator/design-system/motion'
 import { useDismiss } from '@acculturator/design-system/hooks'
-import { THEMES } from '@acculturator/design-system/themes'
 import { collabPath } from '../paths'
-import { BADGES } from '../store/badges'
+import { activeBadges } from '../store/badges'
+import { useOffers } from '../store/activities'
+import { useLevels } from '../store/levels'
 import { allThemeMastery, nextSteps, overallMastery } from '../store/insights'
-import { MISSIONS } from '../store/missions'
+import { activeMissions } from '../store/missions'
 import { countDue, useProgress } from '../store/progress'
 import { useCurrentParcours } from '@acculturator/core/parcours'
 
@@ -59,7 +61,8 @@ function Hero() {
   const xp = useProgress((s) => s.xp)
   const streak = useProgress((s) => s.streak)
   const cards = useProgress((s) => s.cards)
-  const { current, next, progress, toNext } = levelFromXp(xp)
+  const { current, next, progress, toNext } = levelFromXp(xp, useLevels())
+  const offer = useOffers()
   const due = countDue(cards)
   const hour = new Date().getHours()
   const hello = hour < 18 ? 'Bonjour' : 'Bonsoir'
@@ -78,27 +81,31 @@ function Hero() {
           </h1>
           <p className="mb-5 max-w-xl text-primary-foreground/85">
             {due > 0
-              ? `${due} cartes sont à réviser aujourd’hui. Quelques minutes suffisent pour consolider vos réflexes de prévention.`
+              ? `${due} cartes sont à réviser aujourd’hui. Quelques minutes suffisent pour consolider vos acquis.`
               : 'Vos révisions sont à jour. Poursuivez votre parcours avec une ressource ou un quiz.'}
           </p>
           <div className="flex flex-wrap gap-2">
-            <Button
-              asChild
-              size="lg"
-              className="bg-white text-primary shadow-none hover:bg-white/90"
-            >
-              <Link to={collabPath('flashcards/session')}>
-                Reprendre ma révision <ArrowRight />
-              </Link>
-            </Button>
-            <Button
-              asChild
-              size="lg"
-              variant="outline"
-              className="border-white/40 bg-transparent text-primary-foreground hover:bg-white/10"
-            >
-              <Link to={collabPath('ressources')}>Voir les ressources</Link>
-            </Button>
+            {offer('flashcards') && (
+              <Button
+                asChild
+                size="lg"
+                className="bg-white text-primary shadow-none hover:bg-white/90"
+              >
+                <Link to={collabPath('flashcards/session')}>
+                  Reprendre ma révision <ArrowRight />
+                </Link>
+              </Button>
+            )}
+            {offer('resources') && (
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                className="border-white/40 bg-transparent text-primary-foreground hover:bg-white/10"
+              >
+                <Link to={collabPath('ressources')}>Voir les ressources</Link>
+              </Button>
+            )}
           </div>
         </div>
 
@@ -179,7 +186,7 @@ function MissionsList({ onNavigate }: { onNavigate?: () => void }) {
   const progress = missions.day === todayISO() ? missions.progress : {}
   return (
     <div className="flex flex-col gap-2">
-      {MISSIONS.map((m) => {
+      {activeMissions().map((m) => {
         const v = progress[m.id] ?? 0
         const done = v >= m.target
         return (
@@ -239,7 +246,7 @@ function MissionsTile({ t }: { t: Tile }) {
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
         aria-haspopup="dialog"
-        aria-label={`Missions du jour : ${t.value} sur ${MISSIONS.length} accomplies. Voir le détail`}
+        aria-label={`Missions du jour : ${t.value} sur ${activeMissions().length} accomplies. Voir le détail`}
         className="group block h-full w-full text-left"
       >
         <TileBody t={t} info />
@@ -276,11 +283,12 @@ function StatTiles() {
   const badges = Object.keys(s.badges).length
   const catalog = useCatalog()
   const mastery = overallMastery(s, {
-    themes: THEMES.length,
+    themes: catalog.themes.length,
     resources: catalog.resources.length,
     flashcards: catalog.flashcards.length,
   })
 
+  const offer = useOffers()
   const tiles: Tile[] = [
     {
       key: 'cards',
@@ -294,7 +302,7 @@ function StatTiles() {
       key: 'missions',
       label: 'Missions du jour',
       value: missionsDone,
-      suffix: `/${MISSIONS.length}`,
+      suffix: `/${activeMissions().length}`,
       icon: Target,
       to: '',
     },
@@ -302,7 +310,7 @@ function StatTiles() {
       key: 'badges',
       label: 'Badges obtenus',
       value: badges,
-      suffix: `/${BADGES.length}`,
+      suffix: `/${activeBadges().length}`,
       icon: Medal,
       to: 'trophees',
     },
@@ -312,9 +320,9 @@ function StatTiles() {
       value: mastery,
       suffix: ' %',
       icon: Sparkles,
-      to: 'quiz',
+      to: offer('quiz') ? 'quiz' : '',
     },
-  ]
+  ].filter((t) => t.key !== 'cards' || offer('flashcards'))
   return (
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
       {tiles.map((t) =>
@@ -399,7 +407,7 @@ function ThemesProgress() {
           <CardDescription>Quiz, flashcards et ressources consultées.</CardDescription>
         </div>
       </CardHeader>
-      <CardContent className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-7">
+      <CardContent className="grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fit,minmax(8rem,1fr))]">
         {rows.map(({ theme, mastery }) => (
           <Link
             key={theme.id}
@@ -413,7 +421,12 @@ function ThemesProgress() {
               indicatorClassName="stroke-primary"
               label={`Maîtrise ${theme.title}`}
             >
-              <theme.icon className="size-5 text-foreground" strokeWidth={1.75} aria-hidden />
+              <ThemeGlyph
+                theme={theme}
+                className="size-5 text-foreground"
+                strokeWidth={1.75}
+                aria-hidden
+              />
             </ProgressRing>
             <span className="flex min-w-0 flex-1 flex-col justify-between gap-1">
               <span className="block text-sm leading-tight font-semibold text-balance">

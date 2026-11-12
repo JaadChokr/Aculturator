@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { create } from 'zustand'
-import type { Catalog } from '@acculturator/contracts'
+import type { Catalog, Theme, ThemeId } from '@acculturator/contracts'
 import { api } from '../api'
 import { useParcoursStore } from '../parcours/store'
 import { LoadError } from '@acculturator/design-system/components'
@@ -54,4 +54,28 @@ export function getCatalog(): Catalog {
   const catalog = useCatalogStore.getState().catalog
   if (!catalog) throw new Error('Catalogue non chargé')
   return catalog
+}
+
+/** Thématique d'un identifiant : un identifiant inconnu du catalogue reçoit un libellé neutre. */
+function findTheme(catalog: Catalog | null, id: ThemeId): Theme {
+  return (
+    catalog?.themes.find((t) => t.id === id) ?? {
+      id,
+      title: id,
+      short: id,
+      description: '',
+      icon: '',
+      color: '',
+    }
+  )
+}
+
+/** Une thématique du parcours en cours. */
+export function useTheme(id: ThemeId): Theme {
+  return findTheme(useCatalog(), id)
+}
+
+/** Accès hors composant à une thématique (logique métier, libellés). */
+export function getTheme(id: ThemeId): Theme {
+  return findTheme(useCatalogStore.getState().catalog, id)
 }

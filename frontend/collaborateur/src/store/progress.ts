@@ -6,9 +6,10 @@ import { api } from '@acculturator/core/api'
 import { getSelectedParcoursId, onParcoursChange } from '@acculturator/core/parcours'
 import { getCatalog } from '@acculturator/core/catalog'
 import { XP, levelFromXp } from '@acculturator/core/content'
+import { getLevels } from './levels'
 import { toast } from '@acculturator/design-system/components'
 import { addDays, todayISO } from '@acculturator/design-system/lib'
-import { BADGES, type BadgeId } from './badges'
+import { activeBadges, type BadgeId } from './badges'
 import { MISSIONS, type MissionId } from './missions'
 import { moduleStates } from './modules'
 import { useTips } from './tips'
@@ -302,7 +303,7 @@ export const useProgress = create<ProgressState>()(
       const checkBadges = () => {
         checkModules()
         const s = get()
-        const unlocked = BADGES.filter((b) => !s.badges[b.id] && b.isUnlocked(s))
+        const unlocked = activeBadges().filter((b) => !s.badges[b.id] && b.isUnlocked(s))
         if (!unlocked.length) return
         const date = todayISO()
         set({ badges: { ...s.badges, ...Object.fromEntries(unlocked.map((b) => [b.id, date])) } })
@@ -320,7 +321,7 @@ export const useProgress = create<ProgressState>()(
         ...empty(),
 
         addXp: (amount, reason, silent) => {
-          const before = levelFromXp(get().xp).current.level
+          const before = levelFromXp(get().xp, getLevels()).current.level
           const today = todayISO()
           set((s) => ({
             xp: s.xp + amount,
@@ -328,7 +329,7 @@ export const useProgress = create<ProgressState>()(
           }))
           if (!silent && reason)
             toast({ title: `+${amount} XP`, description: reason, icon: Zap, tone: 'xp' })
-          const after = levelFromXp(get().xp).current
+          const after = levelFromXp(get().xp, getLevels()).current
           if (after.level > before)
             toast({
               title: `Niveau ${after.level} : ${after.title}`,

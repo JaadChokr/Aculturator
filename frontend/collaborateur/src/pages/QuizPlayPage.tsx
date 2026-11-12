@@ -16,8 +16,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import type { Difficulty, QuizQuestion, ThemeId } from '@acculturator/contracts'
-import { getCatalog, useCatalog } from '@acculturator/core/catalog'
-import { THEMES, getTheme } from '@acculturator/design-system/themes'
+import { getCatalog, getTheme, useCatalog } from '@acculturator/core/catalog'
 import { DIFFICULTY_LABEL, DIFFICULTY_LEVELS, XP } from '@acculturator/core/content'
 import {
   Confetti,
@@ -109,7 +108,7 @@ function pickQuestions(
   if (mode === 'defi-du-jour') {
     // Cible les thématiques les moins maîtrisées (apprentissage adaptatif)
     const s = useProgress.getState()
-    const weakest = [...THEMES]
+    const weakest = [...getCatalog().themes]
       .sort((a, b) => themeMastery(s, a.id) - themeMastery(s, b.id))
       .slice(0, 3)
       .map((t) => t.id)
@@ -181,7 +180,7 @@ function LevelChooser({ mode, theme }: { mode: 'chrono' | 'entrainement'; theme:
     theme
       ? themeMastery(s, theme)
       : overallMastery(s, {
-          themes: THEMES.length,
+          themes: catalog.themes.length,
           resources: catalog.resources.length,
           flashcards: catalog.flashcards.length,
         }),

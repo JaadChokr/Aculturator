@@ -5,6 +5,23 @@
  */
 export type ParcoursStatus = 'available' | 'coming_soon'
 
+/** Activités qu'un parcours peut proposer (les rubriques correspondantes sont masquées sinon). */
+export type ActivityId = 'resources' | 'flashcards' | 'quiz' | 'hazard-hunt' | 'assistant'
+
+/** Identité propre à un parcours : ce qui, dans l'interface, dépend de sa thématique. */
+export interface ParcoursBranding {
+  /** Icône du parcours : clé de la palette d'icônes du design system (ex. « shield-plus ») */
+  icon?: string
+  /** Nom de l'assistant (ex. « Prévi ») */
+  assistantName: string
+  /** Ce sur quoi l'assistant répond (ex. « la santé et la sécurité au travail ») */
+  assistantScope: string
+  /** Mise en garde sous le champ de l'assistant (limites de ses réponses, vers qui se tourner) */
+  assistantDisclaimer?: string
+  /** Noms des niveaux de joueur, du premier au dernier (6) ; noms génériques sinon */
+  levelTitles?: string[]
+}
+
 /** Avancement de l'utilisateur connecté dans un parcours. */
 export interface ParcoursProgress {
   /** Maîtrise globale (0-100), la même que sur le tableau de bord */
@@ -31,6 +48,9 @@ export interface Parcours {
     flashcards: number
     quizQuestions: number
   }
+  /** Activités proposées, dans l'ordre du menu */
+  activities: ActivityId[]
+  branding: ParcoursBranding
   /** Avancement de l'utilisateur connecté ; absent tant qu'il n'a pas commencé */
   progress?: ParcoursProgress
 }

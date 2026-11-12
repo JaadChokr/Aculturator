@@ -3,7 +3,7 @@ import { ComingSoon } from '@acculturator/design-system/components'
 const SECTIONS = {
   overview: {
     title: 'Pilotage global',
-    description: 'Indicateurs consolidés de l’acculturation SST à l’échelle de l’entreprise.',
+    description: 'Indicateurs consolidés de l’acculturation à l’échelle de l’entreprise.',
     features: [
       'KPI globaux et par site',
       'Taux de complétion des modules obligatoires',
@@ -19,7 +19,7 @@ const SECTIONS = {
       'Éditeur de ressources (vidéo, fiche, podcast…)',
       'Banque de questions + niveaux de difficulté',
       'Éditeur de flashcards par thématique',
-      'Workflow de validation QHSE',
+      'Workflow de validation des contenus',
       'Gestion des thématiques',
     ],
   },

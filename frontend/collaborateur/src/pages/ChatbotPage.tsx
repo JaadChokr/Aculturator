@@ -11,12 +11,13 @@ import {
   ThumbsUp,
 } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
-import type { ChatReply } from '@acculturator/contracts'
+import type { ChatReply, ParcoursBranding } from '@acculturator/contracts'
 import { api } from '@acculturator/core/api'
 import { Mascot, PageHeader } from '@acculturator/design-system/components'
 import { Avatar, Button, Card } from '@acculturator/design-system/ui'
 import { spring } from '@acculturator/design-system/motion'
 import { useAuth } from '@acculturator/core/auth'
+import { useBranding, useCurrentParcours } from '@acculturator/core/parcours'
 import { collabPath } from '../paths'
 import { useProgress } from '../store/progress'
 import { PAGE_WIDTH } from '@acculturator/design-system/layout'
@@ -52,11 +53,11 @@ function RichText({ text }: { text: string }) {
   )
 }
 
-const WELCOME: Message = {
+const welcome = ({ assistantName, assistantScope }: ParcoursBranding): Message => ({
   id: 0,
   role: 'bot',
-  text: 'Bonjour, je suis **Prévi**, votre assistant santé & sécurité.\nPosez-moi vos questions sur les bons gestes, les démarches ou les risques au travail. Je vous oriente aussi vers les bonnes ressources.',
-}
+  text: `Bonjour, je suis **${assistantName}**, votre assistant sur ${assistantScope}.\nPosez-moi vos questions : je vous réponds en quelques lignes et je vous oriente vers les bonnes ressources.`,
+})
 
 /** Carrousel d'idées de questions, au-dessus du champ de saisie. */
 function PromptCarousel({
@@ -165,8 +166,11 @@ export default function ChatbotPage() {
     staleTime: Infinity,
   })
   const { user } = useAuth()
+  const parcours = useCurrentParcours()
+  const branding = useBranding()
+  const name = branding.assistantName
   const recordChat = useProgress((s) => s.recordChat)
-  const [messages, setMessages] = useState<Message[]>([WELCOME])
+  const [messages, setMessages] = useState<Message[]>(() => [welcome(branding)])
   const [input, setInput] = useState('')
   const [typing, setTyping] = useState(false)
   const endRef = useRef<HTMLDivElement>(null)
@@ -215,19 +219,19 @@ export default function ChatbotPage() {
     <div>
       <PageHeader
         eyebrow="Assistant"
-        title="Une question ? Demandez à Prévi"
-        description="Réponses courtes et sourcées sur la santé et la sécurité au travail, disponibles à tout moment."
+        title={`Une question ? Demandez à ${name}`}
+        description={`Réponses courtes et sourcées sur ${branding.assistantScope}, disponibles à tout moment.`}
         className="mb-5"
       />
       <div>
         <Card className="flex h-[calc(100dvh-22rem)] min-h-[420px] flex-col overflow-hidden lg:h-[calc(100dvh-15rem)]">
           <div className="flex items-center gap-3 border-b bg-card px-5 py-3">
-            <Mascot className="size-11" />
+            <Mascot label={name} className="size-11" />
             <div>
-              <div className="font-bold">Prévi</div>
+              <div className="font-bold">{name}</div>
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <span className="size-2 shrink-0 rounded-full bg-success" /> En ligne · assistant
-                SST
+                {parcours?.shortTitle}
               </div>
             </div>
           </div>
@@ -261,7 +265,7 @@ export default function ChatbotPage() {
                     transition={spring}
                     style={{ originX: 0 }}
                   >
-                    <Mascot className="size-9 shrink-0" />
+                    <Mascot label={name} className="size-9 shrink-0" />
                     <div className="max-w-[85%]">
                       <div className="rounded-2xl rounded-bl-md border bg-card px-4 py-3 text-sm leading-relaxed shadow-sm">
                         <RichText text={m.text} />
@@ -310,7 +314,7 @@ export default function ChatbotPage() {
               )}
               {typing && (
                 <div className="flex gap-2">
-                  <Mascot mood="thinking" className="size-9 shrink-0" />
+                  <Mascot mood="thinking" label={name} className="size-9 shrink-0" />
                   <div className="flex items-center gap-1 rounded-2xl rounded-bl-md border bg-card px-4 py-3">
                     {[0, 0.15, 0.3].map((d) => (
                       <motion.span
@@ -363,8 +367,8 @@ export default function ChatbotPage() {
               </Button>
             </div>
             <p className={cn(PAGE_WIDTH.focus, 'px-1 text-[11px] text-muted-foreground')}>
-              Prévi donne des repères généraux validés par l’équipe QHSE. Il ne remplace ni votre
-              référent SST, ni le médecin du travail, ni les secours.
+              {branding.assistantDisclaimer ??
+                `${name} donne des repères généraux : pour une situation particulière, adressez-vous à votre référent.`}
             </p>
           </form>
         </Card>

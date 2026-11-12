@@ -1,10 +1,19 @@
-import type { ThemeId } from '@acculturator/contracts'
-import { getTheme } from '@acculturator/design-system/themes'
+import { createElement } from 'react'
+import type { LucideProps } from 'lucide-react'
+import type { Theme, ThemeId } from '@acculturator/contracts'
+import { useTheme } from '@acculturator/core/catalog'
+import { themeDot, themeIcon } from '@acculturator/design-system/themes'
 import { cn } from '@acculturator/design-system/lib'
+
+/** Icône d'une thématique (clé `Theme.icon` résolue dans la palette du design system). */
+export function ThemeGlyph({ theme, ...props }: { theme: Theme } & LucideProps) {
+  // Icône issue d'une palette statique : rien n'est recréé d'un rendu à l'autre
+  return createElement(themeIcon(theme.icon), props)
+}
 
 /** Étiquette de thématique : repère couleur discret + libellé, sur fond neutre. */
 export function ThemeBadge({ themeId, className }: { themeId: ThemeId; className?: string }) {
-  const t = getTheme(themeId)
+  const t = useTheme(themeId)
   return (
     <span
       className={cn(
@@ -12,7 +21,7 @@ export function ThemeBadge({ themeId, className }: { themeId: ThemeId; className
         className,
       )}
     >
-      <span aria-hidden className={cn('size-1.5 rounded-full', t.dot)} />
+      <span aria-hidden className={cn('size-1.5 rounded-full', themeDot(t.color))} />
       {t.short}
     </span>
   )
@@ -20,7 +29,7 @@ export function ThemeBadge({ themeId, className }: { themeId: ThemeId; className
 
 /** Pastille d'icône de thématique (fond neutre, icône graphite). */
 export function ThemeIcon({ themeId, className }: { themeId: ThemeId; className?: string }) {
-  const t = getTheme(themeId)
+  const t = useTheme(themeId)
   return (
     <span
       aria-hidden
@@ -29,8 +38,8 @@ export function ThemeIcon({ themeId, className }: { themeId: ThemeId; className?
         className,
       )}
     >
-      <t.icon className="size-5" strokeWidth={1.75} />
-      <span className={cn('absolute right-1 bottom-1 size-1.5 rounded-full', t.dot)} />
+      <ThemeGlyph theme={t} className="size-5" strokeWidth={1.75} />
+      <span className={cn('absolute right-1 bottom-1 size-1.5 rounded-full', themeDot(t.color))} />
     </span>
   )
 }
