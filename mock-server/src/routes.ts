@@ -8,15 +8,9 @@ import type {
   User,
 } from '@acculturator/contracts'
 import { answer } from './chat.ts'
-import { CHAT_SUGGESTIONS } from './data/chatbot-kb.ts'
-import { FLASHCARDS } from './data/flashcards.ts'
-import { HAZARD_SCENES } from './data/hazards.ts'
 import { notificationsForRole } from './data/notifications.ts'
-import { QUIZ_QUESTIONS } from './data/quiz.ts'
-import { RESOURCES } from './data/resources.ts'
-import { SST_MODULES } from './data/modules.ts'
-import { SST_THEMES } from './data/themes.ts'
-import { PARCOURS } from './data/parcours.ts'
+import { contentOf, PARCOURS } from './data/parcours.ts'
+import type { ParcoursContent } from './data/types.ts'
 import { DEMO_USERS } from './data/users.ts'
 import type { KeyValueStore } from './store.ts'
 
@@ -118,32 +112,24 @@ export function createMockServer({ store, latency = true }: MockServerOptions) {
     },
   }
 
-  // Routes propres à un parcours : /parcours/:id/…
-  // (le serveur de démo n'a qu'un jeu de données, celui du parcours SST)
-  const scoped: Record<string, Handler> = {
-    'GET /catalog': async () => {
+  // Routes propres à un parcours : /parcours/:id/…, servies avec le contenu de ce parcours
+  type ScopedHandler = (request: Request, content: ParcoursContent) => Promise<Response>
+  const scoped: Record<string, ScopedHandler> = {
+    'GET /catalog': async (_request, content) => {
       await delay(120)
-      const catalog: Catalog = {
-        themes: SST_THEMES,
-        resources: RESOURCES,
-        flashcards: FLASHCARDS,
-        quizQuestions: QUIZ_QUESTIONS,
-        hazardScenes: HAZARD_SCENES,
-        modules: SST_MODULES,
-      }
-      return json(catalog)
+      return json(content.catalog satisfies Catalog)
     },
 
-    'POST /chat': async (request) => {
+    'POST /chat': async (request, content) => {
       const question = (await body<{ question: string }>(request))?.question
       if (typeof question !== 'string' || !question.trim()) return error(400, 'Question manquante')
       await delay(700 + Math.random() * 600)
-      return json(answer(question) satisfies ChatReply)
+      return json(answer(question, content) satisfies ChatReply)
     },
 
-    'GET /chat/suggestions': async () => {
+    'GET /chat/suggestions': async (_request, content) => {
       await delay(40)
-      return json(CHAT_SUGGESTIONS)
+      return json(content.assistant.suggestions)
     },
 
     // Le serveur de démo accepte les événements sans les conserver :
@@ -160,10 +146,12 @@ export function createMockServer({ store, latency = true }: MockServerOptions) {
     const inParcours = /^\/parcours\/([^/]+)(\/.*)$/.exec(path)
     if (inParcours) {
       const [, id, rest] = inParcours
-      if (!PARCOURS.some((p) => p.id === id && p.status === 'available'))
-        return error(404, `Parcours inconnu : ${id}`)
+      const content = contentOf(id)
+      if (!content) return error(404, `Parcours inconnu : ${id}`)
       const route = scoped[`${request.method} ${rest}`]
-      return route ? route(request) : error(404, `${request.method} ${path} : route inconnue`)
+      return route
+        ? route(request, content)
+        : error(404, `${request.method} ${path} : route inconnue`)
     }
     const route = routes[`${request.method} ${path}`]
     return route ? route(request) : error(404, `${request.method} ${path} : route inconnue`)

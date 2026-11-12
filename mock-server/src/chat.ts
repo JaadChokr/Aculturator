@@ -1,5 +1,5 @@
 import type { ChatReply } from '@acculturator/contracts'
-import { CHAT_KB, type ChatKnowledge } from './data/chatbot-kb.ts'
+import type { ChatKnowledge, ParcoursContent } from './data/types.ts'
 
 /**
  * Assistant de démonstration : recherche par mots-clés dans une base de réponses validées.
@@ -24,21 +24,22 @@ function score(q: string, k: ChatKnowledge) {
   }, 0)
 }
 
-export function answer(question: string): ChatReply {
+/** Réponse de l'assistant d'un parcours, cherchée dans sa propre base. */
+export function answer(question: string, { parcours, assistant }: ParcoursContent): ChatReply {
   const q = normalize(question)
   if (/^(bonjour|salut|hello|coucou|bonsoir)\b/.test(q) && q.split(' ').length < 4) {
+    const { assistantName, assistantScope } = parcours.branding
     return {
-      text: 'Bonjour, je suis **Prévi**, votre assistant santé-sécurité. Posez-moi une question sur les risques, les bons gestes ou les démarches !',
+      text:
+        assistant.greeting ??
+        `Bonjour, je suis **${assistantName}**, votre assistant sur ${assistantScope}. Posez-moi une question !`,
     }
   }
   if (/\bmerci\b/.test(q)) return { text: 'Avec plaisir. Prenez soin de vous.' }
-  const best = CHAT_KB.map((k) => ({ k, s: score(q, k) }))
+  const best = assistant.knowledge
+    .map((k) => ({ k, s: score(q, k) }))
     .filter((x) => x.s > 0)
     .sort((a, b) => b.s - a.s)[0]
-  if (!best) {
-    return {
-      text: 'Je n’ai pas encore de réponse fiable à cette question.\nPour une réponse adaptée à votre situation, contactez votre **référent SST** ou votre manager. Vous pouvez aussi reformuler avec d’autres mots (ex. « extincteur », « droit de retrait », « mal au dos »).',
-    }
-  }
+  if (!best) return { text: assistant.fallback }
   return { text: best.k.answer, links: best.k.links, matched: best.k.id }
 }

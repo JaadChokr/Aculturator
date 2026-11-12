@@ -1,20 +1,11 @@
-import type { ChatLink, ThemeId } from '@acculturator/contracts'
-
-/** Base de connaissances du chatbot de démonstration (détail d'implémentation du mock). */
-export interface ChatKnowledge {
-  id: string
-  keywords: string[]
-  answer: string
-  links?: ChatLink[]
-  themeId?: ThemeId
-}
+import type { AssistantContent, ChatKnowledge } from '../types.ts'
 
 /**
  * Base de connaissances du chatbot de démonstration (recherche par mots-clés).
  * En production, remplacer `MockChatService` par un service branché sur un
  * modèle de langage + RAG sur les contenus validés par l'équipe QHSE.
  */
-export const CHAT_KB: ChatKnowledge[] = [
+const KNOWLEDGE: ChatKnowledge[] = [
   {
     id: 'urgence',
     keywords: [
@@ -244,7 +235,7 @@ export const CHAT_KB: ChatKnowledge[] = [
   },
 ]
 
-export const CHAT_SUGGESTIONS = [
+const SUGGESTIONS = [
   'Quels numéros appeler en cas d’urgence ?',
   'Comment exercer mon droit de retrait ?',
   'J’ai mal au dos en portant des cartons',
@@ -258,3 +249,12 @@ export const CHAT_SUGGESTIONS = [
   'Quels équipements de protection porter ?',
   'Qui contacter pour la santé au travail ?',
 ]
+
+export const ASSISTANT: AssistantContent = {
+  knowledge: KNOWLEDGE,
+  suggestions: SUGGESTIONS,
+  greeting:
+    'Bonjour, je suis **Prévi**, votre assistant santé-sécurité. Posez-moi une question sur les risques, les bons gestes ou les démarches !',
+  fallback:
+    'Je n’ai pas encore de réponse fiable à cette question.\nPour une réponse adaptée à votre situation, contactez votre **référent SST** ou votre manager. Vous pouvez aussi reformuler avec d’autres mots (ex. « extincteur », « droit de retrait », « mal au dos »).',
+}

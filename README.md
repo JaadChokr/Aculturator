@@ -162,7 +162,7 @@ Le frontend est prêt : contrats de données (`packages/contracts`), client HTTP
 (`packages/core/src/api/http/`), événements d'apprentissage déjà émis par le portail collaborateur.
 
 - **Authentification** : SSO de l'entreprise derrière `GET /api/me` ; le rôle pilote l'accès aux portails.
-- **Contenus** : `GET /api/catalog` remplace les données de démo (`mock-server/src/data/`).
+- **Contenus** : `GET /api/parcours/:id/catalog` remplace les données de démo (un dossier par parcours dans `mock-server/src/data/`).
 - **Progression** : `POST /api/progress/events` reçoit chaque action (`LearningEvent`).
 - **Assistant** : `POST /api/chat`, LLM + RAG limité aux contenus validés QHSE.
 - **Médias** : renseigner `mediaUrl` sur les ressources pour lire les vraies vidéos/podcasts.

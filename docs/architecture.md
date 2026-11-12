@@ -222,8 +222,9 @@ Variables d'environnement (`frontend/shell/.env.*`) :
 
 1. Côté backend : renvoyer le parcours dans `GET /parcours` (statut, chiffres, `activities`,
    `branding`) et servir ses endpoints `/parcours/:id/…`, à commencer par son catalogue
-   (`themes`, contenus, scènes illustrées). Le serveur de démo (`mock-server/src/data/`) donne
-   l'exemple du parcours SST.
+   (`themes`, contenus, scènes illustrées). En attendant le backend, un parcours de démo s'ajoute
+   dans le serveur de démo : un dossier `mock-server/src/data/<id>/` sur le modèle de
+   `mock-server/src/data/sst/` (voir [`mock-server/README.md`](../mock-server/README.md)).
 2. Côté frontend : rien à écrire. Seulement si une thématique a besoin d'une icône ou d'une couleur
    qui n'existe pas encore, l'ajouter aux palettes de `packages/design-system/src/themes/index.ts`
    (une clé inconnue prend un habillage neutre en attendant).

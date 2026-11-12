@@ -1,5 +1,6 @@
 import type { DecoySpot, HazardScene } from '@acculturator/contracts'
-import { OPEN_SPACE_SVG, svgDataUri } from './scenes/open-space.ts'
+import { svgDataUri } from '../svg.ts'
+import { OPEN_SPACE_SVG } from './scenes/open-space.ts'
 
 const OPEN_SPACE_DECOYS: DecoySpot[] = [
   {

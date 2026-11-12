@@ -14,8 +14,8 @@ Java/Spring, .NET…) ; le frontend n'impose que le **contrat d'API** décrit da
   l'utilisateur et son rôle (`collaborateur`, `referent`, `admin`). Les droits sont vérifiés côté
   serveur, le frontend ne fait que masquer les portails non autorisés.
 - **Contenus** : le catalogue doit être relu et validé par l'équipe QHSE ; les contenus actuels
-  (`mock-server/src/data/`) sont des exemples rédigés pour la démo et peuvent servir de
-  jeu d'amorçage.
+  (`mock-server/src/data/sst/` pour le parcours SST) sont des exemples rédigés pour la démo et
+  peuvent servir de jeu d'amorçage.
 - **Assistant** : réponses limitées aux contenus validés (RAG), avec liens vers les ressources.
 - **Implémentation de référence** : `mock-server/src/routes.ts` répond déjà à chaque endpoint
   (avec des données d'exemple) ; c'est le comportement attendu, à reproduire avec une vraie base,

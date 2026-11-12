@@ -2,9 +2,9 @@ import type { Theme } from '@acculturator/contracts'
 
 /**
  * Thématiques du parcours SST. `icon` et `color` sont des clés des palettes du design system
- * (packages/design-system/src/themes/index.ts).
+ * (`packages/design-system/src/themes/index.ts`).
  */
-export const SST_THEMES: Theme[] = [
+export const THEMES: Theme[] = [
   {
     id: 'fondamentaux',
     title: 'Fondamentaux SST',

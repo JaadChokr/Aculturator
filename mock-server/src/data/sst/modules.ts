@@ -4,7 +4,7 @@ import type { ModulesPlan } from '@acculturator/contracts'
  * Parcours SST organisé en 5 modules, à suivre dans l'ordre : chaque module se débloque
  * quand le précédent est terminé. Les étapes renvoient vers les contenus du catalogue.
  */
-export const SST_MODULES: ModulesPlan = {
+export const MODULES: ModulesPlan = {
   ordering: 'sequential',
   modules: [
     {
