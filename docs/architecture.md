@@ -1,24 +1,28 @@
 # Architecture
 
-Acculturator est un **monorepo npm (workspaces)** rangé en deux familles :
+Acculturator est un **monorepo npm (workspaces)**. Tout le code TypeScript du frontend est dans
+`frontend/`, rangé en deux familles :
 
-- **`packages/`** : les bibliothèques partagées, que l'on importe (types, design system, socle
-  applicatif) ;
-- **`frontend/`** : ce qui se lance et se déploie, l'application hôte et un dossier par portail.
+- **`frontend/packages/`** : les bibliothèques partagées entre les applications, que l'on importe
+  (types, design system, socle applicatif) ;
+- **`frontend/<application>/`** : ce qui se lance et se déploie, l'application hôte et un dossier
+  par portail.
+
+Le backend (Python, FastAPI) est à part, dans `backend/`.
 
 ```
 .
-├── packages/                 bibliothèques partagées
-│   ├── contracts/            @acculturator/contracts — types du domaine & DTO (front et back, aucune dépendance)
-│   ├── design-system/        @acculturator/design-system — identité visuelle commune (front, purement visuel)
-│   └── core/                 @acculturator/core — socle applicatif : API, authentification, parcours, catalogue (front)
-├── frontend/                 applications
+├── frontend/
+│   ├── packages/             bibliothèques partagées par les applications
+│   │   ├── contracts/        @acculturator/contracts — types échangés avec le backend (aucune dépendance)
+│   │   ├── design-system/    @acculturator/design-system — identité visuelle commune (purement visuel)
+│   │   └── core/             @acculturator/core — socle applicatif : API, authentification, parcours, catalogue
 │   ├── shell/                @acculturator/shell — application hôte (Vite) : providers, routeur, registre des portails
 │   ├── collaborateur/        @acculturator/portal-collaborateur
 │   ├── referent/             @acculturator/portal-referent
 │   └── admin/                @acculturator/portal-admin
-├── mock-server/              @acculturator/mock-server — faux backend de démo (hors frontend)
-├── backend/                  emplacement réservé au futur backend (voir backend/README.md)
+├── mock-server/              @acculturator/mock-server — faux backend de démo, en TypeScript (hors frontend)
+├── backend/                  futur backend Python / FastAPI (voir backend/README.md)
 └── docs/                     architecture, contrat d'API
 ```
 
@@ -26,26 +30,27 @@ Acculturator est un **monorepo npm (workspaces)** rangé en deux familles :
 
 ```
 Frontend :   contracts  ←  design-system  ←  core  ←  portails (collaborateur, referent, admin)  ←  shell
-Backends :   contracts  ←  mock-server (démo)
-             contracts  ←  backend (futur)
+Backends :   contracts  ←  mock-server (démo, TypeScript)
+             backend (futur, Python) : ses modèles Pydantic décrivent les mêmes données
 
 Seul lien entre les deux mondes : des requêtes HTTP sur /api.
 (Exception : en démo, le shell installe mock-server dans le navigateur.)
 ```
 
-Le frontend et les backends (faux ou vrai) ne partagent **que les contrats** et ne communiquent
-**qu'en HTTP**.
+Le frontend et les backends (faux ou vrai) ne partagent **que le contrat d'API** et ne
+communiquent **qu'en HTTP**. Le mock-server, en TypeScript, importe directement les contrats ; le
+backend Python ne le peut pas : voir « Contrats et backend FastAPI » ci-dessous.
 
 Ces frontières sont **vérifiées par ESLint** (`eslint.config.js`, règle `no-restricted-imports`) :
 
-| Module                   | Peut importer                                                     | Ne peut pas importer                                                            |
-| ------------------------ | ----------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| `packages/contracts`     | rien (imports relatifs uniquement)                                | toute bibliothèque, tout autre paquet                                           |
-| `packages/design-system` | `contracts` (types), bibliothèques d'interface                    | `core`, tout autre paquet maison, toute bibliothèque de données (`@tanstack/*`) |
-| `packages/core`          | `contracts`, `design-system`, bibliothèques                       | un portail, le shell, `mock-server`                                             |
-| `frontend/<portail>`     | `contracts`, points d'entrée publics de `design-system` et `core` | un autre portail, le shell, `mock-server`, des chemins internes (`…/src/…`)     |
-| `frontend/shell`         | tout                                                              | —                                                                               |
-| `mock-server`            | `contracts`, `node:*`                                             | toute bibliothèque, tout paquet frontend                                        |
+| Module                            | Peut importer                                                     | Ne peut pas importer                                                            |
+| --------------------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `frontend/packages/contracts`     | rien (imports relatifs uniquement)                                | toute bibliothèque, tout autre paquet                                           |
+| `frontend/packages/design-system` | `contracts` (types), bibliothèques d'interface                    | `core`, tout autre paquet maison, toute bibliothèque de données (`@tanstack/*`) |
+| `frontend/packages/core`          | `contracts`, `design-system`, bibliothèques                       | un portail, le shell, `mock-server`                                             |
+| `frontend/<portail>`              | `contracts`, points d'entrée publics de `design-system` et `core` | un autre portail, le shell, `mock-server`, des chemins internes (`…/src/…`)     |
+| `frontend/shell`                  | tout                                                              | —                                                                               |
+| `mock-server`                     | `contracts`, `node:*`                                             | toute bibliothèque, tout paquet frontend                                        |
 
 Seul le shell connaît `mock-server`, et uniquement pour l'installer en démo/développement :
 `design-system`, `core` et les portails ne peuvent pas l'importer.
@@ -54,13 +59,26 @@ Conséquence : un portail peut être confié à une équipe, refondu ou retiré 
 Ce qui doit être partagé passe par `design-system` (ce qui se voit), `core` (ce qui se charge,
 se calcule ou se vérifie) ou `contracts` (les types échangés avec le backend).
 
+## Contrats et backend FastAPI
+
+`@acculturator/contracts` décrit les données échangées avec le backend. Tant que le backend
+n'existe pas, ces types écrits à la main (avec [`api-contract.md`](./api-contract.md)) servent de
+spécification. Avec FastAPI, la source de vérité passera côté backend :
+
+1. les modèles Pydantic du backend décrivent les données ; FastAPI en publie le schéma OpenAPI
+   (`/openapi.json`) ;
+2. les types de `frontend/packages/contracts` sont **générés** à partir de ce schéma (par exemple
+   avec `openapi-typescript`) au lieu d'être écrits à la main ;
+3. le frontend et le mock-server continuent d'importer `@acculturator/contracts` : leur code ne
+   change pas, et un champ modifié côté backend casse leur compilation après régénération.
+
 ## Le design system (`@acculturator/design-system`)
 
 Garantit une **identité visuelle unique** entre portails. Il est **purement visuel** : il n'appelle
 jamais l'API, ne connaît ni l'utilisateur ni les portails, et reçoit en props ce qu'il affiche
 (vérifié par ESLint). Il est donc réutilisable tel quel pour une autre thématique d'Acculturator.
 
-Points d'entrée publics (`exports` de `packages/design-system/package.json`) :
+Points d'entrée publics (`exports` de `frontend/packages/design-system/package.json`) :
 
 | Point d'entrée   | Rôle                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -121,7 +139,7 @@ api.notifications.list()         api.notifications.markRead(ids)
 api.progress.track(event)
 ```
 
-Une seule implémentation : **HTTP** (`packages/core/src/api/http/`), sur `VITE_API_URL`
+Une seule implémentation : **HTTP** (`frontend/packages/core/src/api/http/`), sur `VITE_API_URL`
 (défaut `/api`). Endpoints : [`api-contract.md`](./api-contract.md). Qui répond à ces appels ne
 concerne pas le frontend :
 
@@ -170,7 +188,7 @@ La plateforme est prévue pour plusieurs parcours d'acculturation (SST aujourd'h
 choisi est mémorisé dans le navigateur (`@acculturator/core/parcours`) et :
 
 - les appels propres à un parcours (catalogue, assistant, événements de progression) sont
-  automatiquement préfixés par `/parcours/:id` dans `packages/core/src/api/http/` : les pages des
+  automatiquement préfixés par `/parcours/:id` dans `frontend/packages/core/src/api/http/` : les pages des
   portails n'ont pas à s'en occuper ;
 - `RequireParcours` renvoie vers `/` si aucun parcours n'est choisi (lien direct, première visite),
   puis charge le catalogue du parcours avant d'afficher le portail ;
@@ -226,10 +244,10 @@ Variables d'environnement (`frontend/shell/.env.*`) :
    dans le serveur de démo : un dossier `mock-server/src/data/<id>/` sur le modèle de
    `mock-server/src/data/sst/` (voir [`mock-server/README.md`](../mock-server/README.md)).
 2. Côté frontend : rien à écrire. Seulement si une thématique a besoin d'une icône ou d'une couleur
-   qui n'existe pas encore, l'ajouter aux palettes de `packages/design-system/src/themes/index.ts`
+   qui n'existe pas encore, l'ajouter aux palettes de `frontend/packages/design-system/src/themes/index.ts`
    (une clé inconnue prend un habillage neutre en attendant).
 3. Une nouvelle **activité** (un nouveau type d'exercice), elle, demande du code : l'ajouter à
-   `ActivityId` (`packages/contracts/src/parcours.ts`), créer sa rubrique dans le portail et la
+   `ActivityId` (`frontend/packages/contracts/src/parcours.ts`), créer sa rubrique dans le portail et la
    relier à `offers`.
 
 ### Ajouter une rubrique à un portail
@@ -249,9 +267,9 @@ Variables d'environnement (`frontend/shell/.env.*`) :
 
 ### Ajouter un appel au backend
 
-1. Déclarer les types échangés dans `packages/contracts/src/`.
-2. Ajouter la méthode à l'interface concernée dans `packages/core/src/api/types.ts`.
-3. L'implémenter dans `packages/core/src/api/http/index.ts`.
+1. Déclarer les types échangés dans `frontend/packages/contracts/src/`.
+2. Ajouter la méthode à l'interface concernée dans `frontend/packages/core/src/api/types.ts`.
+3. L'implémenter dans `frontend/packages/core/src/api/http/index.ts`.
 4. Documenter l'endpoint dans [`api-contract.md`](./api-contract.md) et ajouter sa route de
    démonstration dans `mock-server/src/routes.ts`.
 5. Consommer depuis un composant avec `useQuery` / `useMutation`.
@@ -259,8 +277,8 @@ Variables d'environnement (`frontend/shell/.env.*`) :
 ### Ajouter un composant shadcn/ui
 
 ```bash
-cd packages/design-system && npx shadcn@latest add <composant>
+cd frontend/packages/design-system && npx shadcn@latest add <composant>
 ```
 
-Le composant est généré dans `packages/design-system/src/ui/`. Remplacer l'import `@/lib/utils`
-généré par `../lib`, puis l'exporter depuis `packages/design-system/src/ui/index.ts`.
+Le composant est généré dans `frontend/packages/design-system/src/ui/`. Remplacer l'import `@/lib/utils`
+généré par `../lib`, puis l'exporter depuis `frontend/packages/design-system/src/ui/index.ts`.

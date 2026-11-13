@@ -2,10 +2,9 @@
 @import 'tw-animate-css';
 @import '@fontsource-variable/ibm-plex-sans';
 
-/* Les classes Tailwind sont détectées dans l'application hôte et les portails (frontend/)
-   et dans les paquets partagés (packages/ : design system, core…). */
-@source '../../../../frontend';
-@source '../../../../packages';
+/* Les classes Tailwind sont détectées dans tout frontend/ : application hôte, portails et
+   paquets partagés (frontend/packages/ : design system, core…). */
+@source '../../../..';
 
 /*
  * ─────────────────────────────────────────────────────────────

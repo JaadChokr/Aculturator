@@ -12,7 +12,7 @@ import tseslint from 'typescript-eslint'
  * - core (données, auth, portails) ne connaît aucun portail ;
  * - un portail n'importe jamais un autre portail ni l'application hôte ;
  * - le frontend (hors shell) ne dépend jamais du serveur de démo : il ne parle qu'HTTP ;
- * - les contrats ne dépendent de rien (types purs, réutilisables par le backend).
+ * - les contrats ne dépendent de rien (types purs, partagés avec le serveur de démo).
  */
 const PORTALS = ['collaborateur', 'referent', 'admin']
 
@@ -79,7 +79,7 @@ export default tseslint.config(
   },
   // Design system : identité visuelle uniquement
   {
-    files: ['packages/design-system/src/**/*.{ts,tsx}'],
+    files: ['frontend/packages/design-system/src/**/*.{ts,tsx}'],
     rules: restrict([
       {
         regex: '^@acculturator/(?!contracts$)',
@@ -96,7 +96,7 @@ export default tseslint.config(
   },
   // Core : données, authentification, contrat des portails
   {
-    files: ['packages/core/src/**/*.{ts,tsx}'],
+    files: ['frontend/packages/core/src/**/*.{ts,tsx}'],
     rules: restrict([
       {
         group: [
@@ -144,7 +144,7 @@ export default tseslint.config(
   { files: ['mock-server/src/node.ts'], languageOptions: { globals: globals.node } },
   // Contrats : types purs, sans dépendance
   {
-    files: ['packages/contracts/src/**/*.ts'],
+    files: ['frontend/packages/contracts/src/**/*.ts'],
     rules: restrict([
       {
         regex: '^[^.]',

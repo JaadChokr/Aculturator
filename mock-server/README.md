@@ -53,7 +53,7 @@ contenu, ex. aucune scène) est masquée dans les portails. `npm run typecheck` 
 grâce aux types de `@acculturator/contracts`.
 
 Les clés d'icône et de couleur disponibles sont dans
-`packages/design-system/src/themes/index.ts`. Pour une illustration de scène, un SVG peut être
+`frontend/packages/design-system/src/themes/index.ts`. Pour une illustration de scène, un SVG peut être
 embarqué comme celui de l'open space (`svgDataUri`) ; un vrai backend servira plutôt une URL.
 
 ## Règles

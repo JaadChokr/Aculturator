@@ -1,15 +1,16 @@
 # Backend (à venir)
 
-Emplacement réservé au backend d'Acculturator. La stack est au choix de l'équipe (Node/NestJS,
-Java/Spring, .NET…) ; le frontend n'impose que le **contrat d'API** décrit dans
-[`docs/api-contract.md`](../docs/api-contract.md).
+Emplacement réservé au backend d'Acculturator, prévu en **Python avec FastAPI**. Le frontend
+n'impose que le **contrat d'API** décrit dans [`docs/api-contract.md`](../docs/api-contract.md).
 
 ## Points d'attention
 
-- **Contrats partagés** : les types échangés sont dans `packages/contracts`
-  (`@acculturator/contracts`). Un backend TypeScript peut l'ajouter comme workspace
-  (`"workspaces": ["packages/*", "frontend/*", "backend"]` dans le `package.json` racine) et
-  l'importer directement ; sinon, reproduire ces types à l'identique.
+- **Contrats** : les types attendus par le frontend sont dans `frontend/packages/contracts`
+  (`@acculturator/contracts`). Les traduire une fois en modèles Pydantic ; ensuite, ces modèles
+  font foi et les types TypeScript sont générés à partir du schéma OpenAPI publié par FastAPI
+  (`/openapi.json`), par exemple avec `openapi-typescript` (voir « Contrats et backend FastAPI »
+  dans [`docs/architecture.md`](../docs/architecture.md)). Les unions comme `LearningEvent`
+  (champ `type`) correspondent aux unions discriminées de Pydantic.
 - **Authentification** : SSO de l'entreprise, session par cookie ; `GET /api/me` renvoie
   l'utilisateur et son rôle (`collaborateur`, `referent`, `admin`). Les droits sont vérifiés côté
   serveur, le frontend ne fait que masquer les portails non autorisés.
@@ -29,4 +30,11 @@ VITE_MOCK_SERVER=false
 # VITE_API_URL=/api   (défaut ; en dev, Vite relaie /api vers http://localhost:3000)
 ```
 
-Le port cible du proxy de dev se règle dans `frontend/shell/vite.config.ts`.
+En développement, Vite relaie `/api` vers `http://localhost:3000` (le mock-server en mode Node).
+FastAPI (uvicorn) écoute par défaut sur le port 8000 : lancer le frontend avec
+
+```bash
+VITE_API_PROXY_TARGET=http://localhost:8000 npm run dev
+```
+
+Les routes FastAPI doivent alors être servies sous le préfixe `/api` (ex. `APIRouter(prefix="/api")`).

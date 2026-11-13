@@ -5,6 +5,6 @@
     "jsx": "react-jsx",
     "types": ["vite/client"]
   },
-  "include": ["packages/*/src", "frontend/*/src", "mock-server/src"],
+  "include": ["frontend/packages/*/src", "frontend/*/src", "mock-server/src"],
   "exclude": ["mock-server/src/node.ts"]
 }

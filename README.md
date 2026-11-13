@@ -40,21 +40,21 @@ dans `frontend/shell/.env.development.local` (voir [`backend/README.md`](backend
 
 ## Architecture
 
-Monorepo modulaire : les **bibliothèques partagées** dans `packages/`, **un dossier par portail** (et l’application hôte) dans `frontend/` :
+Monorepo modulaire : tout le frontend est dans `frontend/`, avec les **bibliothèques partagées** dans `frontend/packages/` et **un dossier par portail** (et l’application hôte) à côté :
 
 ```
-packages/             Bibliothèques partagées (importées par les applications)
-├── contracts/        @acculturator/contracts   Types du domaine & DTO, partagés avec le backend
-├── design-system/    @acculturator/design-system  Identité visuelle commune : composants, mise en page, animations, thème
-└── core/             @acculturator/core        Socle applicatif sans interface : API, authentification, parcours, catalogue
-frontend/             Applications : un dossier par portail + l'application hôte
+frontend/
+├── packages/         Bibliothèques partagées (importées par les applications)
+│   ├── contracts/    @acculturator/contracts   Types échangés avec le backend
+│   ├── design-system/ @acculturator/design-system  Identité visuelle commune : composants, mise en page, animations, thème
+│   └── core/         @acculturator/core        Socle applicatif sans interface : API, authentification, parcours, catalogue
 ├── shell/            @acculturator/shell       Application hôte : providers, routeur, registre des portails, build
 ├── collaborateur/    @acculturator/portal-collaborateur
 │   └── src/          index.tsx (PortalDefinition) · pages/ · components/ · store/
 ├── referent/         @acculturator/portal-referent   (squelette)
 └── admin/            @acculturator/portal-admin      (squelette)
 mock-server/          @acculturator/mock-server Faux backend de démo (données d'exemple), hors frontend
-backend/              Emplacement réservé au backend
+backend/              Futur backend Python / FastAPI
 docs/                 architecture.md · api-contract.md
 ```
 
@@ -81,26 +81,26 @@ Chaque thématique d'un parcours a une icône et un repère couleur discret, cho
 palettes du design system (`Theme.icon` / `.color`), affichés via `<ThemeBadge>` et `<ThemeIcon>`.
 
 - Utiliser **uniquement les tokens** (`bg-primary`, `text-muted-foreground`, `bg-accent`, `text-xp`, `bg-success`…),
-  jamais de couleur codée en dur dans une page. Les tokens clair/sombre sont définis dans `packages/design-system/src/styles/index.css`.
-- Réutiliser `@acculturator/design-system/ui` ; pour un nouveau composant shadcn : `cd packages/design-system && npx shadcn@latest add <composant>`
+  jamais de couleur codée en dur dans une page. Les tokens clair/sombre sont définis dans `frontend/packages/design-system/src/styles/index.css`.
+- Réutiliser `@acculturator/design-system/ui` ; pour un nouveau composant shadcn : `cd frontend/packages/design-system && npx shadcn@latest add <composant>`
   (le fichier `components.json` du socle pointe vers `src/ui`).
 - Chaque page commence par un `<PageHeader eyebrow title description />`.
 - Largeurs, sur-titres, choix exclusifs et teintes de difficulté passent par les briques du design system
   (`Page`/`PAGE_WIDTH`, `Eyebrow`, `SegmentedControl`, `ChoiceGroup`/`ChoiceCard`, `DIFFICULTY_STYLE`) ;
   ESLint refuse leurs équivalents recopiés (voir `docs/architecture.md`, « Rester conforme au style partagé »).
-- Icône et repère couleur des thématiques : clés des palettes `THEME_ICONS` / `THEME_COLORS` (`packages/design-system/src/themes/index.ts`), jamais une classe de couleur écrite dans le catalogue.
+- Icône et repère couleur des thématiques : clés des palettes `THEME_ICONS` / `THEME_COLORS` (`frontend/packages/design-system/src/themes/index.ts`), jamais une classe de couleur écrite dans le catalogue.
 - Sur mobile : barre de navigation basse (5 premières entrées de la `nav`), libellés courts via `short`.
 
 ### En-tête commun
 
-Compteurs propres au portail (`HeaderSlot`), **notifications** (affichage : `packages/design-system/src/components/notifications/`,
+Compteurs propres au portail (`HeaderSlot`), **notifications** (affichage : `frontend/packages/design-system/src/components/notifications/`,
 chargement : `useNotifications()` de `@acculturator/core/notifications`, données de démo par rôle dans `mock-server/src/data/notifications.ts`),
 bouton de thème, puis menu utilisateur (identité, apparence clair/sombre/système, portails, profil de démo).
 Sur mobile, l’en-tête est allégé : libellé court de la page, thème réglable depuis le menu utilisateur.
 
 ### Animations (Motion)
 
-Les réglages d'animation communs sont dans `packages/design-system/src/motion/` : ressorts (`spring`, `springBouncy`),
+Les réglages d'animation communs sont dans `frontend/packages/design-system/src/motion/` : ressorts (`spring`, `springBouncy`),
 apparitions (`fadeUp`, `popIn`), `hoverLift`, et les composants `<Stagger>` / `<Reveal>` (apparition en cascade)
 et `<AnimatedNumber>` (compteurs). Règles d'équipe :
 
@@ -153,13 +153,13 @@ collaborateur ; exprimer le principe par la fonctionnalité elle-même.
 
 ### Gamification (paramétrable)
 
-Barème d’XP : `XP` dans `packages/core/src/content/gamification.ts` · Niveaux : `LEVELS` ·
+Barème d’XP : `XP` dans `frontend/packages/core/src/content/gamification.ts` · Niveaux : `LEVELS` ·
 Badges : `frontend/collaborateur/src/store/badges.ts` · Missions quotidiennes : `store/missions.ts`.
 
 ## Brancher le back-end
 
-Le frontend est prêt : contrats de données (`packages/contracts`), client HTTP et endpoints
-(`packages/core/src/api/http/`), événements d'apprentissage déjà émis par le portail collaborateur.
+Le frontend est prêt : contrats de données (`frontend/packages/contracts`), client HTTP et endpoints
+(`frontend/packages/core/src/api/http/`), événements d'apprentissage déjà émis par le portail collaborateur.
 
 - **Authentification** : SSO de l'entreprise derrière `GET /api/me` ; le rôle pilote l'accès aux portails.
 - **Contenus** : `GET /api/parcours/:id/catalog` remplace les données de démo (un dossier par parcours dans `mock-server/src/data/`).

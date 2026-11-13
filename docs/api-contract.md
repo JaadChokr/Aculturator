@@ -1,10 +1,11 @@
 # Contrat d'API (frontend ↔ backend)
 
 Ce document décrit les endpoints appelés par le frontend
-(`packages/core/src/api/http/index.ts`). `mock-server/src/routes.ts` en est une implémentation de
+(`frontend/packages/core/src/api/http/index.ts`). `mock-server/src/routes.ts` en est une implémentation de
 référence avec des données d'exemple. Les types cités sont définis dans
-**`packages/contracts`** (`@acculturator/contracts`), source de vérité partagée : le backend
-devrait les importer (s'il est en TypeScript) ou les reproduire à l'identique.
+**`frontend/packages/contracts`** (`@acculturator/contracts`). Le backend (Python, FastAPI) les
+reproduit en modèles Pydantic ; à terme, ces types TypeScript seront générés à partir de son schéma
+OpenAPI (voir « Contrats et backend FastAPI » dans [`architecture.md`](./architecture.md)).
 
 ## Conventions
 
@@ -151,8 +152,8 @@ interface HazardScene {
 }
 ```
 
-Détail des champs : `packages/contracts/src/content.ts`. Les clés d'icône et de couleur disponibles
-sont listées dans `packages/design-system/src/themes/index.ts`.
+Détail des champs : `frontend/packages/contracts/src/content.ts`. Les clés d'icône et de couleur disponibles
+sont listées dans `frontend/packages/design-system/src/themes/index.ts`.
 
 ### `ChatReply`
 
